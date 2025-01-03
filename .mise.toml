@@ -14,13 +14,13 @@ description = "Install dependencies"
 alias = "i"
 run = "uv pip install -r requirements.txt"
 
-[tasks.run]
+[tasks.app]
 description = "Run the application"
-run = "python app.py"
+run = "python run.py"
 
 [tasks.lint]
 description = "Lint the code"
-run = "ruff src/"
+run = "ruff app/"
 
 [tasks.info]
 description = "Print project information"
