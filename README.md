@@ -23,9 +23,6 @@ mise run test-api
 mise run app
 ```
 
-Сервер стартует на http://localhost:8000
-Документация доступна по адресу http://localhost:8000/docs или http://localhost:8000/redoc
-
 ###  Настройка окружения
 В случае с виндой лучше использовать WSL
 
