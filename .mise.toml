@@ -6,6 +6,8 @@ PROJECT_NAME = "{{ config_root | basename }}"
 _.python.venv = { path = ".venv", create = true }
 
 [tools]
+hurl = "latest"
+jq = "latest"
 python = "latest"
 ruff = "latest"
 
@@ -17,6 +19,10 @@ run = "uv pip install -r requirements.txt"
 [tasks.app]
 description = "Run the application"
 run = "fastapi run app/__init__.py"
+
+[tasks.test-api]
+description = "Run examples"
+run = "hurl --test examples"
 
 [tasks.lint]
 description = "Lint the code"
