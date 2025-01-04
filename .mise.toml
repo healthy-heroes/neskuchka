@@ -16,7 +16,7 @@ run = "uv pip install -r requirements.txt"
 
 [tasks.app]
 description = "Run the application"
-run = "python run.py"
+run = "fastapi run app/__init__.py"
 
 [tasks.lint]
 description = "Lint the code"

@@ -1,5 +1,5 @@
 ###
 
-GET http://localhost:5000/api/ping
+GET http://localhost:8000/api/ping
 
 ###

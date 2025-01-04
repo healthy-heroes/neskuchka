@@ -1,11 +1,8 @@
-from flask import Flask
+from fastapi import FastAPI
 
-def create_app():
-    app = Flask(__name__)
-    # app.config.from_object('config.Config')
+app = FastAPI()
 
-    with app.app_context():
-        from .routes import register_routes
-        register_routes(app)
-        
-    return app
+
+@app.get("/api/ping")
+async def root():
+    return {"message": "Pong"}
