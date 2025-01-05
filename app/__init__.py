@@ -19,6 +19,7 @@ exercises = [
     Exercise(id=1, name="Push-ups"),
     Exercise(id=2, name="Pull-ups"),
     Exercise(id=3, name="Squats"),
+    Exercise(id=4, name="SvinKy"),
 ]
 
 @app.post("/api/exercises")
