@@ -11,6 +11,13 @@ jq = "latest"
 python = "latest"
 ruff = "latest"
 
+[tasks.info]
+description = "Print project information"
+run = '''
+echo "Project: $PROJECT_NAME"
+echo "Virtual Environment: $VIRTUAL_ENV"
+'''
+
 [tasks.install]
 description = "Install dependencies"
 alias = "i"
@@ -26,11 +33,8 @@ run = "hurl --test examples"
 
 [tasks.lint]
 description = "Lint the code"
-run = "ruff app/"
+run = "ruff check app"
 
-[tasks.info]
-description = "Print project information"
-run = '''
-echo "Project: $PROJECT_NAME"
-echo "Virtual Environment: $VIRTUAL_ENV"
-'''
+[tasks.pre-commit]
+description = "Pre-commit hook"
+run = "mise run lint"
