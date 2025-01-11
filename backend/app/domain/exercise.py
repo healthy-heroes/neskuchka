@@ -4,19 +4,21 @@ from app.domain.entity import EntityModel
 ExerciseId = NewType("ExerciseId", int)
 ExerciseSlug = NewType("ExerciseSlug", str)
 
+
 class Exercise(EntityModel):
     """
     Модель базового упражнения
-    
+
     Например, push-up, pull-up и подобное
     """
+
     id: ExerciseId
     slug: ExerciseSlug
     name: str
     description: str
 
 
-class ExerciseRepository():
+class ExerciseRepository:
     def add(exercise: Exercise) -> Exercise:
         pass
 

@@ -9,10 +9,12 @@ from app.domain.track import TrackId
 # todo: Нужно заменить на uuid
 WorkoutId = NewType("WorkoutId", int)
 
+
 class WorkoutExercise(EntityModel):
     """
     Упражнение в тренировке
     """
+
     exercise_id: ExerciseId
 
     # Числовые характеристики
@@ -27,6 +29,7 @@ class WorkoutSection(EntityModel):
     """
     Часть тренировки
     """
+
     title: str
     # todo: должно превратиться в полноценный домен
     schema: str
@@ -40,8 +43,9 @@ class Workout(EntityModel):
 
     Может состоять из нескольких частей
     """
+
     id: WorkoutId
-    
+
     date: date
     track_id: TrackId
 
@@ -51,11 +55,11 @@ class Workout(EntityModel):
 
 
 @dataclass(frozen=True)
-class WrokoutCriteria():
+class WrokoutCriteria:
     limit: int
 
 
-class WorkoutRepository():
+class WorkoutRepository:
     def add(workout: Workout) -> Workout:
         pass
 

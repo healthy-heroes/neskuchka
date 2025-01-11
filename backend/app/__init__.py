@@ -22,10 +22,12 @@ exercises = [
     Exercise(id=4, name="SvinKy"),
 ]
 
+
 @app.post("/api/exercises")
 async def create_exercise(item: Exercise):
     exercises.append(item)
     return item
+
 
 @app.get("/api/exercises")
 async def get_exersices(skip: int = 0):
@@ -36,5 +38,3 @@ async def get_exersices(skip: int = 0):
 async def get_exersice(id: int):
     exercise = next((e for e in exercises if e["id"] == id), None)
     return {"data": exercise}
-
-

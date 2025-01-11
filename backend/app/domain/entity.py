@@ -7,6 +7,7 @@ class EntityModel(BaseModel):
 
     Все доменные модели будут потомками, будут наследовать базовые свойства, например, неизменяемость
     """
+
     model_config = ConfigDict(frozen=True)
 
 

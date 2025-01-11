@@ -11,14 +11,15 @@ class Track(EntityModel):
     """
     Модель программы тренировок (трека)
     """
+
     # todo: uuid?
     id: TrackId
     name: str
-    # todo: 
+    # todo:
     owner_id: UserId
 
 
-class RepositoryTrack():
+class RepositoryTrack:
     def add(track: Track) -> Track:
         pass
 

@@ -11,6 +11,7 @@ class User(EntityModel):
     """
     Модель пользователя сервиса
     """
+
     id: UserId
     name: str
     login: str
