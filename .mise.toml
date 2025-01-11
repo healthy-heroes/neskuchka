@@ -4,6 +4,7 @@ PROJECT_NAME = "{{ config_root | basename }}"
 
 
 [tools]
+caddy = "latest"
 hurl = "latest"
 jq = "latest"
 

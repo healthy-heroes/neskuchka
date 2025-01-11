@@ -104,3 +104,20 @@ pip install uv
 # Устанавливаем зависимости
 mise run install
 ```
+
+**Caddy** (пока экспериментальный)
+Для прокси используем [Caddy](https://caddyserver.com/)
+
+Даем привилегии использовать порты 80 и 443:
+```
+sudo setcap cap_net_bind_service=+ep $(which caddy)
+```
+
+Запускаем caddy:
+
+```
+caddy start
+```
+
+Теперь можно бекенд доступен по адресу: `https://neskuchka.localhost`
+

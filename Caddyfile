@@ -1,0 +1,3 @@
+neskuchka.localhost
+
+reverse_proxy :8000
