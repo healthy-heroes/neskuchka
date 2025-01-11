@@ -1,0 +1,31 @@
+[env]
+# Use the project name derived from the current directory
+PROJECT_NAME = "{{ config_root | basename }}"
+
+# Automatic virtualenv activation
+_.python.venv = { path = ".venv", create = true }
+
+[tools]
+python = "latest"
+ruff = "latest"
+
+
+[tasks.info]
+description = "Print project information"
+run = '''
+echo "Project: $PROJECT_NAME"
+echo "Virtual Environment: $VIRTUAL_ENV"
+'''
+
+[tasks.install]
+description = "Install dependencies"
+alias = "i"
+run = "uv pip install -r requirements.txt"
+
+[tasks.app]
+description = "Run the application"
+run = "fastapi dev app/__init__.py"
+
+[tasks.lint]
+description = "Lint the code"
+run = "ruff check app"

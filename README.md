@@ -57,7 +57,7 @@ mise run app
 ###  Настройка окружения
 В случае с виндой лучше использовать WSL
 
-Поставить [mise](https://mise.jdx.dev/) и [uv](https://docs.astral.sh/uv/)
+Поставить [mise](https://mise.jdx.dev/)
 
 Клонируем репозиторий и устанавливаем зависимости
 ```
@@ -66,9 +66,6 @@ cd neskuchka
 
 # Добавляем конфиг файл `.mise.toml` в доверяемые 
 mise trust
-
-# Устанавливаем зависимости
-mise run install
 ```
 
 Настраиваем pre-комитные хуки, чтобы автоматом запускать линтинг перед каждым комитом.
@@ -89,4 +86,21 @@ mise generate git-pre-commit --write --task=pre-commit
 All checks passed!
 On branch main
 ...
+```
+
+#### Backend
+Документация по [uv](https://docs.astral.sh/uv/)
+
+```
+# Переходит в папку бекенда
+cd backend
+
+# Добавляем конфиг файл `.mise.toml` в доверяемые 
+mise trust
+
+# Поставить uv
+pip install uv
+
+# Устанавливаем зависимости
+mise run install
 ```
