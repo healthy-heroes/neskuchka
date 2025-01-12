@@ -1,35 +1,21 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
+
+from app.api.deps import ExerciseRepoDependency
+from app.domain.exercise import Exercise, ExerciseSlug
 
 router = APIRouter(prefix="/exercises", tags=["exercises"])
 
 
-class Exercise(BaseModel):
-    id: int
-    name: str
-    description: str | None = None
-
-
-exercises = [
-    Exercise(id=1, name="Push-ups"),
-    Exercise(id=2, name="Pull-ups"),
-    Exercise(id=3, name="Squats"),
-    Exercise(id=4, name="SvinKy"),
-]
-
-
-@router.post("/")
-async def create_exercise(item: Exercise):
-    exercises.append(item)
-    return item
-
+@router.post("/", status_code=201)
+async def create_exercise(item: Exercise, exercise_repo: ExerciseRepoDependency) -> Exercise:
+    exercise = Exercise(**item.model_dump())
+    return exercise_repo.add(exercise)
 
 @router.get("/")
-async def get_exersices(skip: int = 0):
-    return exercises[skip:]
+async def get_exercises(exercise_repo: ExerciseRepoDependency) -> list[Exercise]:
+    return exercise_repo.get_all()
 
 
-@router.get("/{id}")
-async def get_exersice(id: int):
-    exercise = next((e for e in exercises if e["id"] == id), None)
-    return {"data": exercise}
+@router.get("/{slug}")
+async def get_exersice(slug: str, exercise_repo: ExerciseRepoDependency) -> Exercise:
+    return exercise_repo.get_by_slug(ExerciseSlug(slug))

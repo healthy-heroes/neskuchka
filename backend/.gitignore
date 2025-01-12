@@ -57,3 +57,6 @@ dmypy.json
 
 # LSP config files
 pyrightconfig.json
+
+# local fatabase
+database.db
