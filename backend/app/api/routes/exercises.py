@@ -7,9 +7,12 @@ router = APIRouter(prefix="/exercises", tags=["exercises"])
 
 
 @router.post("/", status_code=201)
-async def create_exercise(item: Exercise, exercise_repo: ExerciseRepoDependency) -> Exercise:
+async def create_exercise(
+    item: Exercise, exercise_repo: ExerciseRepoDependency
+) -> Exercise:
     exercise = Exercise(**item.model_dump())
     return exercise_repo.add(exercise)
+
 
 @router.get("/")
 async def get_exercises(exercise_repo: ExerciseRepoDependency) -> list[Exercise]:

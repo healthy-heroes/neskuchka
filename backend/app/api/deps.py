@@ -13,11 +13,13 @@ SessionDependency = Annotated[Session, Depends(get_session)]
 
 
 # Exercise repository dependency per request
-def get_exercise_repository(session: SessionDependency) -> Generator[ExerciseRepository, None, None]:
-    try:    
+def get_exercise_repository(
+    session: SessionDependency,
+) -> Generator[ExerciseRepository, None, None]:
+    try:
         yield ExerciseDbRepository(session)
     finally:
         session.close()
 
-ExerciseRepoDependency = Annotated[ExerciseRepository, Depends(get_exercise_repository)]
 
+ExerciseRepoDependency = Annotated[ExerciseRepository, Depends(get_exercise_repository)]

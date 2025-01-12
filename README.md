@@ -38,6 +38,20 @@ Found 1 error (1 fixed, 0 remaining).
 
 Однако не все ошибки можно починить автоматически
 
+**Второй тип ошибок** - это проверка форматирования, ругаться будет примерно:
+```
+[pre-commit] $ (cd backend && mise run lint)
+[lint] $ ruff format --check . && ruff check .
+Would reformat: app/main.py
+``` 
+
+Нужно запустить руками:
+```
+ruff format .
+ruff format
+1 file reformatted, 16 files left unchanged
+```
+
 
 ### Hurl
 [Hurl](https://github.com/Orange-OpenSource/hurl) позволяет выполнять запросы и делать всякие ассерты

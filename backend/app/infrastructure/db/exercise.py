@@ -4,7 +4,7 @@ from app.domain.exercise import Exercise, ExerciseRepository, ExerciseSlug
 
 
 class ExerciseModel(SQLModel, table=True):
-    __tablename__ = 'exercise'
+    __tablename__ = "exercise"
 
     slug: str = Field(default=None, primary_key=True)
     name: str
@@ -12,9 +12,7 @@ class ExerciseModel(SQLModel, table=True):
 
     def to_domain(self) -> Exercise:
         return Exercise(
-            name=self.name,
-            slug=ExerciseSlug(self.slug),
-            description=self.description
+            name=self.name, slug=ExerciseSlug(self.slug), description=self.description
         )
 
 
@@ -24,21 +22,17 @@ class ExerciseDbRepository(ExerciseRepository):
 
     def add(self, exercise: Exercise) -> Exercise:
         db_exercise = ExerciseModel(
-            name=exercise.name,
-            slug=exercise.slug,
-            description=exercise.description
+            name=exercise.name, slug=exercise.slug, description=exercise.description
         )
         self.session.add(db_exercise)
         self.session.commit()
         self.session.refresh(db_exercise)
-        
+
         return db_exercise.to_domain()
 
     def get_all(self) -> list[Exercise]:
-        exercises = self.session.exec(
-            select(ExerciseModel)
-        ).all()
-        
+        exercises = self.session.exec(select(ExerciseModel)).all()
+
         return [ex.to_domain() for ex in exercises]
 
     def get_by_slug(self, slug: ExerciseSlug) -> Exercise | None:
@@ -48,6 +42,5 @@ class ExerciseDbRepository(ExerciseRepository):
 
         if not exercise:
             return None
-        
-        return exercise.to_domain()
 
+        return exercise.to_domain()
