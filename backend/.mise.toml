@@ -8,6 +8,7 @@ _.python.venv = { path = ".venv", create = true }
 [tools]
 python = "latest"
 ruff = "latest"
+uv = "latest"
 
 
 [tasks.info]
