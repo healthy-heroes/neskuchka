@@ -30,3 +30,7 @@ run = "fastapi dev app/main.py"
 [tasks.lint]
 description = "Lint the code"
 run = "ruff format --check . && ruff check ."
+
+[tasks.test]
+description = "Run tests"
+run = "pytest"
