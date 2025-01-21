@@ -11,14 +11,6 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
 
 
-class TestSettings(Settings):
-    app_name: str = "Test app"
-
-    environment: str = "test"
-
-    API_V1_PREFIX: str = "/api/v1"
-
-
 settings = Settings()
 
 

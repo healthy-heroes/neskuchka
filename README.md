@@ -54,10 +54,13 @@ ruff format
 
 ### Тестирование
 Для запуска тестов используется [pytest](https://docs.pytest.org/en/latest/)
+Клиентом является [httpx](https://www.python-httpx.org/)
 
 ```
 mise run test
 ```
+
+Тесты пищем в отдельной директории `tests`, повторяя структуру проекта.
 
 ### Hurl
 _экспериментально пока_

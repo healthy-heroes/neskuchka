@@ -1,4 +1,5 @@
 fastapi[standard]
+httpx
 pydantic-settings
 pytest
 sqlmodel
