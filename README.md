@@ -52,8 +52,15 @@ ruff format
 1 file reformatted, 16 files left unchanged
 ```
 
+### Тестирование
+Для запуска тестов используется [pytest](https://docs.pytest.org/en/latest/)
+
+```
+mise run test
+```
 
 ### Hurl
+_экспериментально пока_
 [Hurl](https://github.com/Orange-OpenSource/hurl) позволяет выполнять запросы и делать всякие ассерты
 
 В папке `examples` лежат .hurl файлы, в которых написаны легковесные тесты, запустить их можно так:
@@ -103,8 +110,6 @@ On branch main
 ```
 
 #### Backend
-Документация по [uv](https://docs.astral.sh/uv/)
-
 ```
 # Переходит в папку бекенда
 cd backend
@@ -112,12 +117,12 @@ cd backend
 # Добавляем конфиг файл `.mise.toml` в доверяемые 
 mise trust
 
-# Поставить uv
-pip install uv
-
 # Устанавливаем зависимости
 mise run install
 ```
+
+Для управления зависимостей используется [uv](https://docs.astral.sh/uv/), но пока в очень простом виде
+
 
 **Caddy** (пока экспериментальный)
 Для прокси используем [Caddy](https://caddyserver.com/)

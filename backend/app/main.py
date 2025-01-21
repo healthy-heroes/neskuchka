@@ -1,5 +1,4 @@
-from typing import Annotated
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from pydantic import BaseModel
 
 from app.api.main import api_router
