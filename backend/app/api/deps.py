@@ -4,12 +4,12 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Session
 
-from app.infrastructure.db.session import get_session
+from app.infrastructure.db.database import db
 from app.infrastructure.db.exercise import ExerciseDbRepository
 from app.domain.exercise import ExerciseRepository
 
 # Session dependency per request
-SessionDependency = Annotated[Session, Depends(get_session)]
+SessionDependency = Annotated[Session, Depends(db.session_getter)]
 
 
 # Exercise repository dependency per request

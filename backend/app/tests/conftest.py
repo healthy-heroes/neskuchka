@@ -1,22 +1,29 @@
-import os
 import pytest
 from sqlmodel import SQLModel
+from fastapi.testclient import TestClient
 
-from app.infrastructure.db.session import engine
-
-
-def pytest_configure(config):
-    os.environ["ENVIRONMENT"] = "test"
+from app.infrastructure.db.database import db
+from app.main import app
 
 
 # Init testing database
 @pytest.fixture(scope="session", autouse=True)
 def init_db():
+    # если импортить рано, то настройки инциализируются раньше выставления ENVIRONMENT
+    # from app.infrastructure.db.database import db
+
     print("init_db:Starting up")
-    # TODO: пока создается
-    # SQLModel.metadata.create_all(bind=engine)
+    SQLModel.metadata.create_all(db.engine)
 
     yield
 
     print("init_db:Shutting down")
-    SQLModel.metadata.drop_all(engine)
+    SQLModel.metadata.drop_all(db.engine)
+    db.dispose()
+
+
+# client fixture
+@pytest.fixture(name="client")
+def client():
+    yield TestClient(app)
+    app.dependency_overrides.clear()

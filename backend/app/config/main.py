@@ -8,7 +8,7 @@ from app.config.default import AppSettings, Environment, get_env
 
 def init_settings():
     env = os.getenv("ENVIRONMENT")
-    print("env: ", env)
+
     if env == Environment.TEST:
         from app.config.test import TestAppSettings
 

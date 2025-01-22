@@ -60,3 +60,4 @@ pyrightconfig.json
 
 # local fatabase
 database.db
+database_test.db

@@ -1,24 +1,22 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from pydantic import BaseModel
+from sqlmodel import SQLModel
 
 from app.api.main import api_router
-from app.infrastructure.db.session import create_db_and_tables
 from app.config.main import settings
+from app.infrastructure.db.database import db
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: connect to db
-    # await db.connect()
     print("app:Starting up")
-    create_db_and_tables()
+    SQLModel.metadata.create_all(db.engine)
 
     yield
 
-    # Shutdown: disconnect from db
-    # await db.disconnect()
     print("app:Shutting down")
+    db.dispose()
 
 
 app = FastAPI(lifespan=lifespan)

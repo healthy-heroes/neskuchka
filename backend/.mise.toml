@@ -37,4 +37,4 @@ run = "ruff format . && ruff check . --fix"
 
 [tasks.test]
 description = "Run tests"
-run = "pytest"
+run = "ENVIRONMENT=test pytest"
