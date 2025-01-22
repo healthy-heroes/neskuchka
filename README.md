@@ -55,7 +55,9 @@ ruff format
 ### Тестирование
 Для запуска тестов используется [pytest](https://docs.pytest.org/en/latest/)
 Клиентом является [httpx](https://www.python-httpx.org/)
+Конфигурация тестов происходит через файл `conftest.py`
 
+Запуск тестов:
 ```
 mise run test
 ```
