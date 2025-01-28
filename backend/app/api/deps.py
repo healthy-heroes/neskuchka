@@ -28,6 +28,7 @@ def get_exercise_repository(
 
 ExerciseRepoDependency = Annotated[ExerciseRepository, Depends(get_exercise_repository)]
 
+
 # User repository dependency per request
 def get_user_repository(
     session: SessionDependency,

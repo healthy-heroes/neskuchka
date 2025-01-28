@@ -14,9 +14,9 @@ class UserModel(SQLModel, table=True):
     def to_domain(self) -> User:
         return User(
             id=UserId(self.id),
-            name=self.name, 
+            name=self.name,
             login=self.login,
-            email=self.email, 
+            email=self.email,
         )
 
 

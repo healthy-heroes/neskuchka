@@ -12,9 +12,7 @@ class ExerciseModel(SQLModel, table=True):
 
     def to_domain(self) -> Exercise:
         return Exercise(
-            slug=ExerciseSlug(self.slug),
-            name=self.name,
-            description=self.description
+            slug=ExerciseSlug(self.slug), name=self.name, description=self.description
         )
 
 

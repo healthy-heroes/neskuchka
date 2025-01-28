@@ -5,6 +5,7 @@ from sqlmodel import Session
 from app.infrastructure.db.track import TrackModel
 from app.infrastructure.db.user import UserModel
 
+
 def test_get_main_track(client: TestClient, session: Session):
     user_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, "test-user"))
     db_user = UserModel(
@@ -32,4 +33,3 @@ def test_get_main_track(client: TestClient, session: Session):
         "name": "Main Track",
         "owner_id": user_id,
     }
-

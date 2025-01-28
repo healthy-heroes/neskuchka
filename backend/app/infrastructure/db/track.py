@@ -41,4 +41,3 @@ class TrackDbRepository(RepositoryTrack):
             return None
 
         return result.to_domain()
-
