@@ -60,11 +60,8 @@ class WrokoutCriteria:
 
 
 class WorkoutRepository:
-    def add(workout: Workout) -> Workout:
+    def add(self, workout: Workout) -> Workout:
         pass
 
-    def get_by_id(workout_id: WorkoutId) -> Workout:
-        pass
-
-    def get(track_id: TrackId, criteria: WrokoutCriteria) -> list[Workout]:
+    def get_by_id(self, workout_id: WorkoutId) -> Workout | None:
         pass

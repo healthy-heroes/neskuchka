@@ -16,7 +16,7 @@ async def create_exercise(
         return exercise_repo.add(exercise)
     except sqlalchemy.exc.IntegrityError:
         raise HTTPException(
-            status_code=400, detail=f"Упражнение с slug={exercise.slug} уже существует"
+            status_code=400, detail=f"Exercise with slug={exercise.slug} already exists"
         )
 
 
@@ -30,6 +30,6 @@ async def get_exersice(slug: str, exercise_repo: ExerciseRepoDependency) -> Exer
     exercise = exercise_repo.get_by_slug(ExerciseSlug(slug))
     if not exercise:
         raise HTTPException(
-            status_code=404, detail=f"Упражнение с slug={slug} не найдено"
+            status_code=404, detail=f"Exercise with slug={slug} not found"
         )
     return exercise

@@ -1,16 +1,19 @@
-from typing import NewType
-from pydantic import EmailStr
+from uuid import UUID
+from typing import Annotated
+from pydantic import ConfigDict, EmailStr
+from pydantic.types import UuidVersion
+
 from app.domain.entity import EntityModel
 
-
-# todo: Нужно заменить на uuid
-UserId = NewType("UserId", int)
+UserId = Annotated[UUID, UuidVersion(5)]
 
 
 class User(EntityModel):
     """
     Модель пользователя сервиса
     """
+
+    model_config = ConfigDict(frozen=True)
 
     id: UserId
     name: str
@@ -19,8 +22,5 @@ class User(EntityModel):
 
 
 class RepositoryUser(EntityModel):
-    def add(user: User) -> User:
-        pass
-
-    def get_by_id(iser_id: UserId) -> User:
+    def get_by_id(self, user_id: UserId) -> User | None:
         pass

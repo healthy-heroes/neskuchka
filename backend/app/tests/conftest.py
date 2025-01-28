@@ -1,5 +1,5 @@
 import pytest
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Session
 from fastapi.testclient import TestClient
 
 from app.infrastructure.db.database import db
@@ -27,3 +27,10 @@ def init_db():
 def client():
     yield TestClient(app)
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(name="session")
+def session():
+    # TODO: remove copypaste from database.py
+    with Session(db.engine) as session:
+        yield session

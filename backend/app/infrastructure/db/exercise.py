@@ -12,7 +12,9 @@ class ExerciseModel(SQLModel, table=True):
 
     def to_domain(self) -> Exercise:
         return Exercise(
-            name=self.name, slug=ExerciseSlug(self.slug), description=self.description
+            slug=ExerciseSlug(self.slug),
+            name=self.name,
+            description=self.description
         )
 
 
@@ -36,9 +38,8 @@ class ExerciseDbRepository(ExerciseRepository):
         return [ex.to_domain() for ex in exercises]
 
     def get_by_slug(self, slug: ExerciseSlug) -> Exercise | None:
-        exercise = self.session.exec(
-            select(ExerciseModel).where(ExerciseModel.slug == slug)
-        ).first()
+        query = select(ExerciseModel).where(ExerciseModel.slug == slug).limit(1)
+        exercise = self.session.exec(query).first()
 
         if not exercise:
             return None

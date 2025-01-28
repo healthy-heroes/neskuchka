@@ -1,4 +1,6 @@
 from typing import NewType
+
+from pydantic import ConfigDict
 from app.domain.entity import EntityModel
 
 ExerciseSlug = NewType("ExerciseSlug", str)
@@ -11,17 +13,19 @@ class Exercise(EntityModel):
     Например, push-up, pull-up и подобное
     """
 
+    model_config = ConfigDict(frozen=True)
+
     slug: ExerciseSlug
     name: str
     description: str
 
 
 class ExerciseRepository:
-    def add(exercise: Exercise) -> Exercise:
+    def add(self, exercise: Exercise) -> Exercise:
         pass
 
-    def get_all() -> list[Exercise]:
+    def get_all(self) -> list[Exercise]:
         pass
 
-    def get_by_slug(slug: ExerciseSlug) -> Exercise:
+    def get_by_slug(self, slug: ExerciseSlug) -> Exercise | None:
         pass
