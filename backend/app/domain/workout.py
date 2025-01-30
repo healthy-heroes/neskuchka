@@ -1,13 +1,31 @@
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import NewType
 from datetime import date
+from pydantic import Field
+from ulid import ULID
+
 from app.domain.entity import EntityModel
-from app.domain.exercise import ExerciseId
+from app.domain.exercise import ExerciseSlug
 from app.domain.track import TrackId
 
 
 # todo: Нужно заменить на uuid
-WorkoutId = NewType("WorkoutId", int)
+WorkoutId = NewType("WorkoutId", ULID)
+
+
+class WorkoutProtocolType(StrEnum):
+    DEFAULT = "DEFAULT"
+
+
+class WorkoutProtocol(EntityModel):
+    """
+    Протокол тренировки
+    """
+
+    type: WorkoutProtocolType = Field(default=WorkoutProtocolType.DEFAULT)
+    title: str
+    description: str = ""
 
 
 class WorkoutExercise(EntityModel):
@@ -15,14 +33,17 @@ class WorkoutExercise(EntityModel):
     Упражнение в тренировке
     """
 
-    exercise_id: ExerciseId
+    exercise_slug: ExerciseSlug
 
-    # Числовые характеристики
     # Количество повторов
-    repetitions: int
+    repetitions: int | None = None
+    # Текстовое описание повторов
+    repetitions_text: str = ""
 
     # Вес (кг)
-    weight: int
+    weight: int | None = None
+    # Текстовое описание веса
+    weight_text: str = ""
 
 
 class WorkoutSection(EntityModel):
@@ -31,10 +52,8 @@ class WorkoutSection(EntityModel):
     """
 
     title: str
-    # todo: должно превратиться в полноценный домен
-    schema: str
-    # todo: non empty list Field(min_length)
-    exercises: list[WorkoutExercise]
+    protocol: WorkoutProtocol
+    exercises: list[WorkoutExercise] = Field(min_length=1)
 
 
 class Workout(EntityModel):
@@ -44,14 +63,13 @@ class Workout(EntityModel):
     Может состоять из нескольких частей
     """
 
-    id: WorkoutId
+    id: WorkoutId = Field(default_factory=ULID)
 
     date: date
     track_id: TrackId
 
-    # todo: non empty list
     # Упорядоченный список частей
-    sections: list[WorkoutSection]
+    sections: list[WorkoutSection] = Field(min_length=1)
 
 
 @dataclass(frozen=True)

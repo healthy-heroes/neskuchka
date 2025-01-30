@@ -1,6 +1,6 @@
 from sqlmodel import Field, SQLModel, Session, select
 
-from app.domain.user import RepositoryUser, User, UserId
+from app.domain.user import UserRepository, User, UserId
 
 
 class UserModel(SQLModel, table=True):
@@ -20,7 +20,7 @@ class UserModel(SQLModel, table=True):
         )
 
 
-class UserDbRepository(RepositoryUser):
+class UserDbRepository(UserRepository):
     def __init__(self, session: Session):
         self.session = session
 

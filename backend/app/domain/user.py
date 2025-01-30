@@ -21,6 +21,6 @@ class User(EntityModel):
     email: EmailStr
 
 
-class RepositoryUser(EntityModel):
+class UserRepository(EntityModel):
     def get_by_id(self, user_id: UserId) -> User | None:
         pass

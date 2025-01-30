@@ -1,6 +1,6 @@
 from sqlmodel import Field, SQLModel, Session, select
 
-from app.domain.track import RepositoryTrack, Track, TrackId
+from app.domain.track import TrackRepository, Track, TrackId
 from app.domain.user import UserId
 
 
@@ -19,13 +19,12 @@ class TrackModel(SQLModel, table=True):
         )
 
 
-class TrackDbRepository(RepositoryTrack):
+class TrackDbRepository(TrackRepository):
     def __init__(self, session: Session):
         self.session = session
 
     def get_main_track(self) -> Track | None:
         query = select(TrackModel).limit(1)
-        print(query)
         result = self.session.exec(query).first()
 
         if not result:

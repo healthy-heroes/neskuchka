@@ -22,7 +22,7 @@ class Track(EntityModel):
     owner_id: UserId
 
 
-class RepositoryTrack:
+class TrackRepository:
     def get_main_track(self) -> Track | None:
         """
         Временный метод, так как пока будет всего один трек

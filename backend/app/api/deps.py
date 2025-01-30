@@ -7,8 +7,8 @@ from sqlmodel import Session
 from app.infrastructure.db.database import db
 from app.infrastructure.db.exercise import ExerciseDbRepository
 from app.domain.exercise import ExerciseRepository
-from app.domain.track import RepositoryTrack
-from app.domain.user import RepositoryUser
+from app.domain.track import TrackRepository
+from app.domain.user import UserRepository
 from app.infrastructure.db.track import TrackDbRepository
 from app.infrastructure.db.user import UserDbRepository
 
@@ -32,24 +32,24 @@ ExerciseRepoDependency = Annotated[ExerciseRepository, Depends(get_exercise_repo
 # User repository dependency per request
 def get_user_repository(
     session: SessionDependency,
-) -> Generator[RepositoryUser, None, None]:
+) -> Generator[UserRepository, None, None]:
     try:
         yield UserDbRepository(session)
     finally:
         session.close()
 
 
-UserRepoDependency = Annotated[RepositoryUser, Depends(get_user_repository)]
+UserRepoDependency = Annotated[UserRepository, Depends(get_user_repository)]
 
 
 # Track repository dependency per request
 def get_track_repository(
     session: SessionDependency,
-) -> Generator[RepositoryTrack, None, None]:
+) -> Generator[TrackRepository, None, None]:
     try:
         yield TrackDbRepository(session)
     finally:
         session.close()
 
 
-TrackRepoDependency = Annotated[RepositoryTrack, Depends(get_track_repository)]
+TrackRepoDependency = Annotated[TrackRepository, Depends(get_track_repository)]
