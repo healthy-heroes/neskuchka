@@ -38,7 +38,7 @@ def test_add_get_workout(session: Session):
 
     workout_from_db = workout_repository.get_by_id(workout.id)
 
-    print(workout_from_db)
-
     assert workout_from_db is not None
     assert workout_from_db.id == workout.id
+
+    assert workout_from_db.sections[0].exercises[0].exercise_slug == exercise_slug
