@@ -29,5 +29,8 @@ class TrackRepository:
         """
         pass
 
+    def add(self, track: Track) -> Track:
+        pass
+
     def get_by_id(self, track_id: TrackId) -> Track | None:
         pass

@@ -19,13 +19,26 @@ class UserModel(SQLModel, table=True):
             email=self.email,
         )
 
+    @staticmethod
+    def from_domain(user: User) -> "UserModel":
+        return UserModel(
+            id=str(user.id),
+            **user.model_dump(exclude={"id"}),
+        )
+
 
 class UserDbRepository(UserRepository):
     def __init__(self, session: Session):
         self.session = session
 
+    def add(self, user: User) -> User:
+        db_user = UserModel.from_domain(user)
+
+        self.session.add(db_user)
+        self.session.commit()
+
     def get_by_id(self, user_id: UserId) -> User | None:
-        query = select(UserModel).where(UserModel.id == user_id).limit(1)
+        query = select(UserModel).where(UserModel.id == str(user_id)).limit(1)
         result = self.session.exec(query).first()
 
         if not result:

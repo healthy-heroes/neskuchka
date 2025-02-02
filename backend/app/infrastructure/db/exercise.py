@@ -15,15 +15,18 @@ class ExerciseModel(SQLModel, table=True):
             slug=ExerciseSlug(self.slug), name=self.name, description=self.description
         )
 
+    @staticmethod
+    def from_domain(exercise: Exercise) -> "ExerciseModel":
+        return ExerciseModel(**exercise.model_dump())
+
 
 class ExerciseDbRepository(ExerciseRepository):
     def __init__(self, session: Session):
         self.session = session
 
     def add(self, exercise: Exercise) -> Exercise:
-        db_exercise = ExerciseModel(
-            name=exercise.name, slug=exercise.slug, description=exercise.description
-        )
+        db_exercise = ExerciseModel.from_domain(exercise)
+
         self.session.add(db_exercise)
         self.session.commit()
         self.session.refresh(db_exercise)

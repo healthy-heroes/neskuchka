@@ -18,6 +18,14 @@ class TrackModel(SQLModel, table=True):
             owner_id=UserId(self.owner_id),
         )
 
+    @staticmethod
+    def from_domain(track: Track) -> "TrackModel":
+        return TrackModel(
+            id=str(track.id),
+            owner_id=str(track.owner_id),
+            **track.model_dump(exclude={"id", "owner_id"}),
+        )
+
 
 class TrackDbRepository(TrackRepository):
     def __init__(self, session: Session):
@@ -32,8 +40,14 @@ class TrackDbRepository(TrackRepository):
 
         return result.to_domain()
 
+    def add(self, track: Track) -> Track:
+        db_track = TrackModel.from_domain(track)
+
+        self.session.add(db_track)
+        self.session.commit()
+
     def get_by_id(self, track_id: TrackId) -> Track | None:
-        query = select(TrackModel).where(TrackModel.id == track_id).limit(1)
+        query = select(TrackModel).where(TrackModel.id == str(track_id)).limit(1)
         result = self.session.exec(query).first()
 
         if not result:

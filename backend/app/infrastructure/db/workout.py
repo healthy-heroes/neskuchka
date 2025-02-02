@@ -24,18 +24,24 @@ class WorkoutModel(SQLModel, table=True):
             sections=loads(self.sections)["sections"],
         )
 
+    @staticmethod
+    def from_domain(workout: Workout) -> "WorkoutModel":
+        print(f"workout: {workout.model_dump(exclude={"id", "track_id", "sections"})}")
+
+        return WorkoutModel(
+            id=str(workout.id),
+            track_id=str(workout.track_id),
+            sections=workout.model_dump_json(include={"sections"}),
+            **workout.model_dump(exclude={"id", "track_id", "sections"}),
+        )
+
 
 class WorkoutDbRepository(WorkoutRepository):
     def __init__(self, session: Session):
         self.session = session
 
     def add(self, workout: Workout) -> Workout:
-        db_workout = WorkoutModel(
-            id=str(workout.id),
-            date=workout.date,
-            track_id=str(workout.track_id),
-            sections=workout.model_dump_json(include={"sections"}),
-        )
+        db_workout = WorkoutModel.from_domain(workout)
 
         self.session.add(db_workout)
         self.session.commit()

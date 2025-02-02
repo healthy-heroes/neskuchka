@@ -9,11 +9,11 @@ from app.infrastructure.db.workout import WorkoutDbRepository
 
 
 def test_add_get_workout(session: Session):
-    track_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, "test-track"))
-    exercise_slug = str("test_exercise")
+    track_id = TrackId(str(uuid.uuid5(uuid.NAMESPACE_DNS, "test-track")))
+    exercise_slug = ExerciseSlug("test_exercise")
 
     workout_exercise = WorkoutExercise(
-        exercise_slug=ExerciseSlug(exercise_slug),
+        exercise_slug=exercise_slug,
         repetitions=3,
         repetitions_text="make 3 reps or more",
     )
@@ -29,7 +29,7 @@ def test_add_get_workout(session: Session):
 
     workout = Workout(
         date="2025-01-30",
-        track_id=TrackId(track_id),
+        track_id=track_id,
         sections=[workout_section],
     )
 
@@ -38,7 +38,4 @@ def test_add_get_workout(session: Session):
 
     workout_from_db = workout_repository.get_by_id(workout.id)
 
-    assert workout_from_db is not None
-    assert workout_from_db.id == workout.id
-
-    assert workout_from_db.sections[0].exercises[0].exercise_slug == exercise_slug
+    assert workout_from_db == workout
