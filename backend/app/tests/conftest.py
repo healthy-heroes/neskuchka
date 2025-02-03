@@ -2,8 +2,12 @@ import pytest
 from sqlmodel import SQLModel, Session
 from fastapi.testclient import TestClient
 
+from app.config.test import TestAppSettings
 from app.infrastructure.db.database import db
 from app.main import app
+
+
+settings = TestAppSettings()
 
 
 # Init testing database
