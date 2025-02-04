@@ -11,6 +11,8 @@ from app.domain.track import TrackRepository
 from app.domain.user import UserRepository
 from app.infrastructure.db.track import TrackDbRepository
 from app.infrastructure.db.user import UserDbRepository
+from app.domain.workout import WorkoutRepository
+from app.infrastructure.db.workout import WorkoutDbRepository
 
 # Session dependency per request
 SessionDependency = Annotated[Session, Depends(db.session_getter)]
@@ -53,3 +55,16 @@ def get_track_repository(
 
 
 TrackRepoDependency = Annotated[TrackRepository, Depends(get_track_repository)]
+
+
+# Workout repository dependency per request
+def get_workout_repository(
+    session: SessionDependency,
+) -> Generator[WorkoutRepository, None, None]:
+    try:
+        yield WorkoutDbRepository(session)
+    finally:
+        session.close()
+
+
+WorkoutRepoDependency = Annotated[WorkoutRepository, Depends(get_workout_repository)]

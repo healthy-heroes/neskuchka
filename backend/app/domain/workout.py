@@ -74,7 +74,7 @@ class Workout(EntityModel):
 
 @dataclass(frozen=True)
 class WrokoutCriteria:
-    limit: int
+    limit: int = 10
 
 
 class WorkoutRepository:
@@ -82,4 +82,7 @@ class WorkoutRepository:
         pass
 
     def get_by_id(self, workout_id: WorkoutId) -> Workout | None:
+        pass
+
+    def get_list(self, track_id: TrackId, criteria: WrokoutCriteria) -> list[Workout]:
         pass

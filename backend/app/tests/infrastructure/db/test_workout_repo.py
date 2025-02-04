@@ -1,5 +1,6 @@
 import uuid
 
+import pytest
 from sqlmodel import Session
 
 from app.domain.workout import Workout, WorkoutExercise, WorkoutProtocol, WorkoutSection
@@ -39,3 +40,9 @@ def test_add_get_workout(session: Session):
     workout_from_db = workout_repository.get_by_id(workout.id)
 
     assert workout_from_db == workout
+
+
+@pytest.mark.skip(reason="Not implemented")
+def test_get_list_workout(session: Session):
+    # todo data generators
+    pass

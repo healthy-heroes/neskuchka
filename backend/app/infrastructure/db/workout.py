@@ -1,7 +1,7 @@
 from json import loads
 from sqlalchemy import Date
 from sqlmodel import Field, SQLModel, Session, select
-from app.domain.workout import WorkoutRepository, Workout, WorkoutId
+from app.domain.workout import WorkoutRepository, Workout, WorkoutId, WrokoutCriteria
 from app.domain.track import TrackId
 
 
@@ -55,3 +55,9 @@ class WorkoutDbRepository(WorkoutRepository):
             return None
 
         return result.to_domain()
+    
+    def get_list(self, track_id: TrackId, criteria: WrokoutCriteria) -> list[Workout]:
+        query = select(WorkoutModel).where(WorkoutModel.track_id == str(track_id)).limit(criteria.limit)
+        result = self.session.exec(query).all()
+
+        return [result.to_domain() for result in result]
