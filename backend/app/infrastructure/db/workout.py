@@ -55,9 +55,13 @@ class WorkoutDbRepository(WorkoutRepository):
             return None
 
         return result.to_domain()
-    
+
     def get_list(self, track_id: TrackId, criteria: WrokoutCriteria) -> list[Workout]:
-        query = select(WorkoutModel).where(WorkoutModel.track_id == str(track_id)).limit(criteria.limit)
+        query = (
+            select(WorkoutModel)
+            .where(WorkoutModel.track_id == str(track_id))
+            .limit(criteria.limit)
+        )
         result = self.session.exec(query).all()
 
         return [result.to_domain() for result in result]

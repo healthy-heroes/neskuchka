@@ -1,8 +1,4 @@
 ## Backend
-### Task: Get last workouts
-- Поддержка получения последних тренировок
-- Пагинация
-
 ### Task: Refactoring tests
 - Тесты на API
     - Написать тесты
@@ -13,25 +9,19 @@
 - генераторы для тестов
 
 
-### Task: Postgres
-- connection pool
-- Миграции
-- async db and session
+### Task: Frontend
+- Поднять nextjs и выбрать между spectrum и shadcn
 
+### Task: Refactor API Schema
+- Сделать удобно для фронта
 
 ### Task: Docker
 - docker compos
 
-
-### Task: Frontend
-- Поднять nextjs и выбрать между spectrum и shadcn
-
-### Admin
-- Админка для добавления тренировок
-
 ### Deploy
 - CI/CD
 - Cloud
+
 
 ### Task: Refactoring
 - Рефакторинг dependencies
@@ -42,22 +32,25 @@
 - сделать типы для возвращаемых ошибок, чтобы не хардкодить текст, поправить тесты и сделать проверку
 - документация для апи
 
-### Task: Логирование
-- поизучать чем логируют, прикрутить
-- opentelemetry
-
-
-### На подумать
-- на сколько убого json сохранять для section?
 
 ## Part 2
-
 ### Task: Auth
 - Users
 - Auth
 - JWT
 
-###
+### Task: Admin
+- Админка для добавления тренировок и упражнений
+
+
+### Task: Логирование
+- поизучать чем логируют, прикрутить
+- opentelemetry
+
+### Task: Postgres
+- connection pool
+- Миграции
+- async db and session
 
 ## Utils
 - Сделать так чтобы `ruff lint` проверял форматирование, которое приносит `ruff format`

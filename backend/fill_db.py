@@ -42,21 +42,54 @@ track_repo.add(track)
 
 # create exercises
 exercise_repo = ExerciseDbRepository(session)
-    
+
 exercises = {
-    'Раскрытия в планке': Exercise(name="Раскрытия в планке", slug=ExerciseSlug("plank-hip-opening"), description=""),
-    'Ягодичные марши': Exercise(name="Ягодичные марши", slug=ExerciseSlug("glute-march"), description=""),
-    'Джампинг джек': Exercise(name="Джампинг джек", slug=ExerciseSlug("jumping-jack"), description=""),
-    'C пола на грудь + 2 выпада назад': Exercise(name="C пола на грудь + 2 выпада назад", slug=ExerciseSlug("push-up-with-back-drop"), description=""),
-    'Становая на одной': Exercise(name="Становая на одной", slug=ExerciseSlug("deadlift-on-one-leg"), description=""),
-    'Пресс на прямых руки над головой': Exercise(name="Пресс на прямых руки над головой", slug=ExerciseSlug("situps-with-hands-over-head"), description=""),
-    
-    'Стол': Exercise(name="Стол", slug=ExerciseSlug("table"), description=""),
-    'Наклоны вперед': Exercise(name="Наклоны вперед", slug=ExerciseSlug("forward-bend"), description=""),
-    'Качающиеся планки': Exercise(name="Качающиеся планки", slug=ExerciseSlug("plank-with-jumping-jack"), description=""),
-    'Становая тяга': Exercise(name="Становая тяга", slug=ExerciseSlug("deadlift"), description=""),
-    'Приседания': Exercise(name="Приседания", slug=ExerciseSlug("squats"), description=""),
-    'С груди над головой': Exercise(name="С груди над головой", slug=ExerciseSlug("push-up-with-hands-over-head"), description=""),
+    "Раскрытия в планке": Exercise(
+        name="Раскрытия в планке",
+        slug=ExerciseSlug("plank-hip-opening"),
+        description="",
+    ),
+    "Ягодичные марши": Exercise(
+        name="Ягодичные марши", slug=ExerciseSlug("glute-march"), description=""
+    ),
+    "Джампинг джек": Exercise(
+        name="Джампинг джек", slug=ExerciseSlug("jumping-jack"), description=""
+    ),
+    "C пола на грудь + 2 выпада назад": Exercise(
+        name="C пола на грудь + 2 выпада назад",
+        slug=ExerciseSlug("push-up-with-back-drop"),
+        description="",
+    ),
+    "Становая на одной": Exercise(
+        name="Становая на одной",
+        slug=ExerciseSlug("deadlift-on-one-leg"),
+        description="",
+    ),
+    "Пресс на прямых руки над головой": Exercise(
+        name="Пресс на прямых руки над головой",
+        slug=ExerciseSlug("situps-with-hands-over-head"),
+        description="",
+    ),
+    "Стол": Exercise(name="Стол", slug=ExerciseSlug("table"), description=""),
+    "Наклоны вперед": Exercise(
+        name="Наклоны вперед", slug=ExerciseSlug("forward-bend"), description=""
+    ),
+    "Качающиеся планки": Exercise(
+        name="Качающиеся планки",
+        slug=ExerciseSlug("plank-with-jumping-jack"),
+        description="",
+    ),
+    "Становая тяга": Exercise(
+        name="Становая тяга", slug=ExerciseSlug("deadlift"), description=""
+    ),
+    "Приседания": Exercise(
+        name="Приседания", slug=ExerciseSlug("squats"), description=""
+    ),
+    "С груди над головой": Exercise(
+        name="С груди над головой",
+        slug=ExerciseSlug("push-up-with-hands-over-head"),
+        description="",
+    ),
 }
 
 for exercise in exercises.values():
@@ -84,28 +117,43 @@ workout_repo = WorkoutDbRepository(session)
 workout = Workout(
     date=date(2025, 1, 31),
     track_id=track.id,
-
     sections=[
         WorkoutSection(
-            title="Разминка", 
+            title="Разминка",
             protocol=WorkoutProtocol(title="3 раунда"),
             exercises=[
-                WorkoutExercise(exercise_slug=exercises["Раскрытия в планке"].slug, repetitions=20),
-                WorkoutExercise(exercise_slug=exercises["Ягодичные марши"].slug, repetitions=20),
-                WorkoutExercise(exercise_slug=exercises["Джампинг джек"].slug, repetitions=30),
+                WorkoutExercise(
+                    exercise_slug=exercises["Раскрытия в планке"].slug, repetitions=20
+                ),
+                WorkoutExercise(
+                    exercise_slug=exercises["Ягодичные марши"].slug, repetitions=20
+                ),
+                WorkoutExercise(
+                    exercise_slug=exercises["Джампинг джек"].slug, repetitions=30
+                ),
             ],
         ),
         WorkoutSection(
-            title="Комплекс", 
+            title="Комплекс",
             protocol=WorkoutProtocol(title="5 раундов"),
             description="*можно использовать спортивные снаряды",
             exercises=[
-                WorkoutExercise(exercise_slug=exercises["C пола на грудь + 2 выпада назад"].slug, repetitions=10),
-                WorkoutExercise(exercise_slug=exercises["Становая на одной"].slug, repetitions=20, repetitions_text="10+10"),
-                WorkoutExercise(exercise_slug=exercises["Пресс на прямых руки над головой"].slug, repetitions=10),
+                WorkoutExercise(
+                    exercise_slug=exercises["C пола на грудь + 2 выпада назад"].slug,
+                    repetitions=10,
+                ),
+                WorkoutExercise(
+                    exercise_slug=exercises["Становая на одной"].slug,
+                    repetitions=20,
+                    repetitions_text="10+10",
+                ),
+                WorkoutExercise(
+                    exercise_slug=exercises["Пресс на прямых руки над головой"].slug,
+                    repetitions=10,
+                ),
             ],
         ),
-    ]
+    ],
 )
 
 print(f"create workout: {workout}")
@@ -132,24 +180,34 @@ workout = Workout(
     track_id=track.id,
     sections=[
         WorkoutSection(
-            title="Разминка", 
+            title="Разминка",
             protocol=WorkoutProtocol(title="3 раунда"),
             exercises=[
                 WorkoutExercise(exercise_slug=exercises["Стол"].slug, repetitions=10),
-                WorkoutExercise(exercise_slug=exercises["Наклоны вперед"].slug, repetitions=10),
-                WorkoutExercise(exercise_slug=exercises["Качающиеся планки"].slug, repetitions=20),
+                WorkoutExercise(
+                    exercise_slug=exercises["Наклоны вперед"].slug, repetitions=10
+                ),
+                WorkoutExercise(
+                    exercise_slug=exercises["Качающиеся планки"].slug, repetitions=20
+                ),
             ],
         ),
         WorkoutSection(
-            title="Комплекс", 
+            title="Комплекс",
             protocol=WorkoutProtocol(title="5 раундов"),
             exercises=[
-                WorkoutExercise(exercise_slug=exercises["Становая на одной"].slug, repetitions=24),
-                WorkoutExercise(exercise_slug=exercises["Приседания"].slug, repetitions=18),
-                WorkoutExercise(exercise_slug=exercises["С груди над головой"].slug, repetitions=12),
+                WorkoutExercise(
+                    exercise_slug=exercises["Становая на одной"].slug, repetitions=24
+                ),
+                WorkoutExercise(
+                    exercise_slug=exercises["Приседания"].slug, repetitions=18
+                ),
+                WorkoutExercise(
+                    exercise_slug=exercises["С груди над головой"].slug, repetitions=12
+                ),
             ],
         ),
-    ]
+    ],
 )
 
 print(f"create workout: {workout}")
