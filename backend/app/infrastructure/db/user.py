@@ -8,8 +8,8 @@ class UserModel(SQLModel, table=True):
 
     id: str = Field(default=None, primary_key=True)
     name: str
-    login: str
-    email: str
+    login: str = Field(unique=True)
+    email: str = Field(unique=True)
 
     def to_domain(self) -> User:
         return User(

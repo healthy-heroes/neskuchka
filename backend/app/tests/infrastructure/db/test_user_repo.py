@@ -1,17 +1,17 @@
-import uuid
 from sqlmodel import Session
 
-from app.domain.user import User, UserId
+from app.domain.user import User
 from app.infrastructure.db.user import UserDbRepository
 
 
 def test_add_get_user(session: Session):
-    user_id = UserId(str(uuid.uuid5(uuid.NAMESPACE_DNS, "test-user")))
+    user_login = "test-user"
+    user_id = User.create_id(user_login)
 
     user = User(
         id=user_id,
         name="Test User",
-        login="test_user",
+        login=user_login,
         email="test_user@example.com",
     )
 

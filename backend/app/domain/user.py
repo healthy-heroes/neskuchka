@@ -1,5 +1,6 @@
 from uuid import UUID
 from typing import Annotated
+import uuid
 from pydantic import ConfigDict, EmailStr
 from pydantic.types import UuidVersion
 
@@ -19,6 +20,10 @@ class User(EntityModel):
     name: str
     login: str
     email: EmailStr
+
+    @staticmethod
+    def create_id(login: str) -> UserId:
+        return UserId(str(uuid.uuid5(uuid.NAMESPACE_URL, login)))
 
 
 class UserRepository:

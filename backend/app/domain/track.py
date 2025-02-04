@@ -1,13 +1,14 @@
 from typing import Annotated
 from uuid import UUID
-from pydantic import ConfigDict
+import uuid
+from pydantic import ConfigDict, Field
 from pydantic.types import UuidVersion
 
 from app.domain.entity import EntityModel
 from app.domain.user import UserId
 
 
-TrackId = Annotated[UUID, UuidVersion(5)]
+TrackId = Annotated[UUID, UuidVersion(4)]
 
 
 class Track(EntityModel):
@@ -17,7 +18,7 @@ class Track(EntityModel):
 
     model_config = ConfigDict(frozen=True)
 
-    id: TrackId
+    id: TrackId = Field(default_factory=uuid.uuid4)
     name: str
     owner_id: UserId
 

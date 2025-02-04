@@ -1,16 +1,13 @@
-import uuid
 from sqlmodel import Session
 
-from app.domain.user import UserId
-from app.domain.track import Track, TrackId
+from app.domain.user import User
+from app.domain.track import Track
 from app.infrastructure.db.track import TrackDbRepository
 
 
 def test_add_get_track(session: Session):
-    user_id = UserId(str(uuid.uuid5(uuid.NAMESPACE_DNS, "test-user")))
-    track_id = TrackId(str(uuid.uuid5(uuid.NAMESPACE_DNS, "test-track")))
+    user_id = User.create_id("test-user")
     track = Track(
-        id=track_id,
         name="Test track",
         owner_id=user_id,
     )

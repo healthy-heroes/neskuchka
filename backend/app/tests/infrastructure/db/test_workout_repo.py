@@ -9,7 +9,7 @@ from app.infrastructure.db.workout import WorkoutDbRepository
 
 
 def test_add_get_workout(session: Session):
-    track_id = TrackId(str(uuid.uuid5(uuid.NAMESPACE_DNS, "test-track")))
+    track_id = TrackId(str(uuid.uuid4()))
     exercise_slug = ExerciseSlug("test_exercise")
 
     workout_exercise = WorkoutExercise(
