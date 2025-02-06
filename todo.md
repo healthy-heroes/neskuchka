@@ -2,11 +2,10 @@
 ### Task: Refactoring tests
 - Тесты на API
     - Написать тесты
-    - Разрулить конфликты тестов: тесты работают с одной таблицей
+    - Написать фикстуры
 - подумать
     - in-memory база для тестов?
     - async?
-- генераторы для тестов
 
 
 ### Task: Frontend
@@ -16,7 +15,7 @@
 - Сделать удобно для фронта
 
 ### Task: Docker
-- docker compos
+- docker compose
 
 ### Deploy
 - CI/CD
@@ -24,6 +23,7 @@
 
 
 ### Task: Refactoring
+- Подключить mypy
 - Рефакторинг dependencies
 - Рефакторинг моделей (уменьшить?)
 - Обработка ошибок
@@ -31,6 +31,7 @@
 - [v] lifespans
 - сделать типы для возвращаемых ошибок, чтобы не хардкодить текст, поправить тесты и сделать проверку
 - документация для апи
+
 
 
 ## Part 2
@@ -51,6 +52,7 @@
 - connection pool
 - Миграции
 - async db and session
+- тестирование через https://testcontainers.com/guides/getting-started-with-testcontainers-for-python/
 
 ## Utils
 - Сделать так чтобы `ruff lint` проверял форматирование, которое приносит `ruff format`
