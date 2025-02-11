@@ -1,13 +1,4 @@
 ## Backend
-### Task: Refactoring tests
-- Тесты на API
-    - Написать тесты
-    - Написать фикстуры
-- подумать
-    - in-memory база для тестов?
-    - async?
-
-
 ### Task: Frontend
 - Поднять nextjs и выбрать между spectrum и shadcn
 

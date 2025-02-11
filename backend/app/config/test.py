@@ -6,7 +6,7 @@ class TestAppSettings(AppSettings):
     environment: str = "test"
 
     database: DatabaseSettings = DatabaseSettings(
-        dsn="sqlite:///database_test.db",
+        dsn="sqlite:///:memory:",
         engine_args=DatabaseEngineArgs(
             connect_args={"check_same_thread": False},
         ),

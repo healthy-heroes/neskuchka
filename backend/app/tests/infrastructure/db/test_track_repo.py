@@ -1,16 +1,11 @@
 from sqlmodel import Session
 
-from app.domain.user import User
-from app.domain.track import Track
 from app.infrastructure.db.track import TrackDbRepository
+from app.tests.fixtures.domain import create_track
 
 
 def test_add_get_track(session: Session):
-    user_id = User.create_id("test-user")
-    track = Track(
-        name="Test track",
-        owner_id=user_id,
-    )
+    track = create_track()
 
     track_repository = TrackDbRepository(session)
 

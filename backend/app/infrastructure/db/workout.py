@@ -26,8 +26,6 @@ class WorkoutModel(SQLModel, table=True):
 
     @staticmethod
     def from_domain(workout: Workout) -> "WorkoutModel":
-        print(f"workout: {workout.model_dump(exclude={"id", "track_id", "sections"})}")
-
         return WorkoutModel(
             id=str(workout.id),
             track_id=str(workout.track_id),

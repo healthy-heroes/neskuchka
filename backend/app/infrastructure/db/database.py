@@ -17,4 +17,5 @@ class Database:
             yield session
 
 
+print("database.py:settings.database.dsn: ", settings.database.dsn)
 db = Database(settings=settings.database)
