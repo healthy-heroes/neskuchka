@@ -5,12 +5,12 @@ npm = "latest"
 [tasks.install]
 description = "Install dependencies"
 alias = "i"
-run = "npm install"
+run = "(cd app && npm install)"
 
 [tasks.app]
 description = "Run the application"
 alias = "d"
-run = "npm run dev"
+run = "(cd app && npm run dev)"
 
 [tasks.lint]
 description = "Lint the code"
