@@ -152,7 +152,7 @@ cd frontend/app
 mise run install
 
 # Запускаем приложение
-mise run dev
+mise run app
 ```
 
 
