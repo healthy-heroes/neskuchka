@@ -119,9 +119,6 @@ On branch main
 # Переходит в папку бекенда
 cd backend
 
-# Добавляем конфиг файл `.mise.toml` в доверяемые 
-mise trust
-
 # Устанавливаем зависимости
 mise run install
 ```
@@ -144,4 +141,22 @@ caddy start
 ```
 
 Теперь можно бекенд доступен по адресу: `https://neskuchka.localhost`
+
+
+#### Frontend
+
+```
+cd frontend/app
+
+# Устанавливаем зависимости
+mise run install
+
+# Запускаем приложение
+mise run dev
+```
+
+
+
+
+
 

@@ -1,0 +1,23 @@
+[tools]
+node = "latest"
+npm = "latest"
+
+[tasks.install]
+description = "Install dependencies"
+alias = "i"
+run = "npm install"
+
+[tasks.app]
+description = "Run the application"
+alias = "d"
+run = "npm run dev"
+
+[tasks.lint]
+description = "Lint the code"
+alias = "l"
+run = "(cd app && npm run lint)"
+
+[tasks.lint-fix]
+description = "Fixing linting errors"
+alias = "lf"
+run = "(cd app && npm run format && npm run lint -- --fix)"
