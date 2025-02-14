@@ -1,3 +1,11 @@
+import { Features } from "./Features";
+import { Intro } from "./Intro";
+
 export function LandingPage() {
-  return <div>LandingPage</div>;
+  return (
+    <div>
+      <Intro />
+      <Features />
+    </div>
+  );
 }
