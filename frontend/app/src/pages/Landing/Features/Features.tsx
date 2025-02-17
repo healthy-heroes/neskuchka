@@ -64,6 +64,8 @@ export function Features() {
                 <motion.div key={feature.title} variants={item}>
                   <View
                     borderRadius="medium"
+                    borderWidth="thin"
+                    borderColor="gray-200"
                     padding="size-400"
                     UNSAFE_className={styles.featureCard}
                   >

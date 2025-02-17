@@ -42,7 +42,7 @@ export function Intro() {
   };
 
   return (
-    <View paddingY="size-1000" backgroundColor="indigo-400">
+    <View paddingY="size-600" backgroundColor="indigo-400">
       <Content>
         <motion.div
           variants={motionConfig.container}
@@ -58,7 +58,12 @@ export function Intro() {
             marginX="auto"
           >
             <motion.div variants={motionConfig.item}>
-              <Heading level={1} UNSAFE_className={styles.title}>
+              <Heading
+                level={1}
+                marginBottom="size-1"
+                marginTop="size-200"
+                UNSAFE_className={styles.title}
+              >
                 Тренируйся с удовольствием
               </Heading>
             </motion.div>

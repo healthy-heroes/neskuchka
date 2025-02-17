@@ -8,7 +8,7 @@ import { Footer } from "./components/Footer";
 
 function App() {
   return (
-    <Provider theme={defaultTheme}>
+    <Provider theme={defaultTheme} colorScheme="light" scale="large">
       <BrowserRouter>
         <Flex direction="column" height="100%">
           <NavBar />
