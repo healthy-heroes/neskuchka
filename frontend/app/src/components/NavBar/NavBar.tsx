@@ -7,6 +7,8 @@ import {
   ButtonGroup,
 } from "@adobe/react-spectrum";
 
+import { Logo } from "./Logo/Logo";
+
 import styles from "./NavBar.module.css";
 
 export function NavBar() {
@@ -31,7 +33,7 @@ export function NavBar() {
           marginX="auto"
           width="100%"
         >
-          <Text UNSAFE_className={styles.logo}>Neskuchka</Text>
+          <Logo />
 
           <Flex gap="size-400" alignItems="center">
             <Flex gap="size-300" alignItems="center">

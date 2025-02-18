@@ -14,7 +14,7 @@ function App() {
           <NavBar />
           <Content>
             <Routes>
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/welcome" element={<LandingPage />} />
             </Routes>
           </Content>
           <Footer />
