@@ -1,13 +1,14 @@
 import { motion } from "framer-motion";
 import {
   Heading,
-  Content,
   Flex,
   Text,
   Button,
   ButtonGroup,
   View,
 } from "@adobe/react-spectrum";
+
+import { pageProps } from "../../constants";
 
 import styles from "./Intro.module.css";
 
@@ -42,61 +43,63 @@ export function Intro() {
   };
 
   return (
-    <View paddingY="size-600" backgroundColor="indigo-400">
-      <Content>
-        <motion.div
-          variants={motionConfig.container}
-          initial="hidden"
-          animate="show"
+    <View
+      paddingX={pageProps.paddingX}
+      paddingY="size-600"
+      backgroundColor="indigo-400"
+    >
+      <motion.div
+        variants={motionConfig.container}
+        initial="hidden"
+        animate="show"
+      >
+        <Flex
+          direction="column"
+          gap="size-400"
+          alignItems="center"
+          justifyContent="center"
+          maxWidth={pageProps.maxWidth}
+          marginX="auto"
         >
-          <Flex
-            direction="column"
-            gap="size-400"
-            alignItems="center"
-            justifyContent="center"
-            maxWidth={{ base: "100%", L: "1200px" }}
-            marginX="auto"
-          >
-            <motion.div variants={motionConfig.item}>
-              <Heading
-                level={1}
-                marginBottom="size-1"
-                marginTop="size-200"
-                UNSAFE_className={styles.title}
+          <motion.div variants={motionConfig.item}>
+            <Heading
+              level={1}
+              marginBottom="size-1"
+              marginTop="size-200"
+              UNSAFE_className={styles.title}
+            >
+              Тренируйся с удовольствием
+            </Heading>
+          </motion.div>
+
+          <motion.div variants={motionConfig.item}>
+            <Text UNSAFE_className={styles.subtitle}>
+              Тренировки для каждого. Тренируйся в своем темпе, получай
+              удовольствие от результата.
+            </Text>
+          </motion.div>
+
+          <motion.div variants={motionConfig.item}>
+            <ButtonGroup marginTop="size-400">
+              <Button
+                variant="accent"
+                UNSAFE_className={styles.startButton}
+                onPress={handleStart}
               >
-                Тренируйся с удовольствием
-              </Heading>
-            </motion.div>
-
-            <motion.div variants={motionConfig.item}>
-              <Text UNSAFE_className={styles.subtitle}>
-                Тренировки для каждого. Тренируйся в своем темпе, получай
-                удовольствие от результата.
-              </Text>
-            </motion.div>
-
-            <motion.div variants={motionConfig.item}>
-              <ButtonGroup marginTop="size-400">
-                <Button
-                  variant="accent"
-                  UNSAFE_className={styles.startButton}
-                  onPress={handleStart}
-                >
-                  Начать
-                </Button>
-                <Button
-                  variant="primary"
-                  staticColor="white"
-                  UNSAFE_className={styles.featuresButton}
-                  onPress={handleLearnMore}
-                >
-                  Узнать больше
-                </Button>
-              </ButtonGroup>
-            </motion.div>
-          </Flex>
-        </motion.div>
-      </Content>
+                Начать
+              </Button>
+              <Button
+                variant="primary"
+                staticColor="white"
+                UNSAFE_className={styles.featuresButton}
+                onPress={handleLearnMore}
+              >
+                Узнать больше
+              </Button>
+            </ButtonGroup>
+          </motion.div>
+        </Flex>
+      </motion.div>
     </View>
   );
 }

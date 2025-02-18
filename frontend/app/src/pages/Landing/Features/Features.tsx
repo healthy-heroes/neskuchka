@@ -8,6 +8,8 @@ import {
   Flex,
 } from "@adobe/react-spectrum";
 
+import { pageProps } from "../../constants";
+
 import styles from "./Features.module.css";
 
 const features = [
@@ -45,12 +47,12 @@ export function Features() {
   };
 
   return (
-    <View paddingY="size-1000">
+    <View paddingX={pageProps.paddingX} paddingY="size-1000">
       <Content>
         <Flex
           direction="column"
           gap="size-400"
-          maxWidth={{ base: "100%", L: "1200px" }}
+          maxWidth={pageProps.maxWidth}
           marginX="auto"
         >
           <motion.div

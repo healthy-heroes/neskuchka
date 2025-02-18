@@ -3,9 +3,9 @@ import { Intro } from "./Intro";
 
 export function LandingPage() {
   return (
-    <div>
+    <main>
       <Intro />
       <Features />
-    </div>
+    </main>
   );
 }

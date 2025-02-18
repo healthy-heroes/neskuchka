@@ -1,12 +1,6 @@
-import {
-  Header,
-  Flex,
-  Text,
-  Button,
-  View,
-  ButtonGroup,
-} from "@adobe/react-spectrum";
+import { Flex, Text, Button, View, ButtonGroup } from "@adobe/react-spectrum";
 
+import { pageProps } from "../../pages/constants";
 import { Logo } from "./Logo/Logo";
 
 import styles from "./NavBar.module.css";
@@ -23,38 +17,36 @@ export function NavBar() {
   const menuItems = ["Тренировки", "О нас"];
 
   return (
-    <Header>
-      <View paddingX="size=100" paddingY="size-200" backgroundColor="gray-50">
-        <Flex
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          maxWidth={{ base: "100%", L: "1200px" }}
-          marginX="auto"
-          width="100%"
-        >
-          <Logo />
+    <View backgroundColor="gray-50" paddingX="size=100" paddingY="size-200">
+      <Flex
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        maxWidth={pageProps.maxWidth}
+        marginX="auto"
+        width="100%"
+      >
+        <Logo />
 
-          <Flex gap="size-400" alignItems="center">
-            <Flex gap="size-300" alignItems="center">
-              {menuItems.map((item) => (
-                <Text key={item} UNSAFE_className={styles.menuLink}>
-                  {item}
-                </Text>
-              ))}
-            </Flex>
-
-            <ButtonGroup>
-              <Button variant="primary" onPress={handleSignIn}>
-                Войти
-              </Button>
-              <Button variant="accent" onPress={handleSignUp}>
-                Зарегистрироваться
-              </Button>
-            </ButtonGroup>
+        <Flex gap="size-400" alignItems="center">
+          <Flex gap="size-300" alignItems="center">
+            {menuItems.map((item) => (
+              <Text key={item} UNSAFE_className={styles.menuLink}>
+                {item}
+              </Text>
+            ))}
           </Flex>
+
+          <ButtonGroup>
+            <Button variant="primary" onPress={handleSignIn}>
+              Войти
+            </Button>
+            <Button variant="accent" onPress={handleSignUp}>
+              Зарегистрироваться
+            </Button>
+          </ButtonGroup>
         </Flex>
-      </View>
-    </Header>
+      </Flex>
+    </View>
   );
 }

@@ -1,7 +1,8 @@
-import { Provider, defaultTheme, Flex, Content } from "@adobe/react-spectrum";
+import { Provider, defaultTheme, Flex } from "@adobe/react-spectrum";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { LandingPage } from "./pages/Landing";
+import { MainTrackPage } from "./pages/MainTrack";
 
 import { NavBar } from "./components/NavBar";
 import { Footer } from "./components/Footer";
@@ -12,11 +13,10 @@ function App() {
       <BrowserRouter>
         <Flex direction="column" height="100%">
           <NavBar />
-          <Content>
-            <Routes>
-              <Route path="/welcome" element={<LandingPage />} />
-            </Routes>
-          </Content>
+          <Routes>
+            <Route path="/welcome" element={<LandingPage />} />
+            <Route path="/" element={<MainTrackPage />} />
+          </Routes>
           <Footer />
         </Flex>
       </BrowserRouter>
