@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from sqlmodel import SQLModel
 
-from app.api.main import api_router
+from app.api.main import init_api
 from app.config.main import settings
 from app.infrastructure.db.database import db
 
@@ -23,7 +23,7 @@ app = FastAPI(lifespan=lifespan)
 
 
 # attach routers
-app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+init_api(app, settings)
 
 
 # root endpoint
