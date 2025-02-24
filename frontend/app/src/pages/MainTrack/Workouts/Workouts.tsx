@@ -6,7 +6,7 @@ import { getMainTrackWorkouts } from "../../../services/api";
 
 export function Workouts() {
   const {
-    data: workouts,
+    data: trackWorkouts,
     isLoading,
     error,
   } = useQuery({
@@ -26,7 +26,7 @@ export function Workouts() {
       )}
       {error && <Text>Error: {error.message}</Text>}
 
-      {workouts?.map((workout) => (
+      {trackWorkouts?.workouts.map((workout) => (
         <View
           key={workout.id}
           borderWidth="thin"
@@ -54,7 +54,8 @@ export function Workouts() {
 
                   return (
                     <Text key={exerciseKey}>
-                      {exercise.exercise_slug}
+                      {trackWorkouts.exercises[exercise.exercise_slug]?.name ||
+                        exercise.exercise_slug}
                       <br />
                     </Text>
                   );

@@ -1,7 +1,7 @@
 from typing import NewType
 
 from pydantic import ConfigDict
-from app.domain.entity import EntityModel
+from app.domain.entity import EntityModel, CriteriaModel
 
 ExerciseSlug = NewType("ExerciseSlug", str)
 
@@ -20,6 +20,10 @@ class Exercise(EntityModel):
     description: str
 
 
+class ExerciseCriteria(CriteriaModel):
+    slugs: list[ExerciseSlug] | None = None
+
+
 class ExerciseRepository:
     def add(self, exercise: Exercise) -> Exercise:
         pass
@@ -28,4 +32,7 @@ class ExerciseRepository:
         pass
 
     def get_by_slug(self, slug: ExerciseSlug) -> Exercise | None:
+        pass
+
+    def find(self, criteria: ExerciseCriteria) -> list[Exercise]:
         pass

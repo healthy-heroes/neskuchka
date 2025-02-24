@@ -1,7 +1,12 @@
 from datetime import date
 import uuid
 
-from app.domain.exercise import Exercise, ExerciseRepository, ExerciseSlug
+from app.domain.exercise import (
+    Exercise,
+    ExerciseCriteria,
+    ExerciseRepository,
+    ExerciseSlug,
+)
 from app.domain.track import Track, TrackId, TrackRepository
 from app.domain.user import User
 from app.domain.workout import (
@@ -16,9 +21,9 @@ from app.domain.workout import (
 
 
 # Exercise
-def create_exercise() -> Exercise:
+def create_exercise(slug: ExerciseSlug | None = None) -> Exercise:
     return Exercise(
-        slug=ExerciseSlug(str(uuid.uuid4())),
+        slug=slug or ExerciseSlug(str(uuid.uuid4())),
         name="Some exercise",
         description="Some exercise description",
     )
@@ -37,6 +42,9 @@ class ExerciseRepositoryTest(ExerciseRepository):
 
     def get_by_slug(self, slug: ExerciseSlug) -> Exercise | None:
         return self.exercises.get(slug)
+
+    def find(self, criteria: ExerciseCriteria) -> list[Exercise]:
+        return [self.exercises[slug] for slug in criteria.slugs]
 
 
 # User

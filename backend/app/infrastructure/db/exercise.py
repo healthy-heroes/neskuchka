@@ -1,6 +1,11 @@
 from sqlmodel import Field, SQLModel, Session, select
 
-from app.domain.exercise import Exercise, ExerciseRepository, ExerciseSlug
+from app.domain.exercise import (
+    Exercise,
+    ExerciseCriteria,
+    ExerciseRepository,
+    ExerciseSlug,
+)
 
 
 class ExerciseModel(SQLModel, table=True):
@@ -46,3 +51,13 @@ class ExerciseDbRepository(ExerciseRepository):
             return None
 
         return exercise.to_domain()
+
+    def find(self, criteria: ExerciseCriteria) -> list[Exercise]:
+        query = select(ExerciseModel)
+
+        if criteria.slugs:
+            query = query.where(ExerciseModel.slug.in_(criteria.slugs))
+
+        exercises = self.session.exec(query).all()
+
+        return [ex.to_domain() for ex in exercises]

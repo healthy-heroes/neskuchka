@@ -11,4 +11,9 @@ class EntityModel(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-# todo: Какой uuid использовать?
+class CriteriaModel(BaseModel):
+    """
+    Базовая модель для критериев
+    """
+
+    model_config = ConfigDict(frozen=True)

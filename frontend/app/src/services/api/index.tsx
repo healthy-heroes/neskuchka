@@ -9,6 +9,12 @@ export class HttpError extends Error {
   }
 }
 
+export interface Exercise {
+  slug: string;
+  name: string;
+  description: string;
+}
+
 export interface Workout {
   id: number;
   date: string;
@@ -25,7 +31,12 @@ export interface Workout {
   }>;
 }
 
-export async function getMainTrackWorkouts(): Promise<Array<Workout>> {
+export interface TrackWorkouts {
+  workouts: Array<Workout>;
+  exercises: Record<string, Exercise>;
+}
+
+export async function getMainTrackWorkouts(): Promise<TrackWorkouts> {
   const response = await fetch(`${API_URL}/tracks/main/last_workouts`);
   if (!response.ok) {
     throw new HttpError(response.status, await response.json());
