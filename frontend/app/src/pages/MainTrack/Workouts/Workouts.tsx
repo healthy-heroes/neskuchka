@@ -3,6 +3,7 @@ import { Heading, ProgressCircle, Text, View } from "@adobe/react-spectrum";
 
 import { pageProps } from "../../constants";
 import { getMainTrackWorkouts } from "../../../services/api";
+import { WorkoutDate } from "./WorkoutDate";
 
 export function Workouts() {
   const {
@@ -36,7 +37,7 @@ export function Workouts() {
           paddingBottom="size-200"
           marginBottom="size-200"
         >
-          <Heading level={2}>{workout.date}</Heading>
+          <Heading level={2}>{WorkoutDate(workout.date)}</Heading>
 
           {workout.sections.map((section, index) => {
             const sectionKey = `${workout.id}-${index}`;

@@ -58,6 +58,7 @@ class WorkoutDbRepository(WorkoutRepository):
         query = (
             select(WorkoutModel)
             .where(WorkoutModel.track_id == str(track_id))
+            .order_by(WorkoutModel.date.desc())
             .limit(criteria.limit)
         )
         result = self.session.exec(query).all()

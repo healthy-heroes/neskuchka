@@ -1,11 +1,6 @@
 ## Backend
-### Task: Frontend
-- Получение тренировок по треку
-- Конфигурация приложения
--
-
-### Task: Refactor API Schema
-- Сделать удобно для фронта
+- починить тесты
+- форматирование даты
 
 ### Task: Docker
 - docker compose
