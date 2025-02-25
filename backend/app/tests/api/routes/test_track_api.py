@@ -1,8 +1,19 @@
-import pytest
-from app.domain.exercise import ExerciseRepository
+from app.domain.exercise import Exercise, ExerciseRepository
 from app.domain.track import Track, TrackRepository
 from app.domain.workout import Workout, WorkoutRepository
-from app.tests.fixtures.domain import create_track, create_workout
+from app.tests.fixtures.domain import (
+    create_exercise,
+    create_track,
+    create_workout,
+    create_workout_exercise,
+    create_workout_section,
+)
+
+
+def exercise_for_assert(exercise: Exercise) -> dict:
+    exercise_assert = exercise.model_dump()
+    exercise_assert["slug"] = str(exercise.slug)
+    return exercise_assert
 
 
 def track_for_assert(track: Track) -> dict:
@@ -36,24 +47,48 @@ def test_get_non_existent_main_track(client, track_repo: TrackRepository):
     assert response.status_code == 404
 
 
-@pytest.mark.skip(reason="TODO: пока сломано, нужно расширить фикстуры")
 def test_get_workouts_for_main_track(
-    client, track_repo: TrackRepository, workout_repo: WorkoutRepository
+    client,
+    track_repo: TrackRepository,
+    workout_repo: WorkoutRepository,
+    exercise_repo: ExerciseRepository,
 ):
     track = create_track()
     track_repo.add(track)
 
+    all_exercises = []
+
+    for _ in range(5):
+        exercise = create_exercise()
+        exercise_repo.add(exercise)
+        all_exercises.append(exercise)
+
+    exercises = all_exercises[:3]
+
     workouts = []
     for _ in range(12):
-        workout = create_workout(track_id=track.id)
+        workout = create_workout(
+            track=track,
+            sections=[
+                create_workout_section(
+                    exercises=[
+                        create_workout_exercise(exercise) for exercise in exercises
+                    ]
+                ),
+            ],
+        )
         workout_repo.add(workout)
         workouts.append(workout)
 
     response = client.get("/api/v1/tracks/main/last_workouts")
 
     assert response.status_code == 200
-    # todo: пока захардкожен лимит
-    assert response.json() == [workout_for_assert(workout) for workout in workouts[:10]]
+    assert response.json()["workouts"] == [
+        workout_for_assert(workout) for workout in workouts[:10]
+    ], "Должен возвращать последние 10 тренировок"
+    assert response.json()["exercises"] == {
+        str(ex.slug): exercise_for_assert(ex) for ex in exercises
+    }, "Должен возвращать упражнения из воркаутов"
 
 
 def test_get_workouts_for_non_existent_track(

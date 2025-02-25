@@ -48,8 +48,7 @@ class ExerciseRepositoryTest(ExerciseRepository):
 
 
 # User
-def create_user() -> User:
-    login = "test-user"
+def create_user(login: str = "test-user") -> User:
     return User(
         id=User.create_id(login),
         login=login,
@@ -59,10 +58,10 @@ def create_user() -> User:
 
 
 # Track
-def create_track() -> Track:
+def create_track(user: User = create_user()) -> Track:
     return Track(
         name="Main test track",
-        owner_id=create_user().id,
+        owner_id=user.id,
     )
 
 
@@ -82,9 +81,9 @@ class TrackRepositoryTest(TrackRepository):
 
 
 # Workout
-def create_workout_exercise() -> WorkoutExercise:
+def create_workout_exercise(exercise: Exercise = create_exercise()) -> WorkoutExercise:
     return WorkoutExercise(
-        exercise_slug=create_exercise().slug,
+        exercise_slug=exercise.slug,
         repetitions=10,
         repetitions_text="10 reps",
         weight=10,
@@ -105,11 +104,13 @@ def create_workout_section(
 
 
 def create_workout(
-    track_id: TrackId = None, sections: list[WorkoutSection] | None = None
+    date: date = date.today(),
+    track: Track = create_track(),
+    sections: list[WorkoutSection] | None = None,
 ) -> Workout:
     return Workout(
-        date=date.today(),
-        track_id=track_id or create_track().id,
+        date=date,
+        track_id=track.id,
         sections=sections or [create_workout_section()],
     )
 
