@@ -1,7 +1,0 @@
-fastapi[standard]
-httpx
-pydantic-settings
-pytest
-pytest-mock
-python-ulid[pydantic]
-sqlmodel

@@ -21,7 +21,7 @@ echo "Virtual Environment: $VIRTUAL_ENV"
 [tasks.install]
 description = "Install dependencies"
 alias = "i"
-run = "uv pip install -r requirements.txt"
+run = "uv sync"
 
 [tasks.app]
 description = "Run the application"

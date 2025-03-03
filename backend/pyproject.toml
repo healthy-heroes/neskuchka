@@ -1,0 +1,19 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "Backend for neskucka project"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.115.11",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.8.1",
+    "python-ulid[pydantic]>=3.0.0",
+    "sqlmodel>=0.0.23",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-mock>=3.14.0",
+]
