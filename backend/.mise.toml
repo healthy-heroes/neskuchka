@@ -7,7 +7,6 @@ _.python.venv = { path = ".venv", create = true }
 
 [tools]
 python = "latest"
-ruff = "latest"
 uv = "latest"
 
 
@@ -29,11 +28,11 @@ run = "fastapi dev app/main.py"
 
 [tasks.lint]
 description = "Lint the code"
-run = "ruff format --check . && ruff check ."
+run = "uvx ruff format --check . && uvx ruff check ."
 
 [tasks.lint-fix]
 description = "Lint the code"
-run = "ruff format . && ruff check . --fix"
+run = "uvx ruff format . && uvx ruff check . --fix"
 
 [tasks.test]
 description = "Run tests"

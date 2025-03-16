@@ -36,6 +36,6 @@ def test_get_list_workout(session: Session):
     )
 
     assert len(workouts_from_db) == 5
-    assert workouts_from_db[0].date == date(
-        2025, 1, count
-    ), "Последняя тренировка должна быть первой"
+    assert workouts_from_db[0].date == date(2025, 1, count), (
+        "Последняя тренировка должна быть первой"
+    )

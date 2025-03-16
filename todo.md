@@ -1,7 +1,8 @@
 ## Part 1
 ### Task: Локальная разработка
 - backend
-    - перевести запуск всего через uv
+    - перевести запуск всего через uv 
+        - https://mise.jdx.dev/mise-cookbook/python.html#mise-uv
     - разобраться с рекомендуемой с докеранизацией 
 - docker compose
 - CORS
