@@ -70,7 +70,6 @@ func (app *serverApp) run(ctx context.Context) error {
 
 		log.Info().Msg("Handle shutdown...")
 
-		// Shutdown all application objects
 		app.apiServer.Shutdown()
 	}()
 

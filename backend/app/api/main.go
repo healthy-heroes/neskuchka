@@ -7,7 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
 )
 
@@ -48,12 +49,14 @@ func (api *Api) Shutdown() {
 	api.lock.Unlock()
 }
 
-func (api *Api) routes() *mux.Router {
-	router := mux.NewRouter()
+func (api *Api) routes() *chi.Mux {
+	router := chi.NewRouter()
 
 	api.public = &PublicMethods{}
 
+	router.Use(middleware.Logger)
+
 	// make mw
-	router.HandleFunc("/api/v1/ping", api.public.pingCtrl)
+	router.Get("/api/v1/ping", api.public.pingCtrl)
 	return router
 }
