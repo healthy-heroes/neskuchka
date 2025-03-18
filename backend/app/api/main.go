@@ -10,14 +10,22 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
+
+	"github.com/healthy-heroes/neskuchka/backend/app/store/engine"
 )
 
 type Api struct {
 	httpServer *http.Server
+	lock       sync.Mutex
 
-	lock sync.Mutex
-
+	store  engine.Engine
 	public *PublicMethods
+}
+
+func NewApi(store engine.Engine) *Api {
+	return &Api{
+		store: store,
+	}
 }
 
 func (api *Api) Run(address string, port int) {
@@ -52,11 +60,14 @@ func (api *Api) Shutdown() {
 func (api *Api) routes() *chi.Mux {
 	router := chi.NewRouter()
 
-	api.public = &PublicMethods{}
+	api.public = &PublicMethods{
+		store: api.store,
+	}
 
 	router.Use(middleware.Logger)
 
 	// make mw
 	router.Get("/api/v1/ping", api.public.pingCtrl)
+	router.Get("/api/v1/exercises/{slug}", api.public.getExerciseCtrl)
 	return router
 }

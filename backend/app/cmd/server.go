@@ -4,11 +4,14 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api"
+	"github.com/healthy-heroes/neskuchka/backend/app/store/engine"
+	"github.com/healthy-heroes/neskuchka/backend/app/store/engine/sqlite"
 )
 
 // ServerCommand is the command for the run server
@@ -22,6 +25,7 @@ type serverApp struct {
 	*ServerCommand
 
 	apiServer *api.Api
+	store     engine.Engine
 }
 
 func (cmd *ServerCommand) Execute(args []string) error {
@@ -52,11 +56,18 @@ func (cmd *ServerCommand) Execute(args []string) error {
 }
 
 func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
-	apiServer := &api.Api{}
+	sqliteStore := sqlite.NewSqliteStore(
+		filepath.Join("..", "backend_old", "database.db"))
+	if err := sqliteStore.Connect(); err != nil {
+		return nil, err
+	}
+
+	apiServer := api.NewApi(sqliteStore)
 
 	app := &serverApp{
 		ServerCommand: cmd,
 		apiServer:     apiServer,
+		store:         sqliteStore,
 	}
 
 	return app, nil
