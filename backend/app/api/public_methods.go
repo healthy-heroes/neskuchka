@@ -8,11 +8,11 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/store"
-	"github.com/healthy-heroes/neskuchka/backend/app/store/engine"
+	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
 type PublicMethods struct {
-	store engine.Engine
+	store *datastore.DataStore
 }
 
 func (pm *PublicMethods) pingCtrl(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,7 @@ func (pm *PublicMethods) getExerciseCtrl(w http.ResponseWriter, r *http.Request)
 
 	slug := store.ExerciseSlug(slugParam)
 
-	exercise, err := pm.store.Exercise().Get(slug)
+	exercise, err := pm.store.Exercise.Get(slug)
 	if err != nil {
 		log.Error().Msgf("getExerciseCtrl:%s", err)
 		R.RenderJSON(w, err)

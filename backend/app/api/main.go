@@ -11,18 +11,18 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
 
-	"github.com/healthy-heroes/neskuchka/backend/app/store/engine"
+	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
 type Api struct {
 	httpServer *http.Server
 	lock       sync.Mutex
 
-	store  engine.Engine
+	store  *datastore.DataStore
 	public *PublicMethods
 }
 
-func NewApi(store engine.Engine) *Api {
+func NewApi(store *datastore.DataStore) *Api {
 	return &Api{
 		store: store,
 	}

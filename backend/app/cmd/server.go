@@ -10,8 +10,8 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api"
-	"github.com/healthy-heroes/neskuchka/backend/app/store/engine"
-	"github.com/healthy-heroes/neskuchka/backend/app/store/engine/sqlite"
+	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
+	"github.com/healthy-heroes/neskuchka/backend/app/store/db"
 )
 
 // ServerCommand is the command for the run server
@@ -25,7 +25,7 @@ type serverApp struct {
 	*ServerCommand
 
 	apiServer *api.Api
-	store     engine.Engine
+	store     *datastore.DataStore
 }
 
 func (cmd *ServerCommand) Execute(args []string) error {
@@ -56,18 +56,18 @@ func (cmd *ServerCommand) Execute(args []string) error {
 }
 
 func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
-	sqliteStore := sqlite.NewSqliteStore(
-		filepath.Join("..", "backend_old", "database.db"))
-	if err := sqliteStore.Connect(); err != nil {
+	db, err := db.NewDB(filepath.Join("..", "backend_old", "database.db"))
+	if err != nil {
 		return nil, err
 	}
+	store := datastore.NewDataStore(db)
 
-	apiServer := api.NewApi(sqliteStore)
+	apiServer := api.NewApi(store)
 
 	app := &serverApp{
 		ServerCommand: cmd,
 		apiServer:     apiServer,
-		store:         sqliteStore,
+		store:         store,
 	}
 
 	return app, nil

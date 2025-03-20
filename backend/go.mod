@@ -6,6 +6,7 @@ require (
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-pkgz/rest v1.20.3
 	github.com/jessevdk/go-flags v1.6.1
+	github.com/jmoiron/sqlx v1.4.0
 	github.com/rs/zerolog v1.33.0
 	modernc.org/sqlite v1.36.1
 )

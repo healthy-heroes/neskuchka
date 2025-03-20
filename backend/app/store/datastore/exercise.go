@@ -1,19 +1,17 @@
-package sqlite
+package datastore
 
 import (
-	"database/sql"
-
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/store"
 )
 
-type SqliteExerciseStore struct {
-	db *sql.DB
+type ExerciseDBStore struct {
+	*DataStore
 }
 
-func (s *SqliteExerciseStore) Create(exercise *store.Exercise) error {
-	_, err := s.db.Exec(`
+func (ds *ExerciseDBStore) Create(exercise *store.Exercise) error {
+	_, err := ds.DB.Exec(`
 		INSERT INTO exercise (
 			slug,
 			name
@@ -22,9 +20,9 @@ func (s *SqliteExerciseStore) Create(exercise *store.Exercise) error {
 	return err
 }
 
-func (s *SqliteExerciseStore) Get(slug store.ExerciseSlug) (*store.Exercise, error) {
+func (ds *ExerciseDBStore) Get(slug store.ExerciseSlug) (*store.Exercise, error) {
 	exercise := &store.Exercise{}
-	err := s.db.QueryRow(`
+	err := ds.DB.QueryRow(`
 		SELECT slug, name 
 		FROM exercise 
 		WHERE slug = ?
@@ -36,10 +34,10 @@ func (s *SqliteExerciseStore) Get(slug store.ExerciseSlug) (*store.Exercise, err
 	return exercise, nil
 }
 
-func (s *SqliteExerciseStore) Find(criteria store.ExerciseGetCriteria) ([]*store.Exercise, error) {
+func (ds *ExerciseDBStore) Find(criteria store.ExerciseGetCriteria) ([]*store.Exercise, error) {
 	exercises := []*store.Exercise{}
 
-	rows, err := s.db.Query(`
+	rows, err := ds.DB.Query(`
 		SELECT slug, name 
 		FROM exercise 
 		WHERE id > ?
@@ -68,11 +66,11 @@ func (s *SqliteExerciseStore) Find(criteria store.ExerciseGetCriteria) ([]*store
 	return exercises, nil
 }
 
-func CreateExerciseTables(db *sql.DB) error {
+func (ds *ExerciseDBStore) InitTables() error {
 	log.Debug().Msg("Creating exercise table")
 
 	// Create exercises table
-	_, err := db.Exec(`
+	_, err := ds.DB.Exec(`
 		CREATE TABLE IF NOT EXISTS exercise (
 			slug TEXT NOT NULL UNIQUE,
 			name TEXT NOT NULL
