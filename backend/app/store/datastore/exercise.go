@@ -1,6 +1,7 @@
 package datastore
 
 import (
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/store"
@@ -31,12 +32,47 @@ func (ds *ExerciseDBStore) Get(slug store.ExerciseSlug) (*store.Exercise, error)
 	return exercise, nil
 }
 
-func (ds *ExerciseDBStore) Find(criteria store.ExerciseFindCriteria) ([]*store.Exercise, error) {
-	exercises := []*store.Exercise{}
+func (ds *ExerciseDBStore) Find(criteria *store.ExerciseFindCriteria) ([]*store.Exercise, error) {
+	query := "SELECT * FROM exercise"
+	if len(criteria.Slugs) > 0 {
+		query += " WHERE slug IN (:slugs)"
+	}
+	query += " ORDER BY slug LIMIT :limit"
 
-	err := ds.DB.Select(&exercises,
-		`SELECT * FROM exercise ORDER BY slug LIMIT ?`,
-		criteria.Limit)
+	query, args, err := sqlx.Named(query, criteria)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed sqlx.Named")
+		return nil, err
+	}
+
+	if criteria.Limit > 0 {
+		query, args, err = sqlx.In(query, args...)
+
+		if err != nil {
+			log.Error().Err(err).Msg("Failed sqlx.In")
+			return nil, err
+		}
+	}
+
+	query = ds.DB.Rebind(query)
+
+	rows, err := ds.DB.Queryx(query, args...)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed prepare query")
+		return nil, err
+	}
+	defer rows.Close()
+
+	exercises := make([]*store.Exercise, 0)
+	for rows.Next() {
+		var exercise store.Exercise
+		err = rows.StructScan(&exercise)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed scan exercise")
+			return nil, err
+		}
+		exercises = append(exercises, &exercise)
+	}
 
 	return exercises, err
 }

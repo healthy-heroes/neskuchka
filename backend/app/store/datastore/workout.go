@@ -42,13 +42,16 @@ func (ds *WorkoutDBStore) Get(id store.WorkoutID) (*store.Workout, error) {
 	// Deserialize sections from JSON
 	err = json.Unmarshal(sectionsJSON, &workout.Sections)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to deserialize sections from JSON")
 		return nil, err
 	}
+
+	log.Debug().Msgf("workout: %+v", workout)
 
 	return &workout, nil
 }
 
-func (ds *WorkoutDBStore) GetList(criteria store.WorkoutFindCriteria) ([]*store.Workout, error) {
+func (ds *WorkoutDBStore) Find(criteria *store.WorkoutFindCriteria) ([]*store.Workout, error) {
 	if criteria.TrackID == "" {
 		return nil, errors.New("track_id is required")
 	}

@@ -11,9 +11,10 @@ type Exercise struct {
 type ExerciseStore interface {
 	Create(exercise *Exercise) (*Exercise, error)
 	Get(slug ExerciseSlug) (*Exercise, error)
-	Find(criteria ExerciseFindCriteria) ([]*Exercise, error)
+	Find(criteria *ExerciseFindCriteria) ([]*Exercise, error)
 }
 
 type ExerciseFindCriteria struct {
+	Slugs []ExerciseSlug
 	Limit int
 }

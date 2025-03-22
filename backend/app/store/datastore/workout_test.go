@@ -66,8 +66,12 @@ func createTestWorkout(t *testing.T, ds *DataStore, track *store.Track) *store.W
 		TrackID: track.ID,
 		Sections: []store.WorkoutSection{
 			{
-				Title:    "Warmup",
-				Protocol: store.WorkoutProtocolDefault,
+				Title: "Warmup",
+				Protocol: store.WorkoutProtocol{
+					Type:        store.WorkoutProtocolTypeDefault,
+					Title:       "3 rounds",
+					Description: "3 rounds of 10 reps",
+				},
 				Exercises: []store.WorkoutExercise{
 					{
 						ExerciseSlug:    exercise.Slug,
@@ -129,7 +133,7 @@ func TestWorkoutDBStore_Get(t *testing.T) {
 	assert.Error(t, err, "Should error when workout not found")
 }
 
-func TestWorkoutDBStore_GetList(t *testing.T) {
+func TestWorkoutDBStore_Find(t *testing.T) {
 	ds := setupWorkoutTestDB(t)
 	defer ds.Close()
 
@@ -157,12 +161,12 @@ func TestWorkoutDBStore_GetList(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test getting all workouts for a track
-	criteria := store.WorkoutFindCriteria{
+	criteria := &store.WorkoutFindCriteria{
 		TrackID: track.ID,
 		Limit:   10,
 	}
 
-	workouts, err := ds.Workout.GetList(criteria)
+	workouts, err := ds.Workout.Find(criteria)
 	require.NoError(t, err)
 	assert.Equal(t, 3, len(workouts))
 
@@ -171,7 +175,7 @@ func TestWorkoutDBStore_GetList(t *testing.T) {
 
 	// Test with limit
 	criteria.Limit = 2
-	workouts, err = ds.Workout.GetList(criteria)
+	workouts, err = ds.Workout.Find(criteria)
 	require.NoError(t, err)
 	assert.Equal(t, 2, len(workouts))
 }

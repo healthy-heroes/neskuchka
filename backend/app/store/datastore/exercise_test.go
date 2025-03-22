@@ -79,17 +79,56 @@ func TestExerciseDBStore_Find(t *testing.T) {
 	}
 
 	// Test finding all exercises
-	criteria := store.ExerciseFindCriteria{
-		Limit: 5,
-	}
+	t.Run("Find all exercises", func(t *testing.T) {
+		criteria := &store.ExerciseFindCriteria{
+			Limit: 5,
+		}
 
-	results, err := ds.Exercise.Find(criteria)
-	require.NoError(t, err)
-	assert.Len(t, results, 4, "Should find all exercises")
+		results, err := ds.Exercise.Find(criteria)
+		require.NoError(t, err)
+		assert.Len(t, results, 4, "Should find all exercises")
 
-	// Test with limit
-	criteria.Limit = 2
-	results, err = ds.Exercise.Find(criteria)
-	require.NoError(t, err)
-	assert.Len(t, results, 2, "Should limit results")
+		// Test with limit
+		criteria.Limit = 2
+		results, err = ds.Exercise.Find(criteria)
+		require.NoError(t, err)
+		assert.Len(t, results, 2, "Should limit results")
+	})
+
+	// Test finding exercises by slugs
+	t.Run("Find exercises by slugs", func(t *testing.T) {
+		criteria := &store.ExerciseFindCriteria{
+			Slugs: []store.ExerciseSlug{
+				store.ExerciseSlug("push-up"),
+				store.ExerciseSlug("plank"),
+			},
+			Limit: 10,
+		}
+
+		results, err := ds.Exercise.Find(criteria)
+		require.NoError(t, err)
+		assert.Len(t, results, 2, "Should find exercises by slugs")
+
+		// Verify the correct exercises were returned
+		slugs := make(map[store.ExerciseSlug]bool)
+		for _, ex := range results {
+			slugs[ex.Slug] = true
+		}
+		assert.True(t, slugs["push-up"], "Should find push-up exercise")
+		assert.True(t, slugs["plank"], "Should find plank exercise")
+	})
+
+	// Test with non-existent slugs
+	t.Run("Find with non-existent slugs", func(t *testing.T) {
+		criteria := &store.ExerciseFindCriteria{
+			Slugs: []store.ExerciseSlug{
+				store.ExerciseSlug("non-existent"),
+			},
+			Limit: 10,
+		}
+
+		results, err := ds.Exercise.Find(criteria)
+		require.NoError(t, err)
+		assert.Len(t, results, 0, "Should return empty slice for non-existent slugs")
+	})
 }

@@ -7,10 +7,10 @@ import (
 )
 
 type WorkoutID string
-type WorkoutProtocol string
+type WorkoutProtocolType string
 
 const (
-	WorkoutProtocolDefault WorkoutProtocol = "default"
+	WorkoutProtocolTypeDefault WorkoutProtocolType = "default"
 )
 
 type Workout struct {
@@ -26,6 +26,12 @@ type WorkoutSection struct {
 	Title     string
 	Protocol  WorkoutProtocol
 	Exercises []WorkoutExercise
+}
+
+type WorkoutProtocol struct {
+	Type        WorkoutProtocolType
+	Title       string
+	Description string
 }
 
 type WorkoutExercise struct {
@@ -46,10 +52,29 @@ func CreateWorkoutId() WorkoutID {
 type WorkoutStore interface {
 	Create(workout *Workout) (*Workout, error)
 	Get(id WorkoutID) (*Workout, error)
-	GetList(criteria WorkoutFindCriteria) ([]*Workout, error)
+	GetList(criteria *WorkoutFindCriteria) ([]*Workout, error)
 }
 
 type WorkoutFindCriteria struct {
 	TrackID TrackID
 	Limit   int
+}
+
+func ExtractSlugsFromWorkouts(workouts []*Workout) []ExerciseSlug {
+	slugs := make(map[ExerciseSlug]bool)
+
+	for _, workout := range workouts {
+		for _, section := range workout.Sections {
+			for _, exercise := range section.Exercises {
+				slugs[exercise.ExerciseSlug] = true
+			}
+		}
+	}
+
+	slugsList := make([]ExerciseSlug, 0)
+	for slug := range slugs {
+		slugsList = append(slugsList, slug)
+	}
+
+	return slugsList
 }

@@ -27,9 +27,9 @@ export function Workouts() {
       )}
       {error && <Text>Error: {error.message}</Text>}
 
-      {trackWorkouts?.workouts.map((workout) => (
+      {trackWorkouts?.Workouts.map((workout) => (
         <View
-          key={workout.id}
+          key={workout.ID}
           borderWidth="thin"
           borderColor="gray-200"
           borderRadius="medium"
@@ -37,26 +37,26 @@ export function Workouts() {
           paddingBottom="size-200"
           marginBottom="size-200"
         >
-          <Heading level={2}>{WorkoutDate(workout.date)}</Heading>
+          <Heading level={2}>{WorkoutDate(workout.Date)}</Heading>
 
-          {workout.sections.map((section, index) => {
-            const sectionKey = `${workout.id}-${index}`;
+          {workout.Sections.map((section, index) => {
+            const sectionKey = `${workout.ID}-${index}`;
 
             return (
               <View key={sectionKey}>
-                <Heading level={3}>{section.title}</Heading>
-                <Text>{section.protocol.title}</Text>
+                <Heading level={3}>{section.Title}</Heading>
+                <Text>{section.Protocol.Title}</Text>
                 <br />
-                <Text>{section.protocol.description}</Text>
+                <Text>{section.Protocol.Description}</Text>
                 <br />
 
-                {section.exercises.map((exercise, index) => {
+                {section.Exercises.map((exercise, index) => {
                   const exerciseKey = `${sectionKey}-${index}`;
 
                   return (
                     <Text key={exerciseKey}>
-                      {trackWorkouts.exercises[exercise.exercise_slug]?.name ||
-                        exercise.exercise_slug}
+                      {trackWorkouts.Exercises[exercise.ExerciseSlug]?.Name ||
+                        exercise.ExerciseSlug}
                       <br />
                     </Text>
                   );

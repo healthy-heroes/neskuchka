@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8000/api/v1";
+const API_URL = "http://localhost:8080/api/v1";
 
 export class HttpError extends Error {
   constructor(
@@ -10,30 +10,30 @@ export class HttpError extends Error {
 }
 
 export interface Exercise {
-  slug: string;
-  name: string;
-  description: string;
+  Slug: string;
+  Name: string;
+  Description: string;
 }
 
 export interface Workout {
-  id: number;
-  date: string;
+  ID: number;
+  Date: string;
 
-  sections: Array<{
-    title: string;
-    protocol: {
-      title: string;
-      description: string;
+  Sections: Array<{
+    Title: string;
+    Protocol: {
+      Title: string;
+      Description: string;
     };
-    exercises: Array<{
-      exercise_slug: string;
+    Exercises: Array<{
+      ExerciseSlug: string;
     }>;
   }>;
 }
 
 export interface TrackWorkouts {
-  workouts: Array<Workout>;
-  exercises: Record<string, Exercise>;
+  Workouts: Array<Workout>;
+  Exercises: Record<string, Exercise>;
 }
 
 export async function getMainTrackWorkouts(): Promise<TrackWorkouts> {

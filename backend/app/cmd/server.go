@@ -56,7 +56,7 @@ func (cmd *ServerCommand) Execute(args []string) error {
 }
 
 func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
-	db, err := db.NewDB(filepath.Join("..", "backend_old", "database.db"))
+	db, err := db.NewDB(filepath.Join(".", "bin", "app.db"))
 	if err != nil {
 		return nil, err
 	}

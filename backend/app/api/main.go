@@ -9,8 +9,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/rs/zerolog/log"
 
+	"github.com/healthy-heroes/neskuchka/backend/app/api/public_api"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
@@ -19,7 +21,7 @@ type Api struct {
 	lock       sync.Mutex
 
 	store  *datastore.DataStore
-	public *PublicMethods
+	public *public_api.PublicAPI
 }
 
 func NewApi(store *datastore.DataStore) *Api {
@@ -60,14 +62,25 @@ func (api *Api) Shutdown() {
 func (api *Api) routes() *chi.Mux {
 	router := chi.NewRouter()
 
-	api.public = &PublicMethods{
-		store: api.store,
-	}
+	api.public = public_api.NewPublicAPI(api.store)
 
+	// middlewares
 	router.Use(middleware.Logger)
 
-	// make mw
-	router.Get("/api/v1/ping", api.public.pingCtrl)
-	router.Get("/api/v1/exercises/{slug}", api.public.getExerciseCtrl)
+	// CORS middleware
+	corsMiddleware := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-XSRF-Token", "X-JWT"},
+		ExposedHeaders:   []string{"Authorization"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	})
+	router.Use(corsMiddleware.Handler)
+
+	router.Route("/api/v1", func(r chi.Router) {
+		api.public.InitRoutes(r)
+	})
+
 	return router
 }
