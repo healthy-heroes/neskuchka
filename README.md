@@ -42,9 +42,11 @@ cd backend
 # Устанавливаем зависимости
 go mod tidy
 
+# Проинициализировать базу, чтобы локально хоть чтото было
+go run scripts/fill_db/fill_db.go
+
 # Запуск локального сервера
 go run app/main.go server
-
 ```
 
 
