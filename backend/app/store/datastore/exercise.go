@@ -45,13 +45,10 @@ func (ds *ExerciseDBStore) Find(criteria *store.ExerciseFindCriteria) ([]*store.
 		return nil, err
 	}
 
-	if criteria.Limit > 0 {
-		query, args, err = sqlx.In(query, args...)
-
-		if err != nil {
-			log.Error().Err(err).Msg("Failed sqlx.In")
-			return nil, err
-		}
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed sqlx.In")
+		return nil, err
 	}
 
 	query = ds.DB.Rebind(query)
