@@ -1,2 +1,0 @@
-# Neskuchka backend
-
