@@ -3,17 +3,17 @@ package store
 type ExerciseSlug string
 
 type Exercise struct {
-	Slug ExerciseSlug `json:"slug"`
-	Name string       `json:"name"`
+	Slug        ExerciseSlug
+	Name        string
+	Description string
 }
 
 type ExerciseStore interface {
-	Create(exercise *Exercise) error
+	Create(exercise *Exercise) (*Exercise, error)
 	Get(slug ExerciseSlug) (*Exercise, error)
-	Find(criteria ExerciseGetCriteria) ([]*Exercise, error)
+	Find(criteria ExerciseFindCriteria) ([]*Exercise, error)
 }
 
-type ExerciseGetCriteria struct {
-	Limit   int
-	AfterID int
+type ExerciseFindCriteria struct {
+	Limit int
 }

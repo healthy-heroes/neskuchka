@@ -21,8 +21,8 @@ run = "hurl --test examples"
 
 [tasks.pre-commit]
 description = "Pre-commit hook"
-run = "{(cd backend_old && mise run lint) ; (cd frontend/app && mise run lint)}"
+run = "(cd frontend/app && mise run lint)"
 
 [tasks.lint-fix]
 description = "Auto linting fix"
-run = "{(cd backend_old && mise run lint-fix) ; (cd frontend/app && mise run lint-fix)}"
+run = "(cd frontend/app && mise run lint-fix)"

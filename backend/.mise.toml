@@ -3,3 +3,4 @@ CGO_ENABLED = "0"
 
 [tools]
 go = "latest"
+
