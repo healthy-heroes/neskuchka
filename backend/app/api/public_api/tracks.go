@@ -1,7 +1,6 @@
 package public_api
 
 import (
-	"fmt"
 	"net/http"
 
 	R "github.com/go-pkgz/rest"
@@ -56,8 +55,6 @@ func (api *PublicAPI) getMainTrackLastExercisesCtrl(w http.ResponseWriter, _ *ht
 		Workouts:  workouts,
 		Exercises: exercisesMap,
 	}
-
-	fmt.Printf("response: %+v\n", response)
 
 	R.RenderJSON(w, response)
 }
