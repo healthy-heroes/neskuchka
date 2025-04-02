@@ -1,0 +1,20 @@
+{
+  "name": "neskuchka-frontend",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.7.0",
+  "scripts": {
+    "install-deps": "(cd app && pnpm install)",
+    "lint-staged": "lint-staged",
+    "app": "(cd app && pnpm run dev)",
+    "checks": "(cd app && pnpm run checks-all)",
+    "format+fix": "(cd app && pnpm run format && pnpm run lint-fix)"
+
+  },
+  "devDependencies": {
+    "lint-staged": "^15.5.0"
+  }
+}

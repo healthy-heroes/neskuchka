@@ -3,12 +3,17 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "pnpm@10.7.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint .",
-    "format": "prettier --write ."
+    "checks-all": "npm-run-all --parallel type-check lint:*",
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "_lint:styles": "stylelint \"app/**/*.css\" \"templates/**\"",
+    "lint:scripts": "eslint --max-warnings=0 \"**/*.{ts?(x),?(c)js}\"",
+    "lint-fix": "pnpm run lint:scripts --fix",
+    "format": "prettier --write \"./**/*.{js,ts,tsx,css,html}\""
   },
   "dependencies": {
     "@adobe/react-spectrum": "^3.39.0",
@@ -35,6 +40,7 @@
     "globals": "^15.14.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
+    "npm-run-all": "^4.1.5",
     "prettier": "^3.5.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.22.0",

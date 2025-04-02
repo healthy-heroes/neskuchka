@@ -1,23 +1,19 @@
 [tools]
 node = "latest"
-npm = "latest"
+pnpm = "latest"
 
 [tasks.install]
 description = "Install dependencies"
-alias = "i"
-run = "(cd app && npm install)"
+run = "pnpm run install-deps"
 
 [tasks.app]
 description = "Run the application"
-alias = "d"
-run = "(cd app && npm run dev)"
+run = "pnpm run app"
 
 [tasks.lint]
 description = "Lint the code"
-alias = "l"
-run = "(cd app && npm run lint)"
+run = "pnpm run checks"
 
 [tasks.lint-fix]
 description = "Fixing linting errors"
-alias = "lf"
-run = "(cd app && npm run format && npm run lint -- --fix)"
+run = "pnpm run format+fix"
