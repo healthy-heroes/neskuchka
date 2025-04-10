@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"slices"
 	"sync"
 	"time"
 
@@ -93,15 +94,25 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 
 	staticFS, _ := fs.Sub(api.WebFS, "web")
 
+	verifyPaths := []string{
+		"/",
+		"/welcome",
+	}
+
 	router.Route("/", func(r chi.Router) {
 		r.Handle("/favicon.*", http.FileServer(http.FS(staticFS)))
 		r.Handle("/assets/*", http.FileServer(http.FS(staticFS)))
 		r.Handle("/img/*", http.FileServer(http.FS(staticFS)))
 
-		//todo: Its bad, because dont work 404
+		//todo: Подумать как улучшить
 		r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-			w.Write(indexHTML)
+			if slices.Contains(verifyPaths, r.URL.Path) {
+				w.WriteHeader(http.StatusOK)
+				w.Write(indexHTML)
+				return
+			}
+
+			http.NotFound(w, r)
 		})
 	})
 }
