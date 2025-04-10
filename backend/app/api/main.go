@@ -94,11 +94,14 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 	staticFS, _ := fs.Sub(api.WebFS, "web")
 
 	router.Route("/", func(r chi.Router) {
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		r.Handle("/favicon.*", http.FileServer(http.FS(staticFS)))
+		r.Handle("/assets/*", http.FileServer(http.FS(staticFS)))
+		r.Handle("/img/*", http.FileServer(http.FS(staticFS)))
+
+		//todo: Its bad, because dont work 404
+		r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			w.Write(indexHTML)
 		})
-
-		r.Handle("/*", http.FileServer(http.FS(staticFS)))
 	})
 }
