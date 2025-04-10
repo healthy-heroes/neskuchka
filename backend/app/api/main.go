@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
-	"slices"
 	"sync"
 	"time"
 
@@ -94,11 +93,6 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 
 	staticFS, _ := fs.Sub(api.WebFS, "web")
 
-	verifyPaths := []string{
-		"/",
-		"/welcome",
-	}
-
 	router.Route("/", func(r chi.Router) {
 		r.Handle("/favicon.*", http.FileServer(http.FS(staticFS)))
 		r.Handle("/assets/*", http.FileServer(http.FS(staticFS)))
@@ -106,7 +100,7 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 
 		//todo: Подумать как улучшить
 		r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
-			if slices.Contains(verifyPaths, r.URL.Path) {
+			if checkWebPath(r.URL.Path) {
 				w.WriteHeader(http.StatusOK)
 				w.Write(indexHTML)
 				return
@@ -115,4 +109,15 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 			http.NotFound(w, r)
 		})
 	})
+}
+
+func checkWebPath(path string) bool {
+	switch {
+	case path == "/":
+		return true
+	case path == "/welcome":
+		return true
+	default:
+		return false
+	}
 }
