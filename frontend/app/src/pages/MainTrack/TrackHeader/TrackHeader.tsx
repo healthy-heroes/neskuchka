@@ -23,7 +23,7 @@ export function TrackHeader() {
         <br />
         <br />
         <Flex alignItems="center" gap="size-40">
-          <Avatar size="avatar-size-100" src="/avatar.jpg" alt="" />
+          <Avatar size="avatar-size-100" src="/img/avatar.jpg" alt="" />
           <Text>Илья Карягин</Text>
         </Flex>
       </View>

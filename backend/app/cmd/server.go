@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"embed"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -14,9 +15,12 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/store/db"
 )
 
+//go:embed web
+var webFS embed.FS
+
 // ServerCommand is the command for the run server
 type ServerCommand struct {
-	Address string `long:"address" env:"ADDRESS" default:"0.0.0.0" description:"address"`
+	Address string `long:"address" env:"ADDRESS" default:"127.0.0.1" description:"address"`
 	Port    int    `long:"port" env:"PORT" default:"8080" description:"port"`
 }
 
@@ -62,7 +66,10 @@ func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
 	}
 	store := datastore.NewDataStore(db)
 
-	apiServer := api.NewApi(store)
+	apiServer := &api.Api{
+		Store: store,
+		WebFS: webFS,
+	}
 
 	app := &serverApp{
 		ServerCommand: cmd,

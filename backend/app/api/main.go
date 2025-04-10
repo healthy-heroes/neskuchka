@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"sync"
 	"time"
@@ -17,17 +19,13 @@ import (
 )
 
 type Api struct {
+	Store *datastore.DataStore
+	WebFS embed.FS
+
 	httpServer *http.Server
 	lock       sync.Mutex
 
-	store  *datastore.DataStore
 	public *public_api.PublicAPI
-}
-
-func NewApi(store *datastore.DataStore) *Api {
-	return &Api{
-		store: store,
-	}
 }
 
 func (api *Api) Run(address string, port int) {
@@ -62,7 +60,7 @@ func (api *Api) Shutdown() {
 func (api *Api) routes() *chi.Mux {
 	router := chi.NewRouter()
 
-	api.public = public_api.NewPublicAPI(api.store)
+	api.public = public_api.NewPublicAPI(api.Store)
 
 	// middlewares
 	router.Use(middleware.Logger)
@@ -82,5 +80,25 @@ func (api *Api) routes() *chi.Mux {
 		api.public.InitRoutes(r)
 	})
 
+	api.addStaticRoutes(router)
+
 	return router
+}
+
+func (api *Api) addStaticRoutes(router *chi.Mux) {
+	indexHTML, err := api.WebFS.ReadFile("web/index.html")
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to read index.html")
+	}
+
+	staticFS, _ := fs.Sub(api.WebFS, "web")
+
+	router.Route("/", func(r chi.Router) {
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write(indexHTML)
+		})
+
+		r.Handle("/*", http.FileServer(http.FS(staticFS)))
+	})
 }
