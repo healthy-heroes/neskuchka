@@ -4,16 +4,16 @@ pnpm = "latest"
 
 [tasks.install]
 description = "Install dependencies"
-run = "pnpm run install-deps"
+run = "pnpm i"
 
 [tasks.app]
 description = "Run the application"
-run = "pnpm run app"
+run = "pnpm app"
 
 [tasks.lint]
 description = "Lint the code"
-run = "pnpm run checks"
+run = "pnpm checks"
 
 [tasks.lint-fix]
 description = "Fixing linting errors"
-run = "pnpm run format+fix"
+run = "pnpm format+fix"

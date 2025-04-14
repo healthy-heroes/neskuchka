@@ -4,4 +4,7 @@
 .vscode/
 .cursor/
 
+*.cov
+*.cov_tmp
+
 /backend/app/cmd/web

@@ -76,6 +76,11 @@ func (api *Api) routes() *chi.Mux {
 	})
 	router.Use(corsMiddleware.Handler)
 
+	router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("pong"))
+	})
+
 	router.Route("/api/v1", func(r chi.Router) {
 		api.public.InitRoutes(r)
 	})
@@ -112,7 +117,7 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 }
 
 func checkWebPath(path string) bool {
-	switch {
+	switch true {
 	case path == "/":
 		return true
 	case path == "/welcome":

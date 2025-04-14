@@ -60,7 +60,7 @@ func (ds *WorkoutDBStore) Create(workout *store.Workout) (*store.Workout, error)
 		return nil, err
 	}
 
-	_, err = ds.DB.Exec(`INSERT INTO workout (id, date, track_id, sections) 
+	_, err = ds.Exec(`INSERT INTO workout (id, date, track_id, sections) 
 						VALUES (?, ?, ?, ?)`,
 		dbWorkout.ID, dbWorkout.Date, dbWorkout.TrackID, dbWorkout.Sections)
 	if err != nil {
@@ -98,7 +98,7 @@ func (ds *WorkoutDBStore) Find(criteria *store.WorkoutFindCriteria) ([]*store.Wo
 	}
 
 	dbWorkouts := make([]*WorkoutDB, 0)
-	err := ds.DB.Select(&dbWorkouts, query, criteria.TrackID, limit)
+	err := ds.Select(&dbWorkouts, query, criteria.TrackID, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func (ds *WorkoutDBStore) Find(criteria *store.WorkoutFindCriteria) ([]*store.Wo
 func (ds *WorkoutDBStore) InitTables() error {
 	log.Debug().Msg("Creating workout table")
 
-	_, err := ds.DB.Exec(`
+	_, err := ds.Exec(`
 		CREATE TABLE IF NOT EXISTS workout (
 			id TEXT PRIMARY KEY NOT NULL,
 			date TIMESTAMP NOT NULL,

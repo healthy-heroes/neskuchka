@@ -6,17 +6,16 @@ settings:
 
 importers:
 
-  .:
-    devDependencies:
-      lint-staged:
-        specifier: ^15.5.0
-        version: 15.5.0
+  .: {}
 
   app:
     dependencies:
       '@adobe/react-spectrum':
         specifier: ^3.39.0
         version: 3.40.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@internationalized/date':
+        specifier: ^3.5.2
+        version: 3.7.0
       '@tanstack/react-query':
         specifier: ^5.66.7
         version: 5.71.1(react@19.1.0)

@@ -16,8 +16,10 @@ type Opts struct {
 	ServerCmd cmd.ServerCommand `command:"server" description:"Start the server"`
 }
 
+var revision = "unknown"
+
 func main() {
-	fmt.Println("Starting application...")
+	fmt.Println("Starting application (revision: ", revision, ")...")
 
 	var opts Opts
 	p := flags.NewParser(&opts, flags.Default)

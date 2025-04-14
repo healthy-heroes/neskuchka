@@ -3,4 +3,12 @@ CGO_ENABLED = "0"
 
 [tools]
 go = "latest"
+golangci-lint = "latest"
+
+[tasks.app]
+description = "Run the application"
+
+[tasks.lint]
+description = "Lint the code"
+run = "go test ./app/... && golangci-lint run"
 

@@ -25,7 +25,7 @@ func (t *TrackDB) ToStore() *store.Track {
 }
 
 func (ds *TrackDBStore) Create(track *store.Track) (*store.Track, error) {
-	_, err := ds.DB.Exec(`INSERT INTO track (id, name, owner_id) VALUES (?, ?, ?)`,
+	_, err := ds.Exec(`INSERT INTO track (id, name, owner_id) VALUES (?, ?, ?)`,
 		track.ID, track.Name, track.OwnerID)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func (ds *TrackDBStore) InitTables() error {
 	log.Debug().Msg("Creating track table")
 
 	// Create track table
-	_, err := ds.DB.Exec(`
+	_, err := ds.Exec(`
 		CREATE TABLE IF NOT EXISTS track (
 			id TEXT PRIMARY KEY NOT NULL,
 			name TEXT NOT NULL,

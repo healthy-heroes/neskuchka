@@ -11,7 +11,7 @@ type UserDBStore struct {
 }
 
 func (ds *UserDBStore) Create(user *store.User) (*store.User, error) {
-	_, err := ds.DB.Exec(`INSERT INTO user (id, name, login, email) VALUES (?, ?, ?, ?)`,
+	_, err := ds.Exec(`INSERT INTO user (id, name, login, email) VALUES (?, ?, ?, ?)`,
 		user.ID, user.Name, user.Login, user.Email)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (ds *UserDBStore) InitTables() error {
 	log.Debug().Msg("Creating user table")
 
 	// Create user table
-	_, err := ds.DB.Exec(`
+	_, err := ds.Exec(`
 		CREATE TABLE IF NOT EXISTS user (
 			id TEXT PRIMARY KEY NOT NULL,
 			name TEXT NOT NULL,

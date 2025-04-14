@@ -12,7 +12,7 @@ type ExerciseDBStore struct {
 }
 
 func (ds *ExerciseDBStore) Create(exercise *store.Exercise) (*store.Exercise, error) {
-	_, err := ds.DB.Exec(`INSERT INTO exercise (slug, name) VALUES (?, ?)`,
+	_, err := ds.Exec(`INSERT INTO exercise (slug, name) VALUES (?, ?)`,
 		exercise.Slug, exercise.Name)
 	if err != nil {
 		return nil, err
@@ -51,9 +51,9 @@ func (ds *ExerciseDBStore) Find(criteria *store.ExerciseFindCriteria) ([]*store.
 		return nil, err
 	}
 
-	query = ds.DB.Rebind(query)
+	query = ds.Rebind(query)
 
-	rows, err := ds.DB.Queryx(query, args...)
+	rows, err := ds.Queryx(query, args...)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed prepare query")
 		return nil, err
@@ -78,7 +78,7 @@ func (ds *ExerciseDBStore) InitTables() error {
 	log.Debug().Msg("Creating exercise table")
 
 	// Create exercises table
-	_, err := ds.DB.Exec(`
+	_, err := ds.Exec(`
 		CREATE TABLE IF NOT EXISTS exercise (
 			slug TEXT PRIMARY KEY NOT NULL,
 			name TEXT NOT NULL
