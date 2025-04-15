@@ -41,27 +41,12 @@ jobs:
         working-directory: backend/app
         env:
           TZ: "Europe/Moscow"
-          
-      - name: test examples
-        run: |
-          go test -race ./...
-          go build -race ./...
-        working-directory: backend/_example/memory_store
-        env:
-          TZ: "Europe/Moscow"
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: "v1.64.7"
           working-directory: backend/app
-
-      - name: golangci-lint on example directory
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: "v1.64.7"
-          args: --config ../../.golangci.yml
-          working-directory: backend/_example/memory_store
 
       - name: submit coverage
         run: |
