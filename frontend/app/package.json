@@ -10,10 +10,10 @@
     "preview": "vite preview",
     "checks-all": "npm-run-all --parallel type-check lint:*",
     "type-check": "tsc -p tsconfig.json --noEmit",
-    "_lint:styles": "stylelint \"app/**/*.css\" \"templates/**\"",
+    "lint:styles": "stylelint **/*.css",
     "lint:scripts": "eslint --max-warnings=0 \"**/*.{ts?(x),?(c)js}\"",
     "lint-fix": "pnpm run lint:scripts --fix",
-    "format": "prettier --write \"./**/*.{js,ts,tsx,css,html}\""
+    "format": "prettier --write ./**/*.{js,ts,tsx,css,html}"
   },
   "dependencies": {
     "@adobe/react-spectrum": "^3.39.0",
@@ -43,6 +43,9 @@
     "lint-staged": "^15.4.3",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.5.0",
+    "stylelint": "^16.18.0",
+    "stylelint-config-standard": "^38.0.0",
+    "stylelint-prettier": "^5.0.3",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.22.0",
     "vite": "^6.1.0"
