@@ -1,6 +1,12 @@
 { 
     "extends": ["stylelint-config-standard", "stylelint-prettier/recommended"],
 
+    "ignoreFiles": [
+        "coverage/**",
+        "node_modules/**",
+        "dist/**"
+    ],
+
     "rules": {
         "selector-class-pattern": null
     }

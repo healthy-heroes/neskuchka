@@ -8,3 +8,5 @@
 *.cov_tmp
 
 /backend/app/cmd/web
+
+/frontend/app/coverage
