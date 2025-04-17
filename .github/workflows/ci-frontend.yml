@@ -18,6 +18,9 @@ jobs:
   test:
     name: Test & Coverage
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     
     steps:
       - uses: actions/checkout@v4
@@ -32,10 +35,10 @@ jobs:
         with:
           node-version: 23
           cache: pnpm
+          cache-dependency-path: 'frontend/pnpm-lock.yaml'
 
       - name: install dependencies
         run: pnpm install
-        working-directory: frontend
 
       - name: lint & type check
         run: pnpm checks-all-ci
