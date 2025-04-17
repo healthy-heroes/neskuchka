@@ -57,6 +57,6 @@ jobs:
           base-path: frontend
           parallel: true
           debug: true
-          verbose: true
+          carryforward: true
       
       
