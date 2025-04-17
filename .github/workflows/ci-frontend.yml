@@ -53,7 +53,7 @@ jobs:
         with:
           flag-name: frontend
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          file: frontend/app/coverage/lcov.info
+          file: app/coverage/lcov.info
           base-path: frontend
           parallel: true
       
