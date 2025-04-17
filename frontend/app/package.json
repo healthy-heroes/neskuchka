@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "checks-all": "npm-run-all --parallel test type-check lint:*",
+    "checks-all-ci": "npm-run-all --parallel type-check lint:*",
     "type-check": "tsc -p tsconfig.json --noEmit",
     "test-watch": "vitest",
     "test": "vitest run",

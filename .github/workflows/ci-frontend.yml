@@ -1,0 +1,56 @@
+name: frontend
+
+on:
+  push:
+    branches:
+    tags:
+    paths:
+      - ".github/workflows/ci-frontend.yml"
+      - "frontend/**"
+
+  pull_request:
+    types: [opened, reopened]
+    paths:
+      - ".github/workflows/ci-frontend.yml"
+      - "frontend/**"
+
+jobs:
+  test:
+    name: Test & Coverage
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10    
+
+      - name: install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: pnpm
+
+      - name: install dependencies
+        run: pnpm install
+        working-directory: frontend
+
+      - name: lint & type check
+        run: pnpm checks-all-ci
+        working-directory: frontend/app
+
+      - name: test & coverage
+        run: pnpm test-coverage
+        working-directory: frontend/app
+
+      - name: submit coverage
+        run: |
+          go install github.com/mattn/goveralls@latest
+          goveralls -flagname=frontend -service="github" -coverprofile=coverage/lcov.info
+        working-directory: frontend/app
+        env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      
