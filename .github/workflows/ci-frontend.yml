@@ -56,5 +56,7 @@ jobs:
           file: frontend/app/coverage/lcov.info
           base-path: frontend
           parallel: true
+          debug: true
+          verbose: true
       
       
