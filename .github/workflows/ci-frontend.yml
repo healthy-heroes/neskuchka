@@ -49,11 +49,11 @@ jobs:
         working-directory: frontend/app
 
       - name: submit coverage
-        run: |
-          go install github.com/mattn/goveralls@latest
-          goveralls -flagname=frontend -service="github" -coverprofile=coverage/lcov.info
-        working-directory: frontend/app
-        env:
-          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: coverallsapp/github-action@v2
+        with:
+          flag-name: frontend
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          base-path: frontend/app
+          file: coverage/lcov.info
       
       
