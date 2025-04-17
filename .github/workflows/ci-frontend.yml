@@ -45,7 +45,7 @@ jobs:
         working-directory: frontend/app
 
       - name: test & coverage
-        run: pnpm test-coverage && cat coverage/lcov.info
+        run: pnpm test-coverage
         working-directory: frontend/app
 
       - name: submit coverage
@@ -58,5 +58,6 @@ jobs:
           parallel: true
           debug: true
           carryforward: true
+          allow_empty: true
       
       
