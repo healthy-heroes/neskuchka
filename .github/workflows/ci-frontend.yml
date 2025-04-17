@@ -50,10 +50,9 @@ jobs:
 
       - name: submit coverage
         uses: coverallsapp/github-action@v2
-        working-directory: frontend/app
         with:
           flag-name: frontend
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          file: coverage/lcov.info
+          file: frontend/app/coverage/lcov.info
       
       
