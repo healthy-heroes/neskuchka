@@ -1,20 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
-import { Heading, ProgressCircle, Text, View } from "@adobe/react-spectrum";
+import { Heading, Text, View } from "@adobe/react-spectrum";
 
 import { pageProps } from "../../constants";
-import { getMainTrackWorkouts } from "../../../services/api";
-import { WorkoutDate } from "./WorkoutDate";
+import { TrackWorkouts } from "../../../services/api";
+import { formatIsoDate } from "../../../utils/dates";
 
-export function Workouts() {
-  const {
-    data: trackWorkouts,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["main-track-workouts"],
-    queryFn: getMainTrackWorkouts,
-  });
+type WorkoutsProps = {
+  // Track workouts data containing workout information and dictionary of exercises.
+  trackWorkouts: TrackWorkouts;
+};
 
+export function Workouts({ trackWorkouts }: WorkoutsProps) {
   return (
     <View
       paddingX="size-400"
@@ -22,12 +17,7 @@ export function Workouts() {
       maxWidth={pageProps.maxWidth}
       marginX="auto"
     >
-      {isLoading && (
-        <ProgressCircle aria-label="Loading…" isIndeterminate={true} />
-      )}
-      {error && <Text>Error: {error.message}</Text>}
-
-      {trackWorkouts?.Workouts.map((workout) => (
+      {trackWorkouts.Workouts.map((workout) => (
         <View
           key={workout.ID}
           borderWidth="thin"
@@ -37,7 +27,7 @@ export function Workouts() {
           paddingBottom="size-200"
           marginBottom="size-200"
         >
-          <Heading level={2}>{WorkoutDate(workout.Date)}</Heading>
+          <Heading level={2}>{formatIsoDate(workout.Date)}</Heading>
 
           {workout.Sections.map((section, index) => {
             const sectionKey = `${workout.ID}-${index}`;
