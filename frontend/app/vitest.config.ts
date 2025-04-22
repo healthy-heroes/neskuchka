@@ -35,7 +35,6 @@ export default mergeConfig(
 
           test: {
             name: "stories",
-            include: ["src/**/*.stories.ts"],
 
             browser: {
               enabled: true,
