@@ -1,4 +1,3 @@
 {
-    "tabWidth": 2,
-    "ignore": ["coverage/**", "dist/**", "node_modules/**"]
+    "tabWidth": 2
 }
