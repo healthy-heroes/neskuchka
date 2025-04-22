@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: [ 'v*' ]
+    paths:
+      - ".github/workflows/ci.yml"
+      - "frontend/**"
+      - "backend/**"
+      - "!backend/bin/**"
+      - "!backend/scripts/**"
+  
+  pull_request:
+    types: [opened, reopened]
+    paths:
+      - ".github/workflows/ci.yml"
+      - "frontend/**"
+      - "backend/**"
+      - "!backend/bin/**"
+      - "!backend/scripts/**"
+
+jobs:
+  backend:
+    name: Backend Test & Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: backend
+
+      - name: test and build backend
+        run: |
+          go test -race -timeout=60s -covermode=atomic -coverprofile=$GITHUB_WORKSPACE/profile.cov_tmp ./...
+          cat $GITHUB_WORKSPACE/profile.cov_tmp | grep -v "_mock.go" > $GITHUB_WORKSPACE/profile.cov
+          go build -race ./...
+        working-directory: backend/app
+        env:
+          TZ: "Europe/Moscow"
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.0
+          working-directory: backend/app
+
+      - name: submit coverage
+        run: |
+          go install github.com/mattn/goveralls@latest
+          goveralls -flagname="backend" -parallel -service="github" -coverprofile=$GITHUB_WORKSPACE/profile.cov
+        working-directory: backend
+        env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  frontend:
+    name: Frontend Test & Coverage
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10    
+
+      - name: install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: pnpm
+          cache-dependency-path: 'frontend/pnpm-lock.yaml'
+
+      - name: install dependencies
+        run: pnpm install
+
+      - name: lint & type check
+        run: pnpm checks-all-ci
+        working-directory: frontend/app
+
+      - name: test & coverage
+        run: |
+          pnpm exec playwright install chromium
+          pnpm test-coverage
+        working-directory: frontend/app
+
+      - name: submit coverage
+        uses: coverallsapp/github-action@v2
+        with:
+          flag-name: frontend
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: frontend/app/coverage/lcov.info
+          parallel: true
+
+  finish:
+    name: Finish Coverage Report
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Finish Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel-finished: true
