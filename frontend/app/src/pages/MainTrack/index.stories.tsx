@@ -24,13 +24,13 @@ export default meta;
 type Story = StoryObj<typeof MainTrackPage>;
 
 export const Default: Story = {
-  beforeEach: async () => {
+  beforeEach: () => {
     getMainTrackWorkouts.mockResolvedValue(WorkoutsData.trackWorkouts);
   },
 };
 
-export const Error: Story = {
-  beforeEach: async () => {
+export const Errors: Story = {
+  beforeEach: () => {
     getMainTrackWorkouts.mockRejectedValue(
       new HttpError(500, { message: "Internal server error" }),
     );
@@ -38,10 +38,7 @@ export const Error: Story = {
 };
 
 export const Loading: Story = {
-  args: {
-    isLoading: true,
-  },
-  beforeEach: async () => {
+  beforeEach: () => {
     getMainTrackWorkouts.mockReturnValue(new Promise(() => {}));
   },
 };

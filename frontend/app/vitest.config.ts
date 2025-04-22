@@ -1,7 +1,11 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { mergeConfig, defineConfig } from "vitest/config";
+import {
+  mergeConfig,
+  defineConfig,
+  coverageConfigDefaults,
+} from "vitest/config";
 import { storybookTest } from "@storybook/experimental-addon-test/vitest-plugin";
 
 import viteConfig from "./vite.config";
@@ -21,6 +25,13 @@ export default mergeConfig(
         provider: "v8",
         reporter: ["text", "json", "html", "lcov"],
         reportsDirectory: "./coverage",
+        exclude: [
+          ".storybook/**",
+          "**/*.stories.tsx",
+          "**/*.mock.ts",
+
+          ...coverageConfigDefaults.exclude,
+        ],
       },
 
       workspace: [

@@ -10,6 +10,7 @@ export interface TrackWorkouts {
 
 export async function getMainTrackWorkouts(): Promise<TrackWorkouts> {
   const response = await fetch(`${API_URL}/tracks/main/last_workouts`);
+
   if (!response.ok) {
     throw new HttpError(response.status, await response.json());
   }
