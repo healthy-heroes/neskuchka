@@ -17,29 +17,31 @@ const meta: Meta<typeof MainTrackPage> = {
         <Story />
       </QueryClientProvider>
     ),
-  ]
+  ],
 };
 export default meta;
 
 type Story = StoryObj<typeof MainTrackPage>;
 
 export const Default: Story = {
-    beforeEach: async () => {
-        getMainTrackWorkouts.mockResolvedValue(WorkoutsData.trackWorkouts)
-    }
+  beforeEach: async () => {
+    getMainTrackWorkouts.mockResolvedValue(WorkoutsData.trackWorkouts);
+  },
 };
 
 export const Error: Story = {
-    beforeEach: async () => {
-        getMainTrackWorkouts.mockRejectedValue(new HttpError(500, { message: "Internal server error" }))
-    }
+  beforeEach: async () => {
+    getMainTrackWorkouts.mockRejectedValue(
+      new HttpError(500, { message: "Internal server error" }),
+    );
+  },
 };
 
 export const Loading: Story = {
-    args: {
-        isLoading: true
-    },
-    beforeEach: async () => {
-        getMainTrackWorkouts.mockReturnValue(new Promise(() => {}))
-    }
+  args: {
+    isLoading: true,
+  },
+  beforeEach: async () => {
+    getMainTrackWorkouts.mockReturnValue(new Promise(() => {}));
+  },
 };

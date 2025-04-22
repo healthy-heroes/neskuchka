@@ -1,6 +1,6 @@
-import path from 'node:path';
+import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { mergeConfig } from 'vite';
+import { mergeConfig } from "vite";
 import type { StorybookConfig } from "@storybook/react-vite";
 
 const dirname =
@@ -21,14 +21,17 @@ const config: StorybookConfig = {
     options: {},
   },
   core: {
-    builder: '@storybook/builder-vite',
+    builder: "@storybook/builder-vite",
   },
 
   async viteFinal(config) {
     return mergeConfig(config, {
       resolve: {
         alias: {
-          '#api/methods': path.resolve(dirname, '../src/services/api/methods.mock.ts'),
+          "#api/methods": path.resolve(
+            dirname,
+            "../src/services/api/methods.mock.ts",
+          ),
         },
       },
     });
