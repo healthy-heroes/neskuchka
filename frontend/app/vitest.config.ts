@@ -56,11 +56,6 @@ export default mergeConfig(
           },
         },
       ],
-
-      // environmentMatchGlobs: [
-      //   ["src/**/*.stories.ts", "jsdom"],
-      //   ["src/**/*.test.ts", "node"],
-      // ],
     },
   }),
 );

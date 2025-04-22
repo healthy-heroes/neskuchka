@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from "@storybook/react";
 
-import { TrackHeader } from "./";
+import { TrackHeader } from ".";
 
 const meta = {
   component: TrackHeader,

@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-import queryClient from "./services/api/client";
+import queryClient from "#api/client";
 
 import { LandingPage } from "./pages/Landing";
 import { MainTrackPage } from "./pages/MainTrack";

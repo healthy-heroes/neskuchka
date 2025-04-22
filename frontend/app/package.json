@@ -37,6 +37,7 @@
     "@storybook/addon-essentials": "^8.6.12",
     "@storybook/addon-onboarding": "^8.6.12",
     "@storybook/blocks": "^8.6.12",
+    "@storybook/builder-vite": "^8.6.12",
     "@storybook/experimental-addon-test": "^8.6.12",
     "@storybook/react": "^8.6.12",
     "@storybook/react-vite": "^8.6.12",
@@ -75,6 +76,18 @@
   "eslintConfig": {
     "extends": [
       "plugin:storybook/recommended"
+    ]
+  },
+  "imports": {
+    "#api/methods": "./src/services/api/methods.ts",
+    "#api/*": "./src/services/api/*.ts",
+    "#types/*": [
+      "./src/types/*.tsx"
+    ],
+    "#*": [
+      "./*",
+      "./*.ts",
+      "./*.tsx"
     ]
   }
 }

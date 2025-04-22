@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from "@storybook/react";
 
-import { Workouts } from "./";
+import { Workouts } from ".";
 
 export const WorkoutsData = {
   trackWorkouts: {

@@ -50,6 +50,9 @@ importers:
       '@storybook/blocks':
         specifier: ^8.6.12
         version: 8.6.12(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.12(prettier@3.5.3))
+      '@storybook/builder-vite':
+        specifier: ^8.6.12
+        version: 8.6.12(storybook@8.6.12(prettier@3.5.3))(vite@6.2.4(@types/node@22.14.1)(yaml@2.7.1))
       '@storybook/experimental-addon-test':
         specifier: ^8.6.12
         version: 8.6.12(@vitest/browser@3.1.1)(@vitest/runner@3.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(storybook@8.6.12(prettier@3.5.3))(vitest@3.1.1)

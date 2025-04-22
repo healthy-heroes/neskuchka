@@ -1,23 +1,15 @@
 import { Heading, Text, View } from "@adobe/react-spectrum";
 
-import { pageProps } from "../../constants";
-import { TrackWorkouts } from "../../../services/api";
+import { TrackWorkouts } from "#api/methods";
 import { formatIsoDate } from "../../../utils/dates";
 
 type WorkoutsProps = {
-  // Track workouts data containing workout information and dictionary of exercises.
+  /** TrackWorkouts stores a list of workouts and a dictionary with exercise details */
   trackWorkouts: TrackWorkouts;
 };
 
 export function Workouts({ trackWorkouts }: WorkoutsProps) {
-  return (
-    <View
-      paddingX="size-400"
-      paddingY="size-400"
-      maxWidth={pageProps.maxWidth}
-      marginX="auto"
-    >
-      {trackWorkouts.Workouts.map((workout) => (
+  return trackWorkouts.Workouts.map((workout) => (
         <View
           key={workout.ID}
           borderWidth="thin"
@@ -55,7 +47,5 @@ export function Workouts({ trackWorkouts }: WorkoutsProps) {
             );
           })}
         </View>
-      ))}
-    </View>
-  );
+  ));
 }
