@@ -2,8 +2,8 @@ name: backend
 
 on:
   push:
-    branches:
-    tags:
+    branches: [main]
+    tags: [ 'v*' ]
     paths:
       - ".github/workflows/ci-backend.yml"
       - "backend/**"
@@ -50,7 +50,7 @@ jobs:
       - name: submit coverage
         run: |
           go install github.com/mattn/goveralls@latest
-          goveralls -flagname="backend" -service="github" -coverprofile=$GITHUB_WORKSPACE/profile.cov
+          goveralls -flagname="backend" -parallel -service="github" -coverprofile=$GITHUB_WORKSPACE/profile.cov
         working-directory: backend
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}

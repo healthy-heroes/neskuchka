@@ -2,7 +2,7 @@ name: frontend
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
     tags: [ 'v*' ]
     paths:
       - ".github/workflows/ci-frontend.yml"
@@ -40,17 +40,14 @@ jobs:
       - name: install dependencies
         run: pnpm install
 
-      - name: Install Playwright Browsers
-        uses: microsoft/playwright-github-action@v1
-        with:
-          browsers: chromium
-
       - name: lint & type check
         run: pnpm checks-all-ci
         working-directory: frontend/app
 
       - name: test & coverage
-        run: pnpm test-coverage
+        run: |
+          pnpm exec playwright install chromium
+          pnpm test-coverage
         working-directory: frontend/app
 
       - name: submit coverage
