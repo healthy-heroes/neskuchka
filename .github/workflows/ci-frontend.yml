@@ -40,6 +40,9 @@ jobs:
       - name: install dependencies
         run: pnpm install
 
+      - name: install Playwright browsers
+        run: pnpm exec playwright install chromium
+
       - name: lint & type check
         run: pnpm checks-all-ci
         working-directory: frontend/app
