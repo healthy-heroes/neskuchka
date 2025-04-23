@@ -68,14 +68,13 @@ export function Intro() {
               marginTop="size-200"
               UNSAFE_className={styles.title}
             >
-              Тренируйся с удовольствием
+              Откройте для себя мир Нескучного Спорта
             </Heading>
           </motion.div>
 
           <motion.div variants={motionConfig.item}>
             <Text UNSAFE_className={styles.subtitle}>
-              Тренировки для каждого. Тренируйся в своем темпе, получай
-              удовольствие от результата.
+              Бесплатные тренировки + анализ твоей физической активности!
             </Text>
           </motion.div>
 
