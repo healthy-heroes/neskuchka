@@ -1,3 +1,9 @@
+.featureCard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .featureCard:hover {
   transform: translateY(-5px);
 }
@@ -14,6 +20,7 @@
 .featureDescription {
   font-size: 1rem;
   line-height: 1.6;
+  flex-grow: 1;
 }
 
 @media (width <= 768px) {
