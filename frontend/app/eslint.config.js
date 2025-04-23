@@ -7,7 +7,7 @@ import reactRefreshPlugin from "eslint-plugin-react-refresh";
 import prettierPlugin from "eslint-plugin-prettier";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ["dist", "storybook-static", "coverage"] },
 
   eslint.configs.recommended,
   tseslint.configs.recommended,

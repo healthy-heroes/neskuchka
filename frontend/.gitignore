@@ -9,4 +9,5 @@ dist
 dist-ssr
 *.local
 
+storybook-static
 *storybook.log
