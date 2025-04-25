@@ -31,6 +31,8 @@ RUN pnpm build
 
 FROM umputun/baseimage:buildgo-v1.15.0 AS build-backend
 
+ARG SKIP_BACKEND_TEST
+
 RUN apk --no-cache add gcc libc-dev
 
 ADD ./backend /build/backend
@@ -41,10 +43,15 @@ WORKDIR /build/backend
 
 RUN echo go version: `go version`
 
+# run tests
 RUN \
-    CGO_ENABLED=1 go test -race -p 1 -timeout="300s" -covermode=atomic -coverprofile=/profile.cov_tmp ./... && \
-    cat /profile.cov_tmp | grep -v "_mock.go" > /profile.cov && \
-    golangci-lint run --config .golangci.yml ./... ;
+  	if [ -z "$SKIP_BACKEND_TEST" ] ; then \
+				CGO_ENABLED=1 go test -race -p 1 -timeout="300s" -covermode=atomic -coverprofile=/profile.cov_tmp ./... && \
+				cat /profile.cov_tmp | grep -v "_mock.go" > /profile.cov && \
+				golangci-lint run --config .golangci.yml ./... ; \
+  	else \
+    		echo 'Skip backend test'; \
+  	fi
 
 RUN \
     version="$(/script/version.sh)" && \
