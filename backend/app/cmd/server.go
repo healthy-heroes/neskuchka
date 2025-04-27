@@ -81,6 +81,8 @@ func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
 	}
 
 	apiServer := &api.Api{
+		Version: cmd.Revision,
+
 		Store: store,
 		WebFS: webFS,
 	}
