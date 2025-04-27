@@ -14,21 +14,25 @@ import (
 
 type Opts struct {
 	ServerCmd cmd.ServerCommand `command:"server" description:"Start the server"`
+
+	Debug bool `long:"debug" env:"DEBUG" description:"Enable debug mode"`
 }
 
 var revision = "unknown"
 
 func main() {
-	fmt.Println("Starting application (revision: ", revision, ")...")
+	fmt.Printf("Starting application (revision: %s)\n", revision)
 
 	var opts Opts
 	p := flags.NewParser(&opts, flags.Default)
-
 	p.CommandHandler = func(command flags.Commander, args []string) error {
-		setupLog()
+		setupLog(&opts)
 
 		// Each command implements the CommonOptionsCommander interface
 		c := command.(cmd.CommonOptionsCommander)
+		c.SetCommon(&cmd.CommonOptions{
+			Revision: revision,
+		})
 
 		err := c.Execute(args)
 		if err != nil {
@@ -38,6 +42,7 @@ func main() {
 		return err
 	}
 
+	// Parsing command line arguments and handling errors
 	if _, err := p.Parse(); err != nil {
 		switch flagsErr := err.(type) {
 		case flags.ErrorType:
@@ -53,7 +58,7 @@ func main() {
 	fmt.Println("Application finished.")
 }
 
-func setupLog() {
+func setupLog(opts *Opts) {
 	consoleWriter := zerolog.ConsoleWriter{
 		Out:        os.Stdout,
 		TimeFormat: time.RFC3339,
@@ -65,6 +70,7 @@ func setupLog() {
 		Timestamp().
 		Logger()
 
-	// todo debug mode
-	log.Logger = log.Logger.Level(zerolog.DebugLevel)
+	if opts.Debug {
+		log.Logger = log.Logger.Level(zerolog.DebugLevel)
+	}
 }

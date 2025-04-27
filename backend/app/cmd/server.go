@@ -20,6 +20,8 @@ var webFS embed.FS
 
 // ServerCommand is the command for the run server
 type ServerCommand struct {
+	Version string
+
 	Address string `long:"address" env:"ADDRESS" default:"127.0.0.1" description:"address"`
 	Port    int    `long:"port" env:"PORT" default:"8080" description:"port"`
 }
@@ -30,6 +32,8 @@ type serverApp struct {
 
 	apiServer *api.Api
 	store     *datastore.DataStore
+
+	CommonOptions
 }
 
 func (cmd *ServerCommand) Execute(args []string) error {
