@@ -66,7 +66,7 @@ go mod tidy
 go run scripts/fill_db/fill_db.go
 
 # Запуск локального сервера
-go run app/main.go server
+go run app/main.go server --store.sqlite.source=./bin/app.db
 ```
 
 ### Запуск локального фронтенда
