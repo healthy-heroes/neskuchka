@@ -8,7 +8,7 @@ COPY ./frontend/package.json ./frontend/pnpm-lock.yaml ./frontend/pnpm-workspace
 COPY ./frontend/app/package.json /srv/frontend/app/
 
 RUN apk add --no-cache --update git && \
-    npm i -g pnpm@10.8.0;
+    npm i -g pnpm@10.9.0;
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
@@ -21,7 +21,8 @@ COPY ./frontend/app/ /srv/frontend/app/
 
 RUN \
   if [ -z "$SKIP_FRONTEND_TEST" ]; then \
-    pnpm checks-all; \
+    pnpm checks-all-ci; \
+		pnpm test-ci; \
   else \
     echo 'Skip frontend test'; \
   fi

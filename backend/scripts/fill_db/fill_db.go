@@ -33,7 +33,7 @@ func main() {
 	}
 
 	// Initialize DB
-	database, err := db.NewDB(dbPath)
+	database, err := db.NewSqlite(dbPath)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}

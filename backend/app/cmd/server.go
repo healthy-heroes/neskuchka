@@ -3,9 +3,9 @@ package cmd
 import (
 	"context"
 	"embed"
+	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 
 	"github.com/rs/zerolog/log"
@@ -20,8 +20,20 @@ var webFS embed.FS
 
 // ServerCommand is the command for the run server
 type ServerCommand struct {
+	Store StoreOptions `group:"store" namespace:"store" env-namespace:"STORE"`
+
 	Address string `long:"address" env:"ADDRESS" default:"127.0.0.1" description:"address"`
 	Port    int    `long:"port" env:"PORT" default:"8080" description:"port"`
+
+	CommonOptions
+}
+
+// StoreOptions defines options for the storage
+type StoreOptions struct {
+	Type   db.Type `long:"type" env:"TYPE" description:"type of storage" default:"sqlite"`
+	Sqlite struct {
+		Source string `long:"source" env:"SOURCE" description:"file name or :memory:"`
+	} `group:"sqlite" namespace:"sqlite" env-namespace:"SQLITE"`
 }
 
 // serverApp holds all active objects
@@ -30,10 +42,13 @@ type serverApp struct {
 
 	apiServer *api.Api
 	store     *datastore.DataStore
+
+	CommonOptions
 }
 
+// Execute starts the server
 func (cmd *ServerCommand) Execute(args []string) error {
-	log.Info().Msgf("Starting server on port %d", cmd.Port)
+	log.Info().Msgf("Starting server on port %d, (revision: %s)", cmd.Port, cmd.Revision)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
@@ -60,13 +75,14 @@ func (cmd *ServerCommand) Execute(args []string) error {
 }
 
 func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
-	db, err := db.NewDB(filepath.Join(".", "bin", "app.db"))
+	store, err := cmd.makeDataStore()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create data store: %w", err)
 	}
-	store := datastore.NewDataStore(db)
 
 	apiServer := &api.Api{
+		Version: cmd.Revision,
+
 		Store: store,
 		WebFS: webFS,
 	}
@@ -80,7 +96,29 @@ func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
 	return app, nil
 }
 
-// Run all application objects
+// makeDataStore creates a new data store
+func (cmd *ServerCommand) makeDataStore() (*datastore.DataStore, error) {
+	log.Info().Msgf("Creating store: %s", cmd.Store.Type)
+
+	switch cmd.Store.Type {
+	case db.Sqlite:
+		if cmd.Store.Sqlite.Source == "" {
+			return nil, fmt.Errorf("sqlite source is not set")
+		}
+
+		db, err := db.NewSqlite(cmd.Store.Sqlite.Source)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create sqlite database: %w", err)
+		}
+
+		return datastore.NewDataStore(db), nil
+
+	default:
+		return nil, fmt.Errorf("unsupported database type: %s", cmd.Store.Type)
+	}
+}
+
+// run starts all application objects
 func (app *serverApp) run(ctx context.Context) error {
 	go func() {
 		// shutdown on context cancellation

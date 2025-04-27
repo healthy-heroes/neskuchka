@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"crypto/sha256"
 	"embed"
 	"fmt"
 	"io/fs"
@@ -12,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/httprate"
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api/public_api"
@@ -19,6 +21,8 @@ import (
 )
 
 type Api struct {
+	Version string
+
 	Store *datastore.DataStore
 	WebFS embed.FS
 
@@ -76,12 +80,17 @@ func (api *Api) routes() *chi.Mux {
 	})
 	router.Use(corsMiddleware.Handler)
 
-	router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+	router.With(
+		httprate.LimitByIP(600, time.Minute),
+	).Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("pong"))
 	})
 
 	router.Route("/api/v1", func(r chi.Router) {
+		r.Use(httprate.LimitByIP(60, time.Minute))
+		r.Use(middleware.Timeout(10 * time.Second))
+
 		api.public.InitRoutes(r)
 	})
 
@@ -99,6 +108,10 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 	staticFS, _ := fs.Sub(api.WebFS, "web")
 
 	router.Route("/", func(r chi.Router) {
+		r.Use(httprate.LimitByIP(60, time.Minute))
+		r.Use(middleware.Timeout(10 * time.Second))
+		r.Use(cacheControl(10*time.Minute, api.Version))
+
 		r.Handle("/favicon.*", http.FileServer(http.FS(staticFS)))
 		r.Handle("/assets/*", http.FileServer(http.FS(staticFS)))
 		r.Handle("/img/*", http.FileServer(http.FS(staticFS)))
@@ -116,6 +129,7 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 	})
 }
 
+// checkWebPath is a basic check for existence of a page
 func checkWebPath(path string) bool {
 	switch true {
 	case path == "/":
@@ -124,5 +138,34 @@ func checkWebPath(path string) bool {
 		return true
 	default:
 		return false
+	}
+}
+
+// cacheControl is a middleware setting cache expiration. Using url+version as etag
+func cacheControl(expiration time.Duration, version string) func(http.Handler) http.Handler {
+	makeEtag := func(r *http.Request, version string) string {
+		data := version + ":" + r.URL.String()
+
+		hash := sha256.Sum256([]byte(data))
+
+		return fmt.Sprintf("\"%x\"", hash)
+	}
+
+	return func(h http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, r *http.Request) {
+			etag := makeEtag(r, version)
+
+			w.Header().Set("Etag", etag)
+			w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, no-cache", int(expiration.Seconds())))
+
+			if match := r.Header.Get("If-None-Match"); match != "" {
+				if match == etag {
+					w.WriteHeader(http.StatusNotModified)
+					return
+				}
+			}
+			h.ServeHTTP(w, r)
+		}
+		return http.HandlerFunc(fn)
 	}
 }
