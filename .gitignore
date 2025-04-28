@@ -10,6 +10,3 @@
 /backend/app/cmd/web
 
 /frontend/app/coverage
-
-
-compse.private.yml
