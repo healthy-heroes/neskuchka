@@ -47,7 +47,7 @@ RUN echo go version: `go version`
 #cdrun tests
 RUN \
   	if [ -z "$SKIP_BACKEND_TEST" ] ; then \
-				CGO_ENABLED=1 go test -race -p 1 -timeout="1000s" -covermode=atomic -coverprofile=/profile.cov_tmp ./... && \
+				CGO_ENABLED=1 go test -race -p 1 -timeout="300s" -covermode=atomic -coverprofile=/profile.cov_tmp ./... && \
 				cat /profile.cov_tmp | grep -v "_mock.go" > /profile.cov && \
 				golangci-lint run --config .golangci.yml ./... ; \
   	else \
