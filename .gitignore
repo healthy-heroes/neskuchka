@@ -10,3 +10,5 @@
 /backend/app/cmd/web
 
 /frontend/app/coverage
+
+compose.private.yml
