@@ -5,6 +5,7 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
+// PublicApi is a set of main routes
 type PublicAPI struct {
 	store *datastore.DataStore
 }
@@ -15,9 +16,11 @@ func NewPublicAPI(store *datastore.DataStore) *PublicAPI {
 	}
 }
 
+// InitRoutes sets up routes and their controllers
 func (api *PublicAPI) InitRoutes(router chi.Router) {
 	// middlewares
 
+	// routes
 	router.Route("/exercises", func(router chi.Router) {
 		router.Get("/{slug}", api.getExerciseCtrl)
 	})

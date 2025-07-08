@@ -12,12 +12,14 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/cmd"
 )
 
+// Opts contains base options and commands
 type Opts struct {
 	ServerCmd cmd.ServerCommand `command:"server" description:"Start the server"`
 
 	Debug bool `long:"debug" env:"DEBUG" description:"Enable debug mode"`
 }
 
+// revision is set during build
 var revision = "unknown"
 
 func main() {
@@ -58,6 +60,7 @@ func main() {
 	fmt.Println("Application finished.")
 }
 
+// setupLog sets up the logger
 func setupLog(opts *Opts) {
 	consoleWriter := zerolog.ConsoleWriter{
 		Out:        os.Stdout,
