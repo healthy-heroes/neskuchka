@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"crypto/sha256"
 	"embed"
 	"fmt"
 	"io/fs"
@@ -11,15 +10,17 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chi_mw "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 	"github.com/rs/zerolog/log"
 
+	mw "github.com/healthy-heroes/neskuchka/backend/app/api/middlewares"
 	"github.com/healthy-heroes/neskuchka/backend/app/api/public_api"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
+// Api is a API server
 type Api struct {
 	Version string
 
@@ -32,6 +33,7 @@ type Api struct {
 	public *public_api.PublicAPI
 }
 
+// Run the listener and request's router, starts the API server
 func (api *Api) Run(address string, port int) {
 	api.lock.Lock()
 	api.httpServer = &http.Server{
@@ -44,6 +46,7 @@ func (api *Api) Run(address string, port int) {
 	log.Warn().Err(err).Msg("Api server terminated")
 }
 
+// Shutdown shuts down the API server
 func (api *Api) Shutdown() {
 	log.Info().Msg("Shutting down api server...")
 
@@ -61,16 +64,17 @@ func (api *Api) Shutdown() {
 	api.lock.Unlock()
 }
 
+// routes is setting up routes for the API
 func (api *Api) routes() *chi.Mux {
 	router := chi.NewRouter()
 
 	api.public = public_api.NewPublicAPI(api.Store)
 
-	// middlewares
-	router.Use(middleware.Logger)
+	// common middlewares
+	router.Use(chi_mw.Logger)
 
 	// CORS middleware
-	corsMiddleware := cors.New(cors.Options{
+	corsMw := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-XSRF-Token", "X-JWT"},
@@ -78,8 +82,9 @@ func (api *Api) routes() *chi.Mux {
 		AllowCredentials: true,
 		MaxAge:           300,
 	})
-	router.Use(corsMiddleware.Handler)
+	router.Use(corsMw.Handler)
 
+	// ping route
 	router.With(
 		httprate.LimitByIP(600, time.Minute),
 	).Get("/ping", func(w http.ResponseWriter, r *http.Request) {
@@ -87,9 +92,10 @@ func (api *Api) routes() *chi.Mux {
 		w.Write([]byte("pong"))
 	})
 
+	// api routes
 	router.Route("/api/v1", func(r chi.Router) {
 		r.Use(httprate.LimitByIP(60, time.Minute))
-		r.Use(middleware.Timeout(10 * time.Second))
+		r.Use(chi_mw.Timeout(10 * time.Second))
 
 		api.public.InitRoutes(r)
 	})
@@ -99,6 +105,7 @@ func (api *Api) routes() *chi.Mux {
 	return router
 }
 
+// addStaticRoutes is adding static routes
 func (api *Api) addStaticRoutes(router *chi.Mux) {
 	indexHTML, err := api.WebFS.ReadFile("web/index.html")
 	if err != nil {
@@ -109,8 +116,8 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 
 	router.Route("/", func(r chi.Router) {
 		r.Use(httprate.LimitByIP(60, time.Minute))
-		r.Use(middleware.Timeout(10 * time.Second))
-		r.Use(cacheControl(10*time.Minute, api.Version))
+		r.Use(chi_mw.Timeout(10 * time.Second))
+		r.Use(mw.CacheControl(10*time.Minute, api.Version))
 
 		r.Handle("/favicon.*", http.FileServer(http.FS(staticFS)))
 		r.Handle("/assets/*", http.FileServer(http.FS(staticFS)))
@@ -138,34 +145,5 @@ func checkWebPath(path string) bool {
 		return true
 	default:
 		return false
-	}
-}
-
-// cacheControl is a middleware setting cache expiration. Using url+version as etag
-func cacheControl(expiration time.Duration, version string) func(http.Handler) http.Handler {
-	makeEtag := func(r *http.Request, version string) string {
-		data := version + ":" + r.URL.String()
-
-		hash := sha256.Sum256([]byte(data))
-
-		return fmt.Sprintf("\"%x\"", hash)
-	}
-
-	return func(h http.Handler) http.Handler {
-		fn := func(w http.ResponseWriter, r *http.Request) {
-			etag := makeEtag(r, version)
-
-			w.Header().Set("Etag", etag)
-			w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, no-cache", int(expiration.Seconds())))
-
-			if match := r.Header.Get("If-None-Match"); match != "" {
-				if match == etag {
-					w.WriteHeader(http.StatusNotModified)
-					return
-				}
-			}
-			h.ServeHTTP(w, r)
-		}
-		return http.HandlerFunc(fn)
 	}
 }
