@@ -3,15 +3,13 @@
 #
 # build: docker compose -f docker-dev-compose.yml build
 # start: docker compose -f docker-dev-compose.yml up
-version: "2"
-
 services:
   backend:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        - SKIP_FRONTEND_TEST
+        SKIP_FRONTEND_TEST: "true"
     
     logging:
       driver: json-file
@@ -21,7 +19,6 @@ services:
 
     ports:
       - "8080:8080" # primary rest server
-
 
     environment:
       - TIME_ZONE=Europe/Moscow
