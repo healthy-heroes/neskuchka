@@ -9,6 +9,8 @@ type Exercise struct {
 }
 
 type ExerciseStore interface {
+	Store
+
 	Create(exercise *Exercise) (*Exercise, error)
 	Get(slug ExerciseSlug) (*Exercise, error)
 	Find(criteria *ExerciseFindCriteria) ([]*Exercise, error)

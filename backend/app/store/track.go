@@ -15,6 +15,8 @@ func CreateTrackId() TrackID {
 }
 
 type TrackStore interface {
+	Store
+
 	Create(track *Track) (*Track, error)
 	Get(id TrackID) (*Track, error)
 	GetMainTrack() (*Track, error)

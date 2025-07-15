@@ -1,16 +1,17 @@
 package datastore
 
 import (
+	"github.com/healthy-heroes/neskuchka/backend/app/store"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/db"
 )
 
 type DataStore struct {
 	*db.DB
 
-	Exercise *ExerciseDBStore
-	User     *UserDBStore
-	Track    *TrackDBStore
-	Workout  *WorkoutDBStore
+	Exercise store.ExerciseStore
+	User     store.UserStore
+	Track    store.TrackStore
+	Workout  store.WorkoutStore
 }
 
 func NewDataStore(db *db.DB) *DataStore {

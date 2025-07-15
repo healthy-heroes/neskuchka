@@ -21,10 +21,10 @@ func TestUserDBStore_Create(t *testing.T) {
 
 	userID := store.CreateUserId()
 	user := &store.User{
-		ID:    userID,
-		Name:  "Test User",
-		Login: "testuser",
-		Email: "test@example.com",
+		ID:      userID,
+		Name:    "Test User",
+		Email:   "test@example.com",
+		Picture: "test.png",
 	}
 
 	// Test creating a new user
@@ -44,16 +44,49 @@ func TestUserDBStore_Get(t *testing.T) {
 	// Create test data
 	userID := store.CreateUserId()
 	user := &store.User{
-		ID:    userID,
-		Name:  "Test User",
-		Login: "testuser",
-		Email: "test@example.com",
+		ID:      userID,
+		Name:    "Test User",
+		Picture: "test.png",
+		Email:   "test@example.com",
 	}
 	_, err := ds.User.Create(user)
 	require.NoError(t, err)
 
 	// Test getting an existing user
 	found, err := ds.User.Get(user.ID)
+	require.NoError(t, err)
+	assert.Equal(t, user, found)
+
+	// Test getting a non-existent user
+	nonExistentID := store.CreateUserId()
+	_, err = ds.User.Get(nonExistentID)
+	assert.Error(t, err, "Should error when user not found")
+}
+
+func TestUserDBStore_GetByEmail(t *testing.T) {
+	ds := setupUserTestDB(t)
+	defer ds.Close()
+
+	// Create test data
+	userID := store.CreateUserId()
+	user := &store.User{
+		ID:      userID,
+		Name:    "Test User",
+		Picture: "test.png",
+		Email:   "test@example.com",
+	}
+	_, err := ds.User.Create(user)
+	require.NoError(t, err)
+
+	_, err = ds.User.Create(&store.User{
+		ID:    store.CreateUserId(),
+		Name:  "Test User 2",
+		Email: "test2@example.com",
+	})
+	require.NoError(t, err)
+
+	// Test getting an existing user
+	found, err := ds.User.FindByEmail("test@example.com")
 	require.NoError(t, err)
 	assert.Equal(t, user, found)
 

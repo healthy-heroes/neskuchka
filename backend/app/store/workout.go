@@ -50,9 +50,11 @@ func CreateWorkoutId() WorkoutID {
 }
 
 type WorkoutStore interface {
+	Store
+
 	Create(workout *Workout) (*Workout, error)
 	Get(id WorkoutID) (*Workout, error)
-	GetList(criteria *WorkoutFindCriteria) ([]*Workout, error)
+	Find(criteria *WorkoutFindCriteria) ([]*Workout, error)
 }
 
 type WorkoutFindCriteria struct {
