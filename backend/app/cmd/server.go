@@ -7,10 +7,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/go-pkgz/auth/v2"
+	"github.com/go-pkgz/auth/v2/avatar"
+	"github.com/go-pkgz/auth/v2/token"
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api"
+	"github.com/healthy-heroes/neskuchka/backend/app/store"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/db"
 )
@@ -24,6 +29,8 @@ type ServerCommand struct {
 
 	Address string `long:"address" env:"ADDRESS" default:"127.0.0.1" description:"address"`
 	Port    int    `long:"port" env:"PORT" default:"8080" description:"port"`
+
+	Secret string `long:"secret" env:"SECRET" description:"secret key for JWT"`
 
 	CommonOptions
 }
@@ -75,22 +82,25 @@ func (cmd *ServerCommand) Execute(args []string) error {
 }
 
 func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
-	store, err := cmd.makeDataStore()
+	dataStore, err := cmd.makeDataStore()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create data store: %w", err)
 	}
 
+	authService := cmd.getAuthService(dataStore)
+
 	apiServer := &api.Api{
 		Version: cmd.Revision,
 
-		Store: store,
-		WebFS: webFS,
+		Store:       dataStore,
+		AuthService: authService,
+		WebFS:       webFS,
 	}
 
 	app := &serverApp{
 		ServerCommand: cmd,
 		apiServer:     apiServer,
-		store:         store,
+		store:         dataStore,
 	}
 
 	return app, nil
@@ -116,6 +126,92 @@ func (cmd *ServerCommand) makeDataStore() (*datastore.DataStore, error) {
 	default:
 		return nil, fmt.Errorf("unsupported database type: %s", cmd.Store.Type)
 	}
+}
+
+// getAuthService creates a new authentication service
+func (cmd *ServerCommand) getAuthService(ds *datastore.DataStore) *auth.Service {
+	options := auth.Opts{
+		//todo: getting secret from server command opts
+		SecretReader: token.SecretFunc(func(id string) (string, error) {
+			// secret key for JWT
+			return "secret", nil
+		}),
+		ClaimsUpd: token.ClaimsUpdFunc(func(claims token.Claims) token.Claims {
+			if claims.User == nil {
+				return claims
+			}
+
+			//todo: we don't have email this time
+
+			user, err := ds.User.FindByEmail(claims.User.Email)
+			if err != nil && err != store.ErrNotFound {
+				log.Error().Err(err).Msgf("Error while finding user by email %s", claims.User.Email)
+
+				claims.User = nil
+				return claims
+			}
+
+			// if user not found, create new user
+			if user == nil {
+				log.Info().Msgf("Creating new user %s", claims.User.Email)
+
+				user, err = ds.User.Create(&store.User{
+					ID:      store.CreateUserId(),
+					Name:    claims.User.Name,
+					Email:   claims.User.Email,
+					Picture: claims.User.Picture,
+				})
+				if err != nil {
+					log.Error().Err(err).Msgf("Error creating user %s", claims.User.Email)
+
+					claims.User = nil
+					return claims
+				}
+			}
+
+			if user == nil {
+				log.Error().Msgf("Empty user after create %s", claims)
+				claims.User = nil
+				return claims
+			}
+
+			// update claims with actual user data
+			claims.User.ID = string(user.ID)
+			claims.User.Name = user.Name
+
+			return claims
+		}),
+		TokenDuration:  time.Minute * 5, // token expires in 5 minutes
+		CookieDuration: time.Hour * 24,  // cookie expires in 1 day and will enforce re-login
+		Issuer:         "neskuchka",
+		AvatarStore:    avatar.NewLocalFS("/tmp"),
+		Validator: token.ValidatorFunc(func(_ string, claims token.Claims) bool {
+			if claims.User == nil {
+				log.Error().Msgf("User nil in validator %s", claims)
+
+				return false
+			}
+
+			return true
+		}),
+	}
+
+	service := auth.NewService(options)
+
+	// todo: make normal email sender
+	emailSender := AuthEmailSender{}
+	msgTemplate := "Confirmation email, token:  http://localhost:8081/auth/email/login?token={{.Token}}"
+	service.AddVerifProvider("email", msgTemplate, emailSender)
+
+	return service
+}
+
+// fake email sender
+type AuthEmailSender struct{}
+
+func (s AuthEmailSender) Send(email string, text string) error {
+	log.Info().Msgf("Sending email to %s:\n\n%s\n", email, text)
+	return nil
 }
 
 // run starts all application objects

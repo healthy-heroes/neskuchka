@@ -13,6 +13,8 @@ import (
 	chi_mw "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
+	"github.com/go-pkgz/auth/v2"
+	"github.com/go-pkgz/auth/v2/token"
 	"github.com/rs/zerolog/log"
 
 	mw "github.com/healthy-heroes/neskuchka/backend/app/api/middlewares"
@@ -24,8 +26,9 @@ import (
 type Api struct {
 	Version string
 
-	Store *datastore.DataStore
-	WebFS embed.FS
+	Store       *datastore.DataStore
+	AuthService *auth.Service
+	WebFS       embed.FS
 
 	httpServer *http.Server
 	lock       sync.Mutex
@@ -90,6 +93,25 @@ func (api *Api) routes() *chi.Mux {
 	).Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("pong"))
+	})
+
+	// setup auth routes
+	authRoutes, avaRoutes := api.AuthService.Handlers()
+	router.Mount("/auth", authRoutes)
+	router.Mount("/avatar", avaRoutes)
+
+	auth_mw := api.AuthService.Middleware()
+
+	router.With(auth_mw.Auth).Get("/secret", func(w http.ResponseWriter, r *http.Request) {
+		user, err := token.GetUserInfo(r)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to get user info")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(fmt.Sprintf("secret: %+v", user)))
 	})
 
 	// api routes

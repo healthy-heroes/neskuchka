@@ -24,7 +24,7 @@ func (ds *UserDBStore) Get(id store.UserID) (*store.User, error) {
 	err := ds.DB.Get(user, `SELECT * FROM user WHERE id = ?`, id)
 
 	if err != nil {
-		return nil, err
+		return nil, handleFindError(err)
 	}
 	return user, nil
 }
@@ -34,7 +34,7 @@ func (ds *UserDBStore) FindByEmail(email string) (*store.User, error) {
 	err := ds.DB.Get(user, `SELECT * FROM user WHERE email = ?`, email)
 
 	if err != nil {
-		return nil, err
+		return nil, handleFindError(err)
 	}
 	return user, nil
 }

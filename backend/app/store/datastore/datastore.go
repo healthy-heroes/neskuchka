@@ -1,6 +1,9 @@
 package datastore
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/healthy-heroes/neskuchka/backend/app/store"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/db"
 )
@@ -36,4 +39,13 @@ func NewDataStore(db *db.DB) *DataStore {
 	}
 
 	return dataStore
+}
+
+// handleFindError handles the error from the find operation and matches it to store errors
+func handleFindError(err error) error {
+	if errors.Is(err, sql.ErrNoRows) {
+		return store.ErrNotFound
+	}
+
+	return err
 }
