@@ -15,6 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/authproviders"
 	"github.com/healthy-heroes/neskuchka/backend/app/store"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/db"
@@ -197,11 +198,14 @@ func (cmd *ServerCommand) getAuthService(ds *datastore.DataStore) *auth.Service 
 	}
 
 	service := auth.NewService(options)
+	providers := authproviders.NewService(options)
 
 	// todo: make normal email sender
 	emailSender := AuthEmailSender{}
 	msgTemplate := "Confirmation email, token:  http://localhost:8081/auth/email/login?token={{.Token}}"
-	service.AddVerifProvider("email", msgTemplate, emailSender)
+
+	verify := providers.NewVerifyProvider("email", msgTemplate, emailSender)
+	service.AddCustomHandler(verify)
 
 	return service
 }
