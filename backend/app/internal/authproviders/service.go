@@ -85,7 +85,7 @@ func NewService(opts auth.Opts) *Service {
 	return s
 }
 
-func (s *Service) NewVerifyProvider(name string, msgTemplate string, sender provider.Sender) *VerifyHandler {
+func (s *Service) NewVerifyProvider(name string, msgTemplate string, sender provider.Sender, userIDFunc UserIDFunc) *VerifyHandler {
 	return &VerifyHandler{
 		L:            s.logger,
 		ProviderName: name,
@@ -95,5 +95,6 @@ func (s *Service) NewVerifyProvider(name string, msgTemplate string, sender prov
 		Sender:       sender,
 		Template:     msgTemplate,
 		UseGravatar:  s.useGravatar,
+		UserIDFunc:   userIDFunc,
 	}
 }

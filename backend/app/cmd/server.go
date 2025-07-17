@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -142,42 +143,15 @@ func (cmd *ServerCommand) getAuthService(ds *datastore.DataStore) *auth.Service 
 				return claims
 			}
 
-			//todo: we don't have email this time
+			user, err := ds.User.Get(store.UserID(claims.User.ID))
+			if err != nil {
+				log.Error().Err(err).Msgf("Error while finding user %s", claims.User.ID)
 
-			user, err := ds.User.FindByEmail(claims.User.Email)
-			if err != nil && err != store.ErrNotFound {
-				log.Error().Err(err).Msgf("Error while finding user by email %s", claims.User.Email)
-
-				claims.User = nil
-				return claims
-			}
-
-			// if user not found, create new user
-			if user == nil {
-				log.Info().Msgf("Creating new user %s", claims.User.Email)
-
-				user, err = ds.User.Create(&store.User{
-					ID:      store.CreateUserId(),
-					Name:    claims.User.Name,
-					Email:   claims.User.Email,
-					Picture: claims.User.Picture,
-				})
-				if err != nil {
-					log.Error().Err(err).Msgf("Error creating user %s", claims.User.Email)
-
-					claims.User = nil
-					return claims
-				}
-			}
-
-			if user == nil {
-				log.Error().Msgf("Empty user after create %s", claims)
 				claims.User = nil
 				return claims
 			}
 
 			// update claims with actual user data
-			claims.User.ID = string(user.ID)
 			claims.User.Name = user.Name
 
 			return claims
@@ -204,7 +178,33 @@ func (cmd *ServerCommand) getAuthService(ds *datastore.DataStore) *auth.Service 
 	emailSender := AuthEmailSender{}
 	msgTemplate := "Confirmation email, token:  http://localhost:8081/auth/email/login?token={{.Token}}"
 
-	verify := providers.NewVerifyProvider("email", msgTemplate, emailSender)
+	verify := providers.NewVerifyProvider("email", msgTemplate, emailSender,
+		func(name string, email string, r *http.Request) (string, error) {
+			user, err := ds.User.FindByEmail(email)
+			if err != nil && err != store.ErrNotFound {
+				log.Error().Err(err).Msgf("Error while finding user by email %s", email)
+
+				return "", err
+			}
+
+			if user == nil {
+				log.Info().Msgf("Creating new user %s", email)
+
+				user, err = ds.User.Create(&store.User{
+					ID:    store.CreateUserId(),
+					Name:  name,
+					Email: email,
+				})
+
+				if err != nil {
+					log.Error().Err(err).Msgf("Error creating user %s", email)
+
+					return "", err
+				}
+			}
+
+			return string(user.ID), nil
+		})
 	service.AddCustomHandler(verify)
 
 	return service

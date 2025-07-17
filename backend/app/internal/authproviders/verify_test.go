@@ -178,6 +178,32 @@ func TestVerifyHandler_LoginAcceptConfirmWithGrAvatarDisabled(t *testing.T) {
 	assert.Equal(t, `{"name":"grava","id":"test_47dbf92d92954b1297cae73a864c159b4d847b9f","picture":""}`+"\n", rr.Body.String())
 }
 
+func TestVerifyHandler_LoginHandlerCustomUserID(t *testing.T) {
+	d := VerifyHandler{
+		ProviderName: "test",
+		UseGravatar:  false,
+		TokenService: token.NewService(token.Opts{
+			SecretReader:   token.SecretFunc(func(string) (string, error) { return "secret", nil }),
+			TokenDuration:  time.Hour,
+			CookieDuration: time.Hour * 24 * 31,
+		}),
+		Issuer: "iss-test",
+		L:      logger.Std,
+		UserIDFunc: func(user string, email string, r *http.Request) (string, error) {
+			return user + "_custom_id", nil
+		},
+	}
+
+	assert.Equal(t, "test", d.Name())
+	handler := http.HandlerFunc(d.LoginHandler)
+	rr := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", fmt.Sprintf("/login?token=%s&sess=1", testConfirmedToken), http.NoBody)
+	require.NoError(t, err)
+	handler.ServeHTTP(rr, req)
+	assert.Equal(t, 200, rr.Code)
+	assert.Equal(t, `{"name":"test123","id":"test123_custom_id","picture":""}`+"\n", rr.Body.String())
+}
+
 func TestVerifyHandler_LoginHandlerFailed(t *testing.T) {
 	emailer := mockSender{}
 	d := VerifyHandler{
@@ -263,6 +289,32 @@ func TestVerifyHandler_LoginHandlerAvatarFailed(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 	assert.Equal(t, 500, rr.Code)
 	assert.Equal(t, `{"error":"failed to save avatar to proxy"}`+"\n", rr.Body.String())
+}
+
+func TestVerifyHandler_LoginHandlerCustomUserIDFailed(t *testing.T) {
+	emailer := mockSender{}
+	d := VerifyHandler{
+		ProviderName: "test",
+		Sender:       &emailer,
+		TokenService: token.NewService(token.Opts{
+			SecretReader:   token.SecretFunc(func(string) (string, error) { return "secret", nil }),
+			TokenDuration:  time.Hour,
+			CookieDuration: time.Hour * 24 * 31,
+		}),
+		Issuer: "iss-test",
+		L:      logger.Std,
+		UserIDFunc: func(user string, email string, r *http.Request) (string, error) {
+			return "", fmt.Errorf("user id func error")
+		},
+	}
+
+	handler := http.HandlerFunc(d.LoginHandler)
+	rr := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/login?token="+testConfirmedToken, http.NoBody)
+	require.NoError(t, err)
+	handler.ServeHTTP(rr, req)
+	assert.Equal(t, 500, rr.Code)
+	assert.Equal(t, `{"error":"failed to get user id"}`+"\n", rr.Body.String())
 }
 
 func TestVerifyHandler_AuthHandler(t *testing.T) {

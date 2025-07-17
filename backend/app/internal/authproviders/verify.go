@@ -28,7 +28,11 @@ type VerifyHandler struct {
 	Sender       provider.Sender
 	Template     string
 	UseGravatar  bool
+	UserIDFunc   UserIDFunc
 }
+
+// UserIDFunc allows to provide custom func making userID instead of the default based on email's hash
+type UserIDFunc func(user string, email string, r *http.Request) (string, error)
 
 // Name of the handler
 func (e VerifyHandler) Name() string { return e.ProviderName }
@@ -65,9 +69,18 @@ func (e VerifyHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	user, address := elems[0], elems[1]
 	sessOnly := r.URL.Query().Get("sess") == "1"
 
+	userID := e.ProviderName + "_" + token.HashID(sha1.New(), address)
+	if e.UserIDFunc != nil {
+		userID, err = e.UserIDFunc(user, address, r)
+		if err != nil {
+			rest.SendErrorJSON(w, r, e.L, http.StatusInternalServerError, err, "failed to get user id")
+			return
+		}
+	}
+
 	u := token.User{
 		Name: user,
-		ID:   e.ProviderName + "_" + token.HashID(sha1.New(), address),
+		ID:   userID,
 	}
 	// try to get gravatar for email
 	if e.UseGravatar && strings.Contains(address, "@") { // TODO: better email check to avoid silly hits to gravatar api
