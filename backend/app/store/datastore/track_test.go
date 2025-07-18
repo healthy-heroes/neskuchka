@@ -24,10 +24,10 @@ func setupTrackTestDB(t *testing.T) *DataStore {
 func createTestUser(t *testing.T, ds *DataStore) *store.User {
 	userID := store.CreateUserId()
 	user := &store.User{
-		ID:    userID,
-		Name:  "Test User",
-		Login: "testuser",
-		Email: "test@example.com",
+		ID:      userID,
+		Name:    "Test User",
+		Email:   "test@example.com",
+		Picture: "test.png",
 	}
 	_, err := ds.User.Create(user)
 	require.NoError(t, err)

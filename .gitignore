@@ -1,6 +1,7 @@
 # General ignores
 .DS_Store
 .idea/
+.kiro/
 .vscode/
 .cursor/
 

@@ -78,7 +78,6 @@ func main() {
 	firstUser := &store.User{
 		ID:    userID,
 		Name:  "First User",
-		Login: userLogin,
 		Email: "first_user@example.com",
 	}
 	fmt.Printf("Creating user: %+v\n", firstUser)

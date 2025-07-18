@@ -13,6 +13,7 @@ import (
 	chi_mw "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
+	"github.com/go-pkgz/auth/v2"
 	"github.com/rs/zerolog/log"
 
 	mw "github.com/healthy-heroes/neskuchka/backend/app/api/middlewares"
@@ -24,8 +25,9 @@ import (
 type Api struct {
 	Version string
 
-	Store *datastore.DataStore
-	WebFS embed.FS
+	Store       *datastore.DataStore
+	AuthService *auth.Service
+	WebFS       embed.FS
 
 	httpServer *http.Server
 	lock       sync.Mutex
@@ -91,6 +93,11 @@ func (api *Api) routes() *chi.Mux {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("pong"))
 	})
+
+	// setup auth routes
+	authRoutes, avaRoutes := api.AuthService.Handlers()
+	router.Mount("/auth", authRoutes)
+	router.Mount("/avatar", avaRoutes)
 
 	// api routes
 	router.Route("/api/v1", func(r chi.Router) {
