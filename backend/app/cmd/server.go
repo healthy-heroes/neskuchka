@@ -145,7 +145,7 @@ func (cmd *ServerCommand) getAuthService(ds *datastore.DataStore) *auth.Service 
 
 			user, err := ds.User.Get(store.UserID(claims.User.ID))
 			if err != nil {
-				log.Error().Err(err).Msgf("Error while finding user %s", claims.User.ID)
+				log.Error().Err(err).Msgf("Error finding user %s", claims.User.ID)
 
 				claims.User = nil
 				return claims
@@ -180,27 +180,11 @@ func (cmd *ServerCommand) getAuthService(ds *datastore.DataStore) *auth.Service 
 
 	verify := providers.NewVerifyProvider("email", msgTemplate, emailSender,
 		func(name string, email string, r *http.Request) (string, error) {
-			user, err := ds.User.FindByEmail(email)
+			user, err := ds.User.FindOrCreate(email, name)
 			if err != nil && err != store.ErrNotFound {
-				log.Error().Err(err).Msgf("Error while finding user by email %s", email)
+				log.Error().Err(err).Msgf("Error getting user %s", email)
 
 				return "", err
-			}
-
-			if user == nil {
-				log.Info().Msgf("Creating new user %s", email)
-
-				user, err = ds.User.Create(&store.User{
-					ID:    store.CreateUserId(),
-					Name:  name,
-					Email: email,
-				})
-
-				if err != nil {
-					log.Error().Err(err).Msgf("Error creating user %s", email)
-
-					return "", err
-				}
 			}
 
 			return string(user.ID), nil
