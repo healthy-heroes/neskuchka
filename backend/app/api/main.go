@@ -14,7 +14,6 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 	"github.com/go-pkgz/auth/v2"
-	"github.com/go-pkgz/auth/v2/token"
 	"github.com/rs/zerolog/log"
 
 	mw "github.com/healthy-heroes/neskuchka/backend/app/api/middlewares"
@@ -99,20 +98,6 @@ func (api *Api) routes() *chi.Mux {
 	authRoutes, avaRoutes := api.AuthService.Handlers()
 	router.Mount("/auth", authRoutes)
 	router.Mount("/avatar", avaRoutes)
-
-	auth_mw := api.AuthService.Middleware()
-
-	router.With(auth_mw.Auth).Get("/secret", func(w http.ResponseWriter, r *http.Request) {
-		user, err := token.GetUserInfo(r)
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to get user info")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf("secret: %+v", user)))
-	})
 
 	// api routes
 	router.Route("/api/v1", func(r chi.Router) {
