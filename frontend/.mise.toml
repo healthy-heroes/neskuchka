@@ -8,12 +8,8 @@ run = "pnpm i"
 
 [tasks.app]
 description = "Run the application"
-run = "pnpm app"
+run = "pnpm dev"
 
 [tasks.lint]
 description = "Lint the code"
-run = "pnpm checks"
-
-[tasks.lint-fix]
-description = "Fixing linting errors"
-run = "pnpm format+fix"
+run = "pnpm lint && pnpm run test"
