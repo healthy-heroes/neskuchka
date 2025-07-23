@@ -1,11 +1,10 @@
-FROM node:23-alpine AS frontend-deps
+FROM node:24-alpine AS frontend-deps
 
 ARG SKIP_FRONTEND_TEST
 
 WORKDIR /srv/frontend/
 
-COPY ./frontend/package.json ./frontend/pnpm-lock.yaml ./frontend/pnpm-workspace.yaml /srv/frontend/
-COPY ./frontend/app/package.json /srv/frontend/app/
+COPY ./frontend/package.json ./frontend/pnpm-lock.yaml  /srv/frontend/
 
 RUN apk add --no-cache --update git && \
     npm i -g pnpm@10.9.0;
@@ -15,14 +14,14 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 FROM frontend-deps AS build-frontend
 
-WORKDIR /srv/frontend/app/
+WORKDIR /srv/frontend/
 
-COPY ./frontend/app/ /srv/frontend/app/
+COPY ./frontend/ /srv/frontend/
 
 RUN \
   if [ -z "$SKIP_FRONTEND_TEST" ]; then \
-    pnpm checks-all-ci; \
-		pnpm test-ci; \
+    pnpm lint; \
+		pnpm test; \
   else \
     echo 'Skip frontend test'; \
   fi
@@ -38,7 +37,7 @@ RUN apk --no-cache add gcc libc-dev
 
 ADD ./backend /build/backend
 
-COPY --from=build-frontend /srv/frontend/app/dist/ /build/backend/app/cmd/web/
+COPY --from=build-frontend /srv/frontend/dist/ /build/backend/app/cmd/web/
 
 WORKDIR /build/backend
 

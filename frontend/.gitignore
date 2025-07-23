@@ -11,3 +11,6 @@ dist-ssr
 
 storybook-static
 *storybook.log
+
+.eslintcache
+.stylelintcache

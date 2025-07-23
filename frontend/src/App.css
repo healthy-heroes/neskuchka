@@ -1,0 +1,7 @@
+:root {
+    --min-width: 400px;
+}
+
+#root {
+    min-width: var(--min-width);
+}
