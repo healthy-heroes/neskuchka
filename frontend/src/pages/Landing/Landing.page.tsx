@@ -1,4 +1,5 @@
 import { Header } from '@/components/Header/Header';
+import { Features } from './Features/Features';
 import { Intro } from './Intro/Intro';
 
 export function LandingPage() {
@@ -6,6 +7,7 @@ export function LandingPage() {
 		<>
 			<Header />
 			<Intro />
+			<Features />
 		</>
 	);
 }
