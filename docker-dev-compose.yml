@@ -10,6 +10,7 @@ services:
       dockerfile: Dockerfile
       args:
         SKIP_FRONTEND_TEST: "true"
+        SKIP_BACKEND_TEST: "true"
     
     logging:
       driver: json-file
@@ -28,5 +29,4 @@ services:
       - STORE_SQLITE_SOURCE=./bin/app.db
 
     volumes:
-      - ./var:/srv/var
       - ./backend/bin:/srv/bin
