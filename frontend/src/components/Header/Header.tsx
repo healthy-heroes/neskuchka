@@ -4,7 +4,7 @@ import classes from './Header.module.css';
 
 export function Header() {
 	return (
-		<Box pb={120}>
+		<Box>
 			<header className={classes.header}>
 				<Group justify="space-between" h="100%">
 					<Logo />
