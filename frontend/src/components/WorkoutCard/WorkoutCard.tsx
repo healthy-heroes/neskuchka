@@ -1,4 +1,5 @@
-import { Card, Container, Divider, Grid, Image, List, Text, Title } from '@mantine/core';
+import { IconArrowRight } from '@tabler/icons-react';
+import { Button, Card, Container, Divider, Grid, Image, List, Text, Title } from '@mantine/core';
 import classes from './WorkoutCard.module.css';
 
 export function WorkoutCard() {
@@ -10,11 +11,13 @@ export function WorkoutCard() {
 						<Image src="https://placehold.co/400x600?text=video" alt="Workout" />
 					</Grid.Col>
 					<Grid.Col span={{ base: 12, xs: 7 }} p="md">
-						<Title order={2} mb="md">
+						<Title order={2} size="h1" mb="md" className={classes.title}>
 							23 июля
 						</Title>
 
-						<Title order={3}>Разминка</Title>
+						<Title order={4} className={classes.sectionTitle}>
+							Разминка
+						</Title>
 						<Text>
 							<b>3 раунда</b>
 							<List withPadding>
@@ -26,7 +29,9 @@ export function WorkoutCard() {
 
 						<Divider my="md" />
 
-						<Title order={3}>Комплекс</Title>
+						<Title order={4} className={classes.sectionTitle}>
+							Комплекс
+						</Title>
 						<Text>
 							<b>По минутки 10 мин</b>
 							<List withPadding>
@@ -34,6 +39,17 @@ export function WorkoutCard() {
 								<List.Item>15+15 прыжки на одной / оставшееся время подъем на носки</List.Item>
 							</List>
 						</Text>
+
+						<Divider my="md" />
+
+						<Button
+							variant="light"
+							rightSection={<IconArrowRight size={14} />}
+							component="a"
+							href="#"
+						>
+							Подробности
+						</Button>
 					</Grid.Col>
 				</Grid>
 			</Card>
