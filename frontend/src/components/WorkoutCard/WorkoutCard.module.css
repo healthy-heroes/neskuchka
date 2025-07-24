@@ -1,0 +1,13 @@
+.card {
+    background-color: var(--mantine-color-body);
+}
+
+.sectionTitle {
+    color: var(--mantine-color-gray-6);
+    text-transform: uppercase;
+}
+
+.linkIcon {
+    position: relative;
+    top: 3px;
+}
