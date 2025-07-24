@@ -36,3 +36,4 @@ jobs:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
           workingDir: frontend
+          buildCommand: pnpm storybook:build
