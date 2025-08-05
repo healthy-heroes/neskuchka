@@ -1,3 +1,4 @@
+import { StoryPreview } from '../StoryBook/StoryPreview';
 import { Workouts } from './Workouts';
 
 export default {
@@ -5,4 +6,10 @@ export default {
 	component: Workouts,
 };
 
-export const Default = () => <Workouts />;
+export function Default() {
+	return (
+		<StoryPreview>
+			<Workouts />
+		</StoryPreview>
+	);
+}
