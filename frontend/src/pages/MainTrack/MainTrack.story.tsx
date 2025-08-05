@@ -1,14 +1,14 @@
 import { StoryPreview } from '@/components/StoryBook/StoryPreview';
-import { Intro } from './Intro';
+import { MainTrackPage } from './MainTrack.page';
 
 export default {
-	title: 'Landing/Intro',
+	title: 'Pages/MainTrack',
 };
 
 export function Default() {
 	return (
-		<StoryPreview>
-			<Intro />
+		<StoryPreview isPage>
+			<MainTrackPage />
 		</StoryPreview>
 	);
 }

@@ -4,11 +4,23 @@ export interface StoryPreviewProps {
 	children: React.ReactNode;
 
 	paperOptions?: PaperProps;
+	isPage?: boolean;
 }
 
-export function StoryPreview({ children, paperOptions }: StoryPreviewProps) {
+export function StoryPreview({ children, paperOptions, isPage }: StoryPreviewProps) {
+	const defaultOptions: PaperProps = {
+		shadow: 'xs',
+		m: 'sm',
+	};
+
+	if (isPage) {
+		defaultOptions.bd = '1px solid var(--mantine-color-gray-2)';
+	} else {
+		defaultOptions.p = 'sm';
+	}
+
 	return (
-		<Paper shadow="xs" p="sm" m="sm" {...paperOptions}>
+		<Paper {...defaultOptions} {...paperOptions}>
 			{children}
 		</Paper>
 	);
