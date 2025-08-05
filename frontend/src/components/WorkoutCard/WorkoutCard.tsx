@@ -1,12 +1,15 @@
 import { IconArrowRight } from '@tabler/icons-react';
 import { Button, Card, CardProps, Divider, Grid, Image, List, Text, Title } from '@mantine/core';
+import { Workout } from '@/types/domain';
 import classes from './WorkoutCard.module.css';
 
-interface WorkoutCardProps {
+export interface WorkoutCardProps {
 	cardProps?: CardProps;
+
+	workout: Workout;
 }
 
-export function WorkoutCard({ cardProps }: WorkoutCardProps) {
+export function WorkoutCard({ cardProps, workout }: WorkoutCardProps) {
 	return (
 		<Card shadow="sm" p="lg" radius="md" withBorder {...cardProps}>
 			<Grid>
@@ -15,35 +18,28 @@ export function WorkoutCard({ cardProps }: WorkoutCardProps) {
 				</Grid.Col>
 				<Grid.Col span={{ base: 12, xs: 7 }} p="md">
 					<Title order={2} size="h1" mb="md" className={classes.title}>
-						23 июля
+						{workout.Date}
 					</Title>
 
-					<Title order={4} className={classes.sectionTitle}>
-						Разминка
-					</Title>
-					<Text>
-						<b>3 раунда</b>
-						<List withPadding>
-							<List.Item>5 снежных ангелов</List.Item>
-							<List.Item>10 качающихся планок на локтях</List.Item>
-							<List.Item>10-15 приседания широкая постановка</List.Item>
-						</List>
-					</Text>
+					{workout.Sections.map((section) => {
+						return (
+							<>
+								<Title order={4} className={classes.sectionTitle}>
+									{section.Title}
+								</Title>
+								<Text>
+									<b>{section.Protocol.Title}</b>
+									<List withPadding>
+										{section.Exercises.map((e) => {
+											return <List.Item>{e.ExerciseSlug}</List.Item>;
+										})}
+									</List>
+								</Text>
 
-					<Divider my="md" />
-
-					<Title order={4} className={classes.sectionTitle}>
-						Комплекс
-					</Title>
-					<Text>
-						<b>По минутки 10 мин</b>
-						<List withPadding>
-							<List.Item>20 сек макс повт берпи / 40 сек отжимания с колен</List.Item>
-							<List.Item>15+15 прыжки на одной / оставшееся время подъем на носки</List.Item>
-						</List>
-					</Text>
-
-					<Divider my="md" />
+								<Divider my="md" />
+							</>
+						);
+					})}
 
 					<Button
 						variant="light"
