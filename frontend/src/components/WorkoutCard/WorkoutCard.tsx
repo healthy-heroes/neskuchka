@@ -1,6 +1,7 @@
 import { IconArrowRight } from '@tabler/icons-react';
 import { Button, Card, CardProps, Divider, Grid, Image, List, Text, Title } from '@mantine/core';
 import { Workout } from '@/types/domain';
+import { formatIsoDate } from '@/utils/dates';
 import classes from './WorkoutCard.module.css';
 
 export interface WorkoutCardProps {
@@ -18,7 +19,7 @@ export function WorkoutCard({ cardProps, workout }: WorkoutCardProps) {
 				</Grid.Col>
 				<Grid.Col span={{ base: 12, xs: 7 }} p="md">
 					<Title order={2} size="h1" mb="md" className={classes.title}>
-						{workout.Date}
+						{formatIsoDate(workout.Date)}
 					</Title>
 
 					{workout.Sections.map((section) => {
