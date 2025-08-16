@@ -1,10 +1,11 @@
 import { Box, Title } from '@mantine/core';
-import { getMainTrackWorkouts } from '@/api/methods';
+import { useApi } from '@/api/provider';
 import { WorkoutCard } from '../WorkoutCard/WorkoutCard';
 import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
 
 export function Workouts() {
-	const { data, loading, error } = getMainTrackWorkouts();
+	const apiService = useApi();
+	const { data, loading, error } = apiService.getMainTrackWorkouts();
 
 	return (
 		<Box p="md">

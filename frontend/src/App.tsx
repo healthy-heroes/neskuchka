@@ -1,21 +1,28 @@
 import '@mantine/core/styles.css';
+import './App.css';
 
 import dayjs from 'dayjs';
-
-import 'dayjs/locale/ru';
-
 import { MantineProvider } from '@mantine/core';
+import { ApiProvider } from './api/provider';
+import ApiService from './api/service';
+import { API_URL } from './config';
 import { Router } from './Router';
 import { theme } from './theme';
 
-import './App.css';
+import 'dayjs/locale/ru';
 
 dayjs.locale('ru');
 
+const apiConfig = {
+	apiUrl: API_URL,
+};
+
 export default function App() {
 	return (
-		<MantineProvider theme={theme}>
-			<Router />
-		</MantineProvider>
+		<ApiProvider apiService={new ApiService(apiConfig)}>
+			<MantineProvider theme={theme}>
+				<Router />
+			</MantineProvider>
+		</ApiProvider>
 	);
 }
