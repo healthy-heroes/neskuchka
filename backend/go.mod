@@ -8,6 +8,7 @@ require (
 	github.com/go-chi/httprate v0.15.0
 	github.com/go-pkgz/auth/v2 v2.0.0
 	github.com/go-pkgz/rest v1.20.3
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/jmoiron/sqlx v1.4.0
@@ -24,7 +25,6 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/go-oauth2/oauth2/v4 v4.5.2 // indirect
 	github.com/go-pkgz/repeater v1.2.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
