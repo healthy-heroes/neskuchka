@@ -2,6 +2,7 @@
 CGO_ENABLED = "0"
 
 [tools]
+air = "latest"
 go = "latest"
 golangci-lint = "latest"
 

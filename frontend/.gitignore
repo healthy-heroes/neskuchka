@@ -1,8 +1,9 @@
-# Logs
 logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+tmp
 
 node_modules
 dist

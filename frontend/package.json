@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
+    "dev2back": "VITE_BACKEND_PORT=8000 vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
@@ -21,9 +22,11 @@
   },
   "dependencies": {
     "@mantine/core": "8.1.2",
+    "@mantine/dates": "^8.2.4",
     "@mantine/hooks": "8.1.2",
     "@tabler/icons-react": "^3.34.1",
     "clsx": "^2.1.1",
+    "dayjs": "^1.11.13",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2"
@@ -62,5 +65,5 @@
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.3"
   },
-  "packageManager": "pnpm@10.13.1"
+  "packageManager": "pnpm@10.14.0"
 }
