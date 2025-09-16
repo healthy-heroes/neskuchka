@@ -1,11 +1,9 @@
+import { randomId } from '@mantine/hooks';
 import { Workout } from '@/types/domain';
-import { createIncrementalIdFactory } from './utils';
-
-const getId = createIncrementalIdFactory();
 
 export default function createWorkout(): Workout {
 	return {
-		ID: getId(),
+		ID: randomId(),
 		Date: '2025-01-01',
 		Sections: [
 			{
