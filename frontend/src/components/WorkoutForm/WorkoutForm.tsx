@@ -51,7 +51,6 @@ export function WorkoutForm({ initialValues, onSubmit }: WorkoutFormProps) {
 	});
 
 	function handleSubmit(values: Workout) {
-		console.log(values);
 		onSubmit(values);
 	}
 

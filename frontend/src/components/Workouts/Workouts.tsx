@@ -16,7 +16,7 @@ export function Workouts() {
 			{(loading || error) && <WorkoutCardSkeleton cardProps={{ mb: 'xl' }} />}
 
 			{data?.Workouts.map((workout) => {
-				return <WorkoutCard cardProps={{ mb: 'xl' }} workout={workout} />;
+				return <WorkoutCard key={workout.ID} cardProps={{ mb: 'xl' }} workout={workout} />;
 			})}
 		</Box>
 	);

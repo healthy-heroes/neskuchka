@@ -4,6 +4,7 @@ import '@mantine/dates/styles.css';
 import './App.css';
 
 import dayjs from 'dayjs';
+import { StrictMode } from 'react';
 import { MantineProvider } from '@mantine/core';
 import { ApiProvider } from './api/provider';
 import ApiService from './api/service';
@@ -21,10 +22,12 @@ const apiConfig = {
 
 export default function App() {
 	return (
-		<ApiProvider apiService={new ApiService(apiConfig)}>
-			<MantineProvider theme={theme}>
-				<Router />
-			</MantineProvider>
-		</ApiProvider>
+		<StrictMode>
+			<ApiProvider apiService={new ApiService(apiConfig)}>
+				<MantineProvider theme={theme}>
+					<Router />
+				</MantineProvider>
+			</ApiProvider>
+		</StrictMode>
 	);
 }
