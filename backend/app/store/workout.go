@@ -42,6 +42,8 @@ type WorkoutExercise struct {
 
 	Weight     int
 	WeightText string
+
+	Description string
 }
 
 func CreateWorkoutId() WorkoutID {

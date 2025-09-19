@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
-	"slices"
 	"sync"
 	"time"
 
@@ -133,24 +132,8 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 
 		//todo: Подумать как улучшить
 		r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
-			if checkWebPath(r.URL.Path) {
-				w.WriteHeader(http.StatusOK)
-				w.Write(indexHTML)
-				return
-			}
-
-			http.NotFound(w, r)
+			w.WriteHeader(http.StatusOK)
+			w.Write(indexHTML)
 		})
 	})
-}
-
-var existsPaths = []string{
-	"/",
-	"/welcome",
-	"/main",
-}
-
-// checkWebPath is a basic check for existence of a page
-func checkWebPath(path string) bool {
-	return slices.Contains(existsPaths, path)
 }

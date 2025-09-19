@@ -2,6 +2,7 @@ import { IconArrowRight } from '@tabler/icons-react';
 import { Button, Card, CardProps, Divider, Grid, Image, List, Title } from '@mantine/core';
 import { Workout } from '@/types/domain';
 import { formatIsoDate } from '@/utils/dates';
+import { RouteLink } from '../RouteLink/RouteLink';
 import classes from './WorkoutCard.module.css';
 
 export interface WorkoutCardProps {
@@ -33,7 +34,7 @@ export function WorkoutCard({ cardProps, workout }: WorkoutCardProps) {
 									<b>{section.Protocol.Title}</b>
 									<List withPadding>
 										{section.Exercises.map((e, index) => {
-											return <List.Item key={`${key}-${index}`}>{e.ExerciseSlug}</List.Item>;
+											return <List.Item key={`${key}-${index}`}>{e.Description}</List.Item>;
 										})}
 									</List>
 								</div>
@@ -46,8 +47,8 @@ export function WorkoutCard({ cardProps, workout }: WorkoutCardProps) {
 					<Button
 						variant="light"
 						rightSection={<IconArrowRight size={14} />}
-						component="a"
-						href="#"
+						component={RouteLink}
+						to={`/workouts/${workout.ID}`}
 					>
 						Подробности
 					</Button>

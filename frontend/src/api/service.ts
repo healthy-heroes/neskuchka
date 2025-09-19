@@ -1,5 +1,5 @@
 import { useFetch, UseFetchOptions, UseFetchReturnValue } from '@mantine/hooks';
-import { TrackWorkouts } from './types';
+import { TrackWorkout, TrackWorkouts } from './types';
 
 type ApiConfig = {
 	apiUrl: string;
@@ -26,6 +26,13 @@ class ApiService {
 			`${this.config.apiUrl}/tracks/main/last_workouts`,
 			fetchOptions
 		);
+	}
+
+	/**
+	 * Get concrete workout by id
+	 */
+	getWorkout(id: string, fetchOptions: RequestOptions = {}) {
+		return this.request<TrackWorkout>(`${this.config.apiUrl}/workouts/${id}`, fetchOptions);
 	}
 }
 
