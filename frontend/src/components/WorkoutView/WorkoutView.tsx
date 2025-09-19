@@ -49,7 +49,11 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 								</Title>
 								<div>
 									<b>{section.Protocol.Title}</b>
-									{section.Protocol.Description && <span>{section.Protocol.Description}</span>}
+									{section.Protocol.Description && (
+										<Text c="dimmed" size="sm">
+											{section.Protocol.Description}
+										</Text>
+									)}
 									<List withPadding>
 										{section.Exercises.map((e, index) => {
 											return <List.Item key={`${key}-${index}`}>{e.Description}</List.Item>;

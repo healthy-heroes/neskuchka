@@ -1,6 +1,22 @@
+import {
+	createMemoryHistory,
+	createRootRoute,
+	createRouter,
+	RouteComponent,
+	RouterProvider,
+} from '@tanstack/react-router';
 import { Paper, PaperProps } from '@mantine/core';
 import { ApiProvider } from '@/api/provider';
 import ApiService from '@/api/service';
+
+const createStoryRouter = (component: RouteComponent) => {
+	return createRouter({
+		history: createMemoryHistory(),
+		routeTree: createRootRoute({
+			component,
+		}),
+	});
+};
 
 export interface StoryPreviewProps {
 	children: React.ReactNode;
@@ -31,9 +47,11 @@ function getPageWrapper({ children, paperOptions, isPage }: StoryPreviewProps) {
 		defaultOptions.p = 'sm';
 	}
 
+	const router = createStoryRouter(() => children);
+
 	return (
 		<Paper {...defaultOptions} {...paperOptions}>
-			{children}
+			<RouterProvider router={router} />
 		</Paper>
 	);
 }
