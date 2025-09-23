@@ -7,6 +7,7 @@ import {
 } from '@tabler/icons-react';
 import {
 	ActionIcon,
+	Alert,
 	Button,
 	Card,
 	Divider,
@@ -22,8 +23,12 @@ import { randomId } from '@mantine/hooks';
 import { Workout, WorkoutExercise, WorkoutSection } from '@/types/domain';
 
 type WorkoutFormProps = {
-	initialValues?: Workout;
+	data?: Workout;
 	onSubmit: (values: Workout) => void;
+	onCancel: () => void;
+
+	isSubmitting?: boolean;
+	error: Error | null;
 };
 
 type FormReturnType = UseFormReturnType<Workout>;
@@ -31,10 +36,23 @@ type FormReturnType = UseFormReturnType<Workout>;
 /**
  * WorkoutForm - component for creating and editing workout
  */
-export function WorkoutForm({ initialValues, onSubmit }: WorkoutFormProps) {
+export function WorkoutForm({
+	data,
+	onSubmit,
+	onCancel,
+	isSubmitting = false,
+	error,
+}: WorkoutFormProps) {
 	const form = useForm<Workout>({
 		mode: 'uncontrolled',
-		initialValues: initialValues ?? makeInitialValues(),
+		initialValues: data ?? makeInitialValues(),
+		enhanceGetInputProps: () => {
+			if (isSubmitting) {
+				return { disabled: true };
+			}
+
+			return {};
+		},
 		validate: {
 			Date: isNotEmpty('Дата тренировки обязательна'),
 			Sections: {
@@ -79,9 +97,19 @@ export function WorkoutForm({ initialValues, onSubmit }: WorkoutFormProps) {
 				/>
 
 				<Divider my="md" />
-				<Button color="green.7" type="submit">
-					Сохранить
-				</Button>
+				{error && (
+					<Alert mb="md" color="red">
+						{error.message}
+					</Alert>
+				)}
+				<Group justify="space-between">
+					<Button color="green.7" type="submit" loading={isSubmitting}>
+						Сохранить
+					</Button>
+					<Button color="red.7" onClick={onCancel} disabled={isSubmitting}>
+						Отменить
+					</Button>
+				</Group>
 			</form>
 		</div>
 	);
@@ -99,6 +127,7 @@ function renderSections(form: FormReturnType): React.ReactNode {
 				leftSection={<IconSquareRoundedPlus2 size={16} />}
 				variant="outline"
 				onClick={() => addSection(form)}
+				{...form.getInputProps('Buttons.addSection')}
 			>
 				Добавить секцию
 			</Button>
@@ -149,6 +178,7 @@ function renderSectionsFields(form: FormReturnType): React.ReactNode {
 						variant="outline"
 						color="red"
 						onClick={() => removeSection(form, index)}
+						{...form.getInputProps('Buttons.removeSection')}
 					>
 						Удалить секцию
 					</Button>
@@ -167,6 +197,7 @@ function renderExercises(form: FormReturnType, sectionIndex: number): React.Reac
 				leftSection={<IconSquareRoundedPlus size={16} />}
 				variant="outline"
 				onClick={() => addExercise(form, sectionIndex)}
+				{...form.getInputProps('Buttons.addExercise')}
 			>
 				Добавить упражнение
 			</Button>
@@ -188,7 +219,11 @@ function renderExercisesFields(form: FormReturnType, sectionIndex: number): Reac
 					key={keyBy('Description')}
 					{...form.getInputProps(pathFor('Description'))}
 				/>
-				<ActionIcon color="red" onClick={() => removeExercise(form, sectionIndex, index)}>
+				<ActionIcon
+					color="red"
+					onClick={() => removeExercise(form, sectionIndex, index)}
+					{...form.getInputProps('Buttons.removeExercise')}
+				>
 					<IconTrash size={16} />
 				</ActionIcon>
 			</Group>

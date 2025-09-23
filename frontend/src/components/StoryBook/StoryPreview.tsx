@@ -1,4 +1,4 @@
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import {
 	createMemoryHistory,
@@ -8,10 +8,9 @@ import {
 	RouterProvider,
 } from '@tanstack/react-router';
 import { Paper, PaperProps } from '@mantine/core';
-import { createApiClient } from '@/api/client';
-import { ApiMock } from '@/api/fixtures/api';
+import { ApiServiceMock } from '@/api/fixtures/api';
 import { ApiContext } from '@/api/provider';
-import { ApiQueries } from '@/api/queries';
+import ApiService from '@/api/service';
 
 const createStoryRouter = (component: RouteComponent) => {
 	return createRouter({
@@ -28,16 +27,15 @@ export interface StoryPreviewProps {
 	paperOptions?: PaperProps;
 	isPage?: boolean;
 
-	queries?: ApiQueries;
+	apiService?: ApiService;
 }
 
 export function StoryPreview(props: StoryPreviewProps) {
-	const queryClient = createApiClient();
-
-	const queries = props.queries ?? new ApiQueries(new ApiMock());
+	const queryClient = new QueryClient();
+	const service = props.apiService ?? new ApiServiceMock();
 
 	return (
-		<ApiContext.Provider value={{ queries }}>
+		<ApiContext.Provider value={{ service }}>
 			<QueryClientProvider client={queryClient}>
 				{getPageWrapper(props)}
 				<ReactQueryDevtools />

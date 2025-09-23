@@ -6,10 +6,16 @@ export default {
 	title: 'WorkoutForm',
 };
 
+const props = {
+	onSubmit: () => {},
+	error: null,
+	onCancel: () => {},
+};
+
 export function Default() {
 	return (
 		<StoryPreview>
-			<WorkoutForm onSubmit={() => {}} />
+			<WorkoutForm {...props} />
 		</StoryPreview>
 	);
 }
@@ -19,7 +25,7 @@ export function WithInitialValues() {
 
 	return (
 		<StoryPreview>
-			<WorkoutForm onSubmit={() => {}} initialValues={workout} />
+			<WorkoutForm {...props} data={workout} />
 		</StoryPreview>
 	);
 }

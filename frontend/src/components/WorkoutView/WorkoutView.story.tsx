@@ -1,6 +1,5 @@
-import { ApiMock } from '@/api/fixtures/api';
+import { ApiServiceMock } from '@/api/fixtures/api';
 import createWorkout from '@/api/fixtures/workout';
-import { ApiQueries } from '@/api/queries';
 import { StoryPreview } from '../StoryBook/StoryPreview';
 import { WorkoutView } from './WorkoutView';
 
@@ -10,8 +9,8 @@ export default {
 
 const workout = createWorkout();
 
-const queries = new ApiQueries(new ApiMock());
-queries.workouts.getWorkoutQuery = () => {
+const apiService = new ApiServiceMock();
+apiService.workouts.getWorkoutQuery = () => {
 	return {
 		queryKey: ['workout', workout.ID],
 		queryFn: () => {
@@ -22,7 +21,7 @@ queries.workouts.getWorkoutQuery = () => {
 
 export const Default = () => {
 	return (
-		<StoryPreview queries={queries}>
+		<StoryPreview apiService={apiService}>
 			<WorkoutView workoutId={workout.ID} />
 		</StoryPreview>
 	);

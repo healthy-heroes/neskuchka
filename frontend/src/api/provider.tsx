@@ -1,17 +1,16 @@
 import React, { createContext, useContext } from 'react';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { Api } from './api';
-import { createApiClient } from './client';
-import { ApiQueries } from './queries';
+import ApiClient from './client';
+import ApiService from './service';
 
-type ApiService = {
-	queries: ApiQueries;
+type ApiContextProps = {
+	service: ApiService;
 };
 
-export const ApiContext = createContext<ApiService | null>(null);
+export const ApiContext = createContext<ApiContextProps | null>(null);
 
-export function useApiService(): ApiService {
+export function useApiService(): ApiContextProps {
 	const context = useContext(ApiContext);
 	if (context === null) {
 		throw new Error('useApiService must be used within a ApiProvider');
@@ -25,16 +24,16 @@ type ApiProviderProps = {
 };
 
 export function ApiProvider({ children }: ApiProviderProps) {
-	const api = new Api();
-	const queries = new ApiQueries(api);
+	const api = new ApiClient();
+	const service = new ApiService(api);
 
 	//todo: add defaults
-	const queryClient = createApiClient({
+	const queryClient = new QueryClient({
 		defaultOptions: {},
 	});
 
 	return (
-		<ApiContext.Provider value={{ queries }}>
+		<ApiContext.Provider value={{ service }}>
 			<QueryClientProvider client={queryClient}>
 				{children}
 				<ReactQueryDevtools />

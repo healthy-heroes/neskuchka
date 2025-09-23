@@ -6,7 +6,7 @@ import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
 
 export function Workouts() {
 	const {
-		queries: { workouts },
+		service: { workouts },
 	} = useApiService();
 
 	//todo: handle errors

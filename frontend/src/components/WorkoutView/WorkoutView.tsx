@@ -13,7 +13,7 @@ interface WorkoutViewProps {
 
 export function WorkoutView({ workoutId }: WorkoutViewProps) {
 	const {
-		queries: { workouts },
+		service: { workouts },
 	} = useApiService();
 
 	//todo: handle errors
