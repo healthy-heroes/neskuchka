@@ -14,6 +14,9 @@ import { theme } from './theme';
 
 import 'dayjs/locale/ru';
 
+import { DatesProvider } from '@mantine/dates';
+
+// todo: get locale from DatesProvider
 dayjs.locale('ru');
 
 const apiConfig = {
@@ -23,11 +26,13 @@ const apiConfig = {
 export default function App() {
 	return (
 		<StrictMode>
-			<ApiProvider apiService={new ApiService(apiConfig)}>
-				<MantineProvider theme={theme}>
-					<Router />
-				</MantineProvider>
-			</ApiProvider>
+			<DatesProvider settings={{ locale: 'ru', firstDayOfWeek: 0, weekendDays: [0] }}>
+				<ApiProvider apiService={new ApiService(apiConfig)}>
+					<MantineProvider theme={theme}>
+						<Router />
+					</MantineProvider>
+				</ApiProvider>
+			</DatesProvider>
 		</StrictMode>
 	);
 }
