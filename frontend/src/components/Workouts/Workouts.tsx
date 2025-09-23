@@ -1,11 +1,16 @@
+import { useQuery } from '@tanstack/react-query';
 import { Box, Title } from '@mantine/core';
-import { useApi } from '@/api/provider';
+import { useApiService } from '@/api/provider';
 import { WorkoutCard } from '../WorkoutCard/WorkoutCard';
 import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
 
 export function Workouts() {
-	const apiService = useApi();
-	const { data, loading, error } = apiService.getMainTrackWorkouts();
+	const {
+		queries: { workouts },
+	} = useApiService();
+
+	//todo: handle errors
+	const { data, isSuccess, isLoading } = useQuery(workouts.getMainTrackWorkoutsQuery());
 
 	return (
 		<Box p="md">
@@ -13,11 +18,12 @@ export function Workouts() {
 				Тренировки
 			</Title>
 
-			{(loading || error) && <WorkoutCardSkeleton cardProps={{ mb: 'xl' }} />}
+			{(isLoading || !isSuccess) && <WorkoutCardSkeleton cardProps={{ mb: 'xl' }} />}
 
-			{data?.Workouts.map((workout) => {
-				return <WorkoutCard key={workout.ID} cardProps={{ mb: 'xl' }} workout={workout} />;
-			})}
+			{isSuccess &&
+				data.Workouts.map((workout) => {
+					return <WorkoutCard key={workout.ID} cardProps={{ mb: 'xl' }} workout={workout} />;
+				})}
 		</Box>
 	);
 }

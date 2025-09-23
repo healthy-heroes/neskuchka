@@ -1,3 +1,5 @@
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import {
 	createMemoryHistory,
 	createRootRoute,
@@ -6,8 +8,10 @@ import {
 	RouterProvider,
 } from '@tanstack/react-router';
 import { Paper, PaperProps } from '@mantine/core';
-import { ApiProvider } from '@/api/provider';
-import ApiService from '@/api/service';
+import { createApiClient } from '@/api/client';
+import { ApiMock } from '@/api/fixtures/api';
+import { ApiContext } from '@/api/provider';
+import { ApiQueries } from '@/api/queries';
 
 const createStoryRouter = (component: RouteComponent) => {
 	return createRouter({
@@ -24,15 +28,22 @@ export interface StoryPreviewProps {
 	paperOptions?: PaperProps;
 	isPage?: boolean;
 
-	apiService?: ApiService;
+	queries?: ApiQueries;
 }
 
 export function StoryPreview(props: StoryPreviewProps) {
-	if (!props.apiService) {
-		return getPageWrapper(props);
-	}
+	const queryClient = createApiClient();
 
-	return <ApiProvider apiService={props.apiService}>{getPageWrapper(props)}</ApiProvider>;
+	const queries = props.queries ?? new ApiQueries(new ApiMock());
+
+	return (
+		<ApiContext.Provider value={{ queries }}>
+			<QueryClientProvider client={queryClient}>
+				{getPageWrapper(props)}
+				<ReactQueryDevtools />
+			</QueryClientProvider>
+		</ApiContext.Provider>
+	);
 }
 
 function getPageWrapper({ children, paperOptions, isPage }: StoryPreviewProps) {

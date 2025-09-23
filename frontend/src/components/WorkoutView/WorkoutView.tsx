@@ -1,6 +1,7 @@
 import { IconArrowLeft } from '@tabler/icons-react';
+import { useQuery } from '@tanstack/react-query';
 import { Box, Divider, Grid, Image, List, Text, Title } from '@mantine/core';
-import { useApi } from '@/api/provider';
+import { useApiService } from '@/api/provider';
 import { formatIsoDate } from '@/utils/dates';
 import { RouteLink } from '../RouteLink/RouteLink';
 import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
@@ -11,17 +12,21 @@ interface WorkoutViewProps {
 }
 
 export function WorkoutView({ workoutId }: WorkoutViewProps) {
-	const apiService = useApi();
-	const { data, loading, error } = apiService.getWorkout(workoutId);
+	const {
+		queries: { workouts },
+	} = useApiService();
 
-	if (loading || error || !data) {
+	//todo: handle errors
+	const { data, isSuccess, isLoading } = useQuery(workouts.getWorkoutQuery(workoutId));
+
+	if (isLoading || !isSuccess) {
 		return (
 			<Box p="md">
 				<Title order={2} my="md">
 					Тренировка
 				</Title>
 
-				{(loading || error) && <WorkoutCardSkeleton cardProps={{ mb: 'xl' }} />}
+				<WorkoutCardSkeleton cardProps={{ mb: 'xl' }} />
 			</Box>
 		);
 	}

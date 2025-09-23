@@ -1,6 +1,6 @@
+import { ApiMock } from '@/api/fixtures/api';
 import createWorkout from '@/api/fixtures/workout';
-import { createMock, createMockApiService } from '@/api/service-mock';
-import { TrackWorkout } from '@/api/types';
+import { ApiQueries } from '@/api/queries';
 import { StoryPreview } from '../StoryBook/StoryPreview';
 import { WorkoutView } from './WorkoutView';
 
@@ -8,16 +8,22 @@ export default {
 	title: 'WorkoutView',
 };
 
-const apiService = createMockApiService({
-	getWorkout: createMock<TrackWorkout>({
-		Workout: createWorkout(),
-	}),
-});
+const workout = createWorkout();
+
+const queries = new ApiQueries(new ApiMock());
+queries.workouts.getWorkoutQuery = () => {
+	return {
+		queryKey: ['workout', workout.ID],
+		queryFn: () => {
+			return Promise.resolve({ Workout: workout });
+		},
+	};
+};
 
 export const Default = () => {
 	return (
-		<StoryPreview apiService={apiService}>
-			<WorkoutView workoutId="1" />
+		<StoryPreview queries={queries}>
+			<WorkoutView workoutId={workout.ID} />
 		</StoryPreview>
 	);
 };
