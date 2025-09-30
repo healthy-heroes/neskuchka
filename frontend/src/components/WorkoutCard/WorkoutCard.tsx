@@ -1,7 +1,8 @@
 import { IconArrowRight } from '@tabler/icons-react';
-import { Button, Card, CardProps, Divider, Grid, Image, List, Text, Title } from '@mantine/core';
+import { Button, Card, CardProps, Divider, Grid, Image, List, Title } from '@mantine/core';
 import { Workout } from '@/types/domain';
 import { formatIsoDate } from '@/utils/dates';
+import { RouteLink } from '../RouteLink/RouteLink';
 import classes from './WorkoutCard.module.css';
 
 export interface WorkoutCardProps {
@@ -22,31 +23,32 @@ export function WorkoutCard({ cardProps, workout }: WorkoutCardProps) {
 						{formatIsoDate(workout.Date)}
 					</Title>
 
-					{workout.Sections.map((section) => {
+					{workout.Sections.map((section, index) => {
+						const key = `${workout.ID}-${index}`;
 						return (
-							<>
+							<div key={key}>
 								<Title order={4} className={classes.sectionTitle}>
 									{section.Title}
 								</Title>
-								<Text>
+								<div>
 									<b>{section.Protocol.Title}</b>
 									<List withPadding>
-										{section.Exercises.map((e) => {
-											return <List.Item>{e.ExerciseSlug}</List.Item>;
+										{section.Exercises.map((e, index) => {
+											return <List.Item key={`${key}-${index}`}>{e.Description}</List.Item>;
 										})}
 									</List>
-								</Text>
+								</div>
 
 								<Divider my="md" />
-							</>
+							</div>
 						);
 					})}
 
 					<Button
 						variant="light"
 						rightSection={<IconArrowRight size={14} />}
-						component="a"
-						href="#"
+						component={RouteLink}
+						to={`/workouts/${workout.ID}`}
 					>
 						Подробности
 					</Button>

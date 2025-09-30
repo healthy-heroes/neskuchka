@@ -1,26 +1,28 @@
 import { ApiServiceMock } from '@/api/fixtures/api';
 import createWorkout from '@/api/fixtures/workout';
 import { StoryPreview } from '../StoryBook/StoryPreview';
-import { Workouts } from './Workouts';
+import { WorkoutView } from './WorkoutView';
 
 export default {
-	title: 'Workouts',
+	title: 'WorkoutView',
 };
 
+const workout = createWorkout();
+
 const apiService = new ApiServiceMock();
-apiService.workouts.getMainTrackWorkoutsQuery = () => {
+apiService.workouts.getWorkoutQuery = () => {
 	return {
-		queryKey: ['workouts'],
+		queryKey: ['workout', workout.ID],
 		queryFn: () => {
-			return Promise.resolve({ Workouts: [createWorkout(), createWorkout()] });
+			return Promise.resolve({ Workout: workout });
 		},
 	};
 };
 
-export function Default() {
+export const Default = () => {
 	return (
 		<StoryPreview apiService={apiService}>
-			<Workouts />
+			<WorkoutView workoutId={workout.ID} />
 		</StoryPreview>
 	);
-}
+};

@@ -1,5 +1,5 @@
+import { Outlet } from '@tanstack/react-router';
 import { Header } from '@/components/Header/Header';
-import { Workouts } from '@/components/Workouts/Workouts';
 import { TrackHeader } from './TrackHeader/TrackHeader';
 
 export function MainTrackPage() {
@@ -7,7 +7,7 @@ export function MainTrackPage() {
 		<>
 			<Header />
 			<TrackHeader />
-			<Workouts />
+			<Outlet />
 		</>
 	);
 }

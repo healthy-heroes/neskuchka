@@ -1,32 +1,12 @@
-import { useFetch, UseFetchOptions, UseFetchReturnValue } from '@mantine/hooks';
-import { TrackWorkouts } from './types';
+import ApiClient from './client';
+import { WorkoutsService } from './services/workouts';
 
-type ApiConfig = {
-	apiUrl: string;
-};
+export default class ApiService {
+	readonly workouts: WorkoutsService;
 
-export interface RequestOptions extends UseFetchOptions {}
+	constructor(private readonly api: ApiClient) {
+		this.api = api;
 
-class ApiService {
-	private readonly config: ApiConfig;
-
-	constructor(config: ApiConfig) {
-		this.config = config;
-	}
-
-	private request<T>(url: string, fetchOptions: RequestOptions): UseFetchReturnValue<T> {
-		return useFetch<T>(url, fetchOptions);
-	}
-
-	/**
-	 * Get the last workouts for the main track
-	 */
-	getMainTrackWorkouts(fetchOptions: RequestOptions = {}) {
-		return this.request<TrackWorkouts>(
-			`${this.config.apiUrl}/tracks/main/last_workouts`,
-			fetchOptions
-		);
+		this.workouts = new WorkoutsService(this.api);
 	}
 }
-
-export default ApiService;

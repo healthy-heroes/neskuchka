@@ -28,4 +28,11 @@ func (api *PublicAPI) InitRoutes(router chi.Router) {
 	router.Route("/tracks", func(router chi.Router) {
 		router.Get("/main/last_workouts", api.getMainTrackLastExercisesCtrl)
 	})
+
+	router.Route("/workouts", func(router chi.Router) {
+		router.Post("/", api.createWorkoutCtrl)
+		router.Get("/{id}", api.getWorkoutCtrl)
+		router.Put("/{id}", api.updateWorkoutCtrl)
+
+	})
 }

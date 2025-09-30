@@ -1,21 +1,13 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { LandingPage } from './pages/Landing/Landing.page';
-import { MainTrackPage } from './pages/MainTrack/MainTrack.page';
+import { createRouter, RouterProvider } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
 
-const router = createBrowserRouter([
-	{
-		path: '/',
-		element: <LandingPage />,
-	},
-	{
-		path: '/welcome',
-		element: <LandingPage />,
-	},
-	{
-		path: '/main',
-		element: <MainTrackPage />,
-	},
-]);
+const router = createRouter({ routeTree });
+
+declare module '@tanstack/react-router' {
+	interface Register {
+		router: typeof router;
+	}
+}
 
 export function Router() {
 	return <RouterProvider router={router} />;

@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -172,8 +171,9 @@ func main() {
 	firstWorkoutID := store.CreateWorkoutId()
 	firstWorkout := &store.Workout{
 		ID:      firstWorkoutID,
-		Date:    time.Date(2025, 1, 31, 0, 0, 0, 0, time.UTC),
+		Date:    "2025-01-31",
 		TrackID: trackID,
+		Notes:   "First workout",
 		Sections: []store.WorkoutSection{
 			{
 				Title: "Разминка",
@@ -186,14 +186,17 @@ func main() {
 					{
 						ExerciseSlug: exercises["Раскрытия в планке"].Slug,
 						Repetitions:  20,
+						Description:  "20 раскрытий в планке",
 					},
 					{
 						ExerciseSlug: exercises["Ягодичные марши"].Slug,
 						Repetitions:  20,
+						Description:  "20 ягодичных маршей",
 					},
 					{
 						ExerciseSlug: exercises["Джампинг джек"].Slug,
 						Repetitions:  30,
+						Description:  "30 джампинг джеков",
 					},
 				},
 			},
@@ -208,15 +211,18 @@ func main() {
 					{
 						ExerciseSlug: exercises["C пола на грудь + 2 выпада назад"].Slug,
 						Repetitions:  10,
+						Description:  "10 отжиманий",
 					},
 					{
 						ExerciseSlug:    exercises["Становая на одной"].Slug,
 						Repetitions:     20,
 						RepetitionsText: "10+10",
+						Description:     "20 становых на одной",
 					},
 					{
 						ExerciseSlug: exercises["Пресс на прямых руки над головой"].Slug,
 						Repetitions:  10,
+						Description:  "10 пресса на прямых руках над головой",
 					},
 				},
 			},
@@ -232,8 +238,9 @@ func main() {
 	secondWorkoutID := store.CreateWorkoutId()
 	secondWorkout := &store.Workout{
 		ID:      secondWorkoutID,
-		Date:    time.Date(2025, 2, 3, 0, 0, 0, 0, time.UTC),
+		Date:    "2025-02-03",
 		TrackID: trackID,
+		Notes:   "Second workout",
 		Sections: []store.WorkoutSection{
 			{
 				Title: "Разминка",
@@ -246,14 +253,17 @@ func main() {
 					{
 						ExerciseSlug: exercises["Стол"].Slug,
 						Repetitions:  10,
+						Description:  "10 столов",
 					},
 					{
 						ExerciseSlug: exercises["Наклоны вперед"].Slug,
 						Repetitions:  10,
+						Description:  "10 наклонов вперед",
 					},
 					{
 						ExerciseSlug: exercises["Качающиеся планки"].Slug,
 						Repetitions:  20,
+						Description:  "20 качающихся планок",
 					},
 				},
 			},
@@ -268,14 +278,17 @@ func main() {
 					{
 						ExerciseSlug: exercises["Становая на одной"].Slug,
 						Repetitions:  24,
+						Description:  "24 становых на одной",
 					},
 					{
 						ExerciseSlug: exercises["Приседания"].Slug,
 						Repetitions:  18,
+						Description:  "18 приседаний",
 					},
 					{
 						ExerciseSlug: exercises["С груди над головой"].Slug,
 						Repetitions:  12,
+						Description:  "12 отжиманий",
 					},
 				},
 			},
