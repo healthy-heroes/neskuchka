@@ -3,7 +3,6 @@ package datastore
 import (
 	"encoding/json"
 	"errors"
-	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -16,7 +15,7 @@ type WorkoutDBStore struct {
 
 type WorkoutDB struct {
 	ID       string
-	Date     time.Time
+	Date     string
 	TrackID  string `db:"track_id"`
 	Sections []byte
 }
@@ -54,6 +53,8 @@ func (w *WorkoutDB) toStore() (*store.Workout, error) {
 	return workout, nil
 }
 
+// Create creates a new workout
+// Expected correct workout, with generated id
 func (ds *WorkoutDBStore) Create(workout *store.Workout) (*store.Workout, error) {
 	dbWorkout, err := workoutDBFromStore(workout)
 	if err != nil {
@@ -63,6 +64,22 @@ func (ds *WorkoutDBStore) Create(workout *store.Workout) (*store.Workout, error)
 	_, err = ds.Exec(`INSERT INTO workout (id, date, track_id, sections) 
 						VALUES (?, ?, ?, ?)`,
 		dbWorkout.ID, dbWorkout.Date, dbWorkout.TrackID, dbWorkout.Sections)
+	if err != nil {
+		return nil, err
+	}
+	return workout, nil
+}
+
+// Update workout
+// Ignore track_id while updating
+func (ds *WorkoutDBStore) Update(workout *store.Workout) (*store.Workout, error) {
+	dbWorkout, err := workoutDBFromStore(workout)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = ds.Exec(`UPDATE workout SET date = ?, sections = ? WHERE id = ?`,
+		dbWorkout.Date, dbWorkout.Sections, dbWorkout.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +139,7 @@ func (ds *WorkoutDBStore) InitTables() error {
 	_, err := ds.Exec(`
 		CREATE TABLE IF NOT EXISTS workout (
 			id TEXT PRIMARY KEY NOT NULL,
-			date TIMESTAMP NOT NULL,
+			date VARCHAR NOT NULL,
 			track_id TEXT NOT NULL,
 			sections TEXT NOT NULL
 		)

@@ -59,10 +59,9 @@ func createTestExercise(t *testing.T, ds *DataStore) *store.Exercise {
 func createTestWorkout(t *testing.T, ds *DataStore, track *store.Track) *store.Workout {
 	exercise := createTestExercise(t, ds)
 
-	now := time.Now()
 	workout := &store.Workout{
 		ID:      store.CreateWorkoutId(),
-		Date:    now,
+		Date:    "2025-06-17",
 		TrackID: track.ID,
 		Sections: []store.WorkoutSection{
 			{
@@ -118,10 +117,8 @@ func TestWorkoutDBStore_Get(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, workout.ID, found.ID)
 	assert.Equal(t, workout.TrackID, found.TrackID)
+	assert.Equal(t, workout.Date, found.Date)
 	assert.Equal(t, len(workout.Sections), len(found.Sections))
-
-	// Проверяем, что даты сохранены правильно
-	assert.Equal(t, workout.Date.Unix(), found.Date.Unix())
 
 	// Test section details
 	assert.Equal(t, workout.Sections[0].Title, found.Sections[0].Title)
@@ -143,13 +140,13 @@ func TestWorkoutDBStore_Find(t *testing.T) {
 	now := time.Now()
 
 	workout1 := createTestWorkout(t, ds, track)
-	workout1.Date = now.Add(-24 * time.Hour) // Yesterday
+	workout1.Date = now.Add(-24 * time.Hour).Format("2006-01-02") // Yesterday
 
 	workout2 := createTestWorkout(t, ds, track)
-	workout2.Date = now // Today
+	workout2.Date = now.Format("2006-01-02") // Today
 
 	workout3 := createTestWorkout(t, ds, track)
-	workout3.Date = now.Add(-48 * time.Hour) // Day before yesterday
+	workout3.Date = now.Add(-48 * time.Hour).Format("2006-01-02") // Day before yesterday
 
 	_, err := ds.Workout.Create(workout1)
 	require.NoError(t, err)
@@ -171,7 +168,7 @@ func TestWorkoutDBStore_Find(t *testing.T) {
 	assert.Equal(t, 3, len(workouts))
 
 	// First workout should be the most recent (today)
-	assert.True(t, workouts[0].Date.After(workouts[1].Date))
+	assert.True(t, workouts[0].Date > workouts[1].Date)
 
 	// Test with limit
 	criteria.Limit = 2

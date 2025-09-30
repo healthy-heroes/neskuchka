@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -172,7 +171,7 @@ func main() {
 	firstWorkoutID := store.CreateWorkoutId()
 	firstWorkout := &store.Workout{
 		ID:      firstWorkoutID,
-		Date:    time.Date(2025, 1, 31, 0, 0, 0, 0, time.UTC),
+		Date:    "2025-01-31",
 		TrackID: trackID,
 		Sections: []store.WorkoutSection{
 			{
@@ -238,7 +237,7 @@ func main() {
 	secondWorkoutID := store.CreateWorkoutId()
 	secondWorkout := &store.Workout{
 		ID:      secondWorkoutID,
-		Date:    time.Date(2025, 2, 3, 0, 0, 0, 0, time.UTC),
+		Date:    "2025-02-03",
 		TrackID: trackID,
 		Sections: []store.WorkoutSection{
 			{

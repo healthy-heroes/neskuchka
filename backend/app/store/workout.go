@@ -1,8 +1,6 @@
 package store
 
 import (
-	"time"
-
 	"github.com/oklog/ulid/v2"
 )
 
@@ -16,7 +14,7 @@ const (
 type Workout struct {
 	ID WorkoutID
 
-	Date    time.Time
+	Date    string
 	TrackID TrackID
 
 	Sections []WorkoutSection
@@ -55,6 +53,7 @@ type WorkoutStore interface {
 	Store
 
 	Create(workout *Workout) (*Workout, error)
+	Update(workout *Workout) (*Workout, error)
 	Get(id WorkoutID) (*Workout, error)
 	Find(criteria *WorkoutFindCriteria) ([]*Workout, error)
 }
@@ -81,4 +80,14 @@ func ExtractSlugsFromWorkouts(workouts []*Workout) []ExerciseSlug {
 	}
 
 	return slugsList
+}
+
+func ClearUnknownExercisesSlugs(workout *Workout, knownSlugs map[ExerciseSlug]bool) {
+	for i := range workout.Sections {
+		for j := range workout.Sections[i].Exercises {
+			if _, ok := knownSlugs[workout.Sections[i].Exercises[j].ExerciseSlug]; !ok {
+				workout.Sections[i].Exercises[j].ExerciseSlug = ""
+			}
+		}
+	}
 }

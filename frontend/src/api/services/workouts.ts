@@ -37,24 +37,27 @@ export class WorkoutsService extends Service {
 		};
 	}
 
-	updateWorkoutMutation(): UseMutationOptions<Workout, Error, Workout> {
+	updateWorkoutMutation(): UseMutationOptions<TrackWorkout, Error, Workout> {
 		return {
 			mutationFn: (workout: Workout) => {
 				return new Promise((resolve, reject) => {
 					setTimeout(() => {
-						this.api.put<Workout>(`workouts/${workout.ID}`, workout).then(resolve).catch(reject);
+						this.api
+							.put<TrackWorkout>(`workouts/${workout.ID}`, workout)
+							.then(resolve)
+							.catch(reject);
 					}, 5000);
 				});
 			},
 		};
 	}
 
-	createWorkoutMutation(): UseMutationOptions<Workout, Error, Workout> {
+	createWorkoutMutation(): UseMutationOptions<TrackWorkout, Error, Workout> {
 		return {
 			mutationFn: (workout: Workout) => {
 				return new Promise((resolve, reject) => {
 					setTimeout(() => {
-						this.api.post<Workout>(`workouts`, workout).then(resolve).catch(reject);
+						this.api.post<TrackWorkout>(`workouts`, workout).then(resolve).catch(reject);
 					}, 5000);
 				});
 			},

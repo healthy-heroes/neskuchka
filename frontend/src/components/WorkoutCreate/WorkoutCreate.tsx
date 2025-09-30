@@ -14,7 +14,7 @@ export function WorkoutCreate() {
 	const mutation = useMutation(workouts.createWorkoutMutation());
 
 	if (mutation.isSuccess) {
-		return <Navigate to="/workouts/$workoutId" params={{ workoutId: mutation.data.ID }} />;
+		return <Navigate to="/workouts/$workoutId" params={{ workoutId: mutation.data.Workout.ID }} />;
 	}
 
 	function handleCancel() {
