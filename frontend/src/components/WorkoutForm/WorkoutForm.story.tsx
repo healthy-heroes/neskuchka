@@ -29,3 +29,18 @@ export function WithInitialValues() {
 		</StoryPreview>
 	);
 }
+
+export function WithSubmitting() {
+	const workout = createWorkout();
+
+	const localProps = {
+		...props,
+		isSubmitting: true,
+	};
+
+	return (
+		<StoryPreview>
+			<WorkoutForm {...localProps} data={workout} />
+		</StoryPreview>
+	);
+}
