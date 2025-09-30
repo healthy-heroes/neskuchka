@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import {
 	IconSquareRoundedMinus2,
 	IconSquareRoundedPlus,
@@ -19,8 +18,17 @@ import {
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { formRootRule, isNotEmpty, useForm, UseFormReturnType } from '@mantine/form';
-import { randomId } from '@mantine/hooks';
-import { Workout, WorkoutExercise, WorkoutSection } from '@/types/domain';
+import { Workout } from '@/types/domain';
+import {
+	convertToDomainData,
+	convertToFormData,
+	makeExercise,
+	makeInitialValues,
+	makeSection,
+	WorkoutExerciseFormData,
+	WorkoutFormData,
+	WorkoutSectionFormData,
+} from './data';
 
 type WorkoutFormProps = {
 	data?: Workout;
@@ -31,7 +39,7 @@ type WorkoutFormProps = {
 	error: Error | null;
 };
 
-type FormReturnType = UseFormReturnType<Workout>;
+type FormReturnType = UseFormReturnType<WorkoutFormData>;
 
 /**
  * WorkoutForm - component for creating and editing workout
@@ -43,9 +51,9 @@ export function WorkoutForm({
 	isSubmitting = false,
 	error,
 }: WorkoutFormProps) {
-	const form = useForm<Workout>({
+	const form = useForm<WorkoutFormData>({
 		mode: 'uncontrolled',
-		initialValues: data ?? makeInitialValues(),
+		initialValues: data ? convertToFormData(data) : makeInitialValues(),
 		enhanceGetInputProps: () => {
 			if (isSubmitting) {
 				return { disabled: true };
@@ -68,8 +76,8 @@ export function WorkoutForm({
 		},
 	});
 
-	function handleSubmit(values: Workout) {
-		onSubmit(values);
+	function handleSubmit(values: WorkoutFormData) {
+		onSubmit(convertToDomainData(values));
 	}
 
 	return (
@@ -136,12 +144,12 @@ function renderSections(form: FormReturnType): React.ReactNode {
 }
 
 function renderSectionsFields(form: FormReturnType): React.ReactNode {
-	return form.getValues().Sections.map((_, index) => {
+	return form.getValues().Sections.map((section: WorkoutSectionFormData, index) => {
 		const pathFor = (property: string) => `Sections.${index}.${property}`;
 		const keyBy = (property: string) => form.key(pathFor(property));
 
 		return (
-			<Card key={randomId()} withBorder mb="md">
+			<Card key={section._key} withBorder mb="md">
 				<TextInput
 					label="Название секции"
 					placeholder="Разминка, Комплекс, ... "
@@ -206,29 +214,32 @@ function renderExercises(form: FormReturnType, sectionIndex: number): React.Reac
 }
 
 function renderExercisesFields(form: FormReturnType, sectionIndex: number): React.ReactNode {
-	return form.getValues().Sections[sectionIndex].Exercises.map((_, index) => {
-		const pathFor = (property: string) => `Sections.${sectionIndex}.Exercises.${index}.${property}`;
-		const keyBy = (property: string) => form.key(pathFor(property));
+	return form
+		.getValues()
+		.Sections[sectionIndex].Exercises.map((exercise: WorkoutExerciseFormData, index) => {
+			const pathFor = (property: string) =>
+				`Sections.${sectionIndex}.Exercises.${index}.${property}`;
+			const keyBy = (property: string) => form.key(pathFor(property));
 
-		return (
-			<Group mb="xs" key={randomId()}>
-				<TextInput
-					placeholder="Описание упражнения"
-					withAsterisk
-					style={{ flex: 1 }}
-					key={keyBy('Description')}
-					{...form.getInputProps(pathFor('Description'))}
-				/>
-				<ActionIcon
-					color="red"
-					onClick={() => removeExercise(form, sectionIndex, index)}
-					{...form.getInputProps('Buttons.removeExercise')}
-				>
-					<IconTrash size={16} />
-				</ActionIcon>
-			</Group>
-		);
-	});
+			return (
+				<Group mb="xs" key={exercise._key}>
+					<TextInput
+						placeholder="Описание упражнения"
+						withAsterisk
+						style={{ flex: 1 }}
+						key={keyBy('Description')}
+						{...form.getInputProps(pathFor('Description'))}
+					/>
+					<ActionIcon
+						color="red"
+						onClick={() => removeExercise(form, sectionIndex, index)}
+						{...form.getInputProps('Buttons.removeExercise')}
+					>
+						<IconTrash size={16} />
+					</ActionIcon>
+				</Group>
+			);
+		});
 }
 
 // Helpers for adding and removing items
@@ -254,31 +265,4 @@ function removeExercise(form: FormReturnType, sectionIndex: number, exerciseInde
 	} else {
 		form.removeListItem(`Sections.${sectionIndex}.Exercises`, exerciseIndex);
 	}
-}
-
-// Helpers for creating initial values
-function makeInitialValues(): Workout {
-	return {
-		ID: randomId('new'),
-		Date: dayjs().format('YYYY-MM-DD'),
-		Sections: [makeSection('Разминка'), makeSection('Комплекс')],
-	};
-}
-
-function makeSection(title: string = 'Комплекс'): WorkoutSection {
-	return {
-		Title: title,
-		Protocol: {
-			Title: '',
-			Description: '',
-		},
-		Exercises: [makeExercise()],
-	};
-}
-
-function makeExercise(): WorkoutExercise {
-	return {
-		ExerciseSlug: randomId('new'),
-		Description: '',
-	};
 }
