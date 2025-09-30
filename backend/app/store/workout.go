@@ -18,6 +18,8 @@ type Workout struct {
 	TrackID TrackID
 
 	Sections []WorkoutSection
+
+	Notes string
 }
 
 type WorkoutSection struct {

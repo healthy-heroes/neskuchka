@@ -173,6 +173,7 @@ func main() {
 		ID:      firstWorkoutID,
 		Date:    "2025-01-31",
 		TrackID: trackID,
+		Notes:   "First workout",
 		Sections: []store.WorkoutSection{
 			{
 				Title: "Разминка",
@@ -239,6 +240,7 @@ func main() {
 		ID:      secondWorkoutID,
 		Date:    "2025-02-03",
 		TrackID: trackID,
+		Notes:   "Second workout",
 		Sections: []store.WorkoutSection{
 			{
 				Title: "Разминка",

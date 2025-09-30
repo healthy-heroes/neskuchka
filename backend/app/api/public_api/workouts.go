@@ -54,6 +54,7 @@ func (api *PublicAPI) updateWorkoutCtrl(w http.ResponseWriter, r *http.Request) 
 
 	workout.Date = newWorkout.Date
 	workout.Sections = newWorkout.Sections
+	workout.Notes = newWorkout.Notes
 	store.ClearUnknownExercisesSlugs(workout, map[store.ExerciseSlug]bool{})
 
 	workout, err = api.store.Workout.Update(workout)

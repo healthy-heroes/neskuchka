@@ -63,6 +63,7 @@ func createTestWorkout(t *testing.T, ds *DataStore, track *store.Track) *store.W
 		ID:      store.CreateWorkoutId(),
 		Date:    "2025-06-17",
 		TrackID: track.ID,
+		Notes:   "Test notes",
 		Sections: []store.WorkoutSection{
 			{
 				Title: "Warmup",
@@ -99,6 +100,7 @@ func TestWorkoutDBStore_Create(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, workout.ID, created.ID)
 	assert.Equal(t, workout.TrackID, created.TrackID)
+	assert.Equal(t, workout.Notes, created.Notes)
 	assert.Equal(t, len(workout.Sections), len(created.Sections))
 }
 
@@ -118,6 +120,7 @@ func TestWorkoutDBStore_Get(t *testing.T) {
 	assert.Equal(t, workout.ID, found.ID)
 	assert.Equal(t, workout.TrackID, found.TrackID)
 	assert.Equal(t, workout.Date, found.Date)
+	assert.Equal(t, workout.Notes, found.Notes)
 	assert.Equal(t, len(workout.Sections), len(found.Sections))
 
 	// Test section details

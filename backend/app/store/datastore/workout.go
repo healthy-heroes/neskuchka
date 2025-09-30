@@ -18,6 +18,7 @@ type WorkoutDB struct {
 	Date     string
 	TrackID  string `db:"track_id"`
 	Sections []byte
+	Notes    string
 }
 
 func workoutDBFromStore(workout *store.Workout) (*WorkoutDB, error) {
@@ -33,6 +34,7 @@ func workoutDBFromStore(workout *store.Workout) (*WorkoutDB, error) {
 		Date:     workout.Date,
 		TrackID:  string(workout.TrackID),
 		Sections: sectionsJSON,
+		Notes:    workout.Notes,
 	}, nil
 }
 
@@ -41,6 +43,7 @@ func (w *WorkoutDB) toStore() (*store.Workout, error) {
 		ID:      store.WorkoutID(w.ID),
 		Date:    w.Date,
 		TrackID: store.TrackID(w.TrackID),
+		Notes:   w.Notes,
 	}
 
 	// Deserialize sections from JSON
@@ -61,9 +64,9 @@ func (ds *WorkoutDBStore) Create(workout *store.Workout) (*store.Workout, error)
 		return nil, err
 	}
 
-	_, err = ds.Exec(`INSERT INTO workout (id, date, track_id, sections) 
-						VALUES (?, ?, ?, ?)`,
-		dbWorkout.ID, dbWorkout.Date, dbWorkout.TrackID, dbWorkout.Sections)
+	_, err = ds.Exec(`INSERT INTO workout (id, date, track_id, sections, notes) 
+						VALUES (?, ?, ?, ?, ?)`,
+		dbWorkout.ID, dbWorkout.Date, dbWorkout.TrackID, dbWorkout.Sections, dbWorkout.Notes)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +81,8 @@ func (ds *WorkoutDBStore) Update(workout *store.Workout) (*store.Workout, error)
 		return nil, err
 	}
 
-	_, err = ds.Exec(`UPDATE workout SET date = ?, sections = ? WHERE id = ?`,
-		dbWorkout.Date, dbWorkout.Sections, dbWorkout.ID)
+	_, err = ds.Exec(`UPDATE workout SET date = ?, sections = ?, notes = ? WHERE id = ?`,
+		dbWorkout.Date, dbWorkout.Sections, dbWorkout.Notes, dbWorkout.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +92,7 @@ func (ds *WorkoutDBStore) Update(workout *store.Workout) (*store.Workout, error)
 func (ds *WorkoutDBStore) Get(id store.WorkoutID) (*store.Workout, error) {
 	var dbWorkout WorkoutDB
 
-	err := ds.DB.Get(&dbWorkout, `SELECT id, date, track_id, sections FROM workout WHERE id = ?`, id)
+	err := ds.DB.Get(&dbWorkout, `SELECT id, date, track_id, sections, notes FROM workout WHERE id = ?`, id)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +110,7 @@ func (ds *WorkoutDBStore) Find(criteria *store.WorkoutFindCriteria) ([]*store.Wo
 		return nil, errors.New("criteria.TrackID is required")
 	}
 
-	query := `SELECT id, date, track_id, sections FROM workout WHERE track_id = ? ORDER BY date DESC LIMIT ?`
+	query := `SELECT id, date, track_id, sections, notes FROM workout WHERE track_id = ? ORDER BY date DESC LIMIT ?`
 
 	limit := criteria.Limit
 	if limit <= 0 {
@@ -141,7 +144,8 @@ func (ds *WorkoutDBStore) InitTables() error {
 			id TEXT PRIMARY KEY NOT NULL,
 			date VARCHAR NOT NULL,
 			track_id TEXT NOT NULL,
-			sections TEXT NOT NULL
+			sections TEXT NOT NULL,
+			notes TEXT
 		)
 	`)
 
