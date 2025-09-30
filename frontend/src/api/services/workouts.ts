@@ -37,12 +37,24 @@ export class WorkoutsService extends Service {
 		};
 	}
 
-	updateWorkoutMutation(): UseMutationOptions<void, Error, Workout> {
+	updateWorkoutMutation(): UseMutationOptions<Workout, Error, Workout> {
 		return {
 			mutationFn: (workout: Workout) => {
 				return new Promise((resolve, reject) => {
 					setTimeout(() => {
-						this.api.put<void>(`workouts/${workout.ID}`, workout).then(resolve).catch(reject);
+						this.api.put<Workout>(`workouts/${workout.ID}`, workout).then(resolve).catch(reject);
+					}, 5000);
+				});
+			},
+		};
+	}
+
+	createWorkoutMutation(): UseMutationOptions<Workout, Error, Workout> {
+		return {
+			mutationFn: (workout: Workout) => {
+				return new Promise((resolve, reject) => {
+					setTimeout(() => {
+						this.api.post<Workout>(`workouts`, workout).then(resolve).catch(reject);
 					}, 5000);
 				});
 			},
