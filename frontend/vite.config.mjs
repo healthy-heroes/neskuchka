@@ -14,7 +14,7 @@ export default defineConfig({
     // Note: @tanstack/router-plugin should be before @vitejs/plugin-react
     tanstackRouter({
       target: 'react',
-      autoCodeSplitting: true,
+      autoCodeSplitting: false,
     }),
     react(), 
     tsconfigPaths()],
