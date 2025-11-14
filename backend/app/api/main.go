@@ -10,18 +10,18 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	chi_mw "github.com/go-chi/chi/v5/middleware"
+	chiMW "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 	"github.com/go-pkgz/auth/v2"
+	"github.com/healthy-heroes/neskuchka/backend/app/api/tracks"
 	"github.com/rs/zerolog/log"
 
 	mw "github.com/healthy-heroes/neskuchka/backend/app/api/middlewares"
-	"github.com/healthy-heroes/neskuchka/backend/app/api/public_api"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
-// Api is a API server
+// Api is an API server
 type Api struct {
 	Version string
 
@@ -31,8 +31,6 @@ type Api struct {
 
 	httpServer *http.Server
 	lock       sync.Mutex
-
-	public *public_api.PublicAPI
 }
 
 // Run the listener and request's router, starts the API server
@@ -70,10 +68,8 @@ func (api *Api) Shutdown() {
 func (api *Api) routes() *chi.Mux {
 	router := chi.NewRouter()
 
-	api.public = public_api.NewPublicAPI(api.Store)
-
 	// common middlewares
-	router.Use(chi_mw.Logger)
+	router.Use(chiMW.Logger)
 
 	// CORS middleware
 	corsMw := cors.New(cors.Options{
@@ -102,9 +98,9 @@ func (api *Api) routes() *chi.Mux {
 	// api routes
 	router.Route("/api/v1", func(r chi.Router) {
 		r.Use(httprate.LimitByIP(60, time.Minute))
-		r.Use(chi_mw.Timeout(10 * time.Second))
+		r.Use(chiMW.Timeout(10 * time.Second))
 
-		api.public.InitRoutes(r)
+		tracks.NewService(api.Store).MountHandlers(r)
 	})
 
 	api.addStaticRoutes(router)
@@ -123,7 +119,7 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 
 	router.Route("/", func(r chi.Router) {
 		r.Use(httprate.LimitByIP(60, time.Minute))
-		r.Use(chi_mw.Timeout(10 * time.Second))
+		r.Use(chiMW.Timeout(10 * time.Second))
 		r.Use(mw.CacheControl(10*time.Minute, api.Version))
 
 		r.Handle("/favicon.*", http.FileServer(http.FS(staticFS)))
