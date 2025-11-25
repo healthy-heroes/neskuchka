@@ -13,11 +13,11 @@ import (
 	chiMW "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
-	"github.com/go-pkgz/auth/v2"
-	"github.com/healthy-heroes/neskuchka/backend/app/api/tracks"
 	"github.com/rs/zerolog/log"
 
+	"github.com/healthy-heroes/neskuchka/backend/app/api/auth"
 	mw "github.com/healthy-heroes/neskuchka/backend/app/api/middlewares"
+	"github.com/healthy-heroes/neskuchka/backend/app/api/tracks"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
@@ -25,12 +25,15 @@ import (
 type Api struct {
 	Version string
 
-	Store       *datastore.DataStore
-	AuthService *auth.Service
-	WebFS       embed.FS
+	Store *datastore.DataStore
+	WebFS embed.FS
 
 	httpServer *http.Server
 	lock       sync.Mutex
+}
+
+type Service interface {
+	MountHandlers(router chi.Router)
 }
 
 // Run the listener and request's router, starts the API server
@@ -90,22 +93,22 @@ func (api *Api) routes() *chi.Mux {
 		w.Write([]byte("pong"))
 	})
 
-	// setup auth routes
-	authRoutes, avaRoutes := api.AuthService.Handlers()
-	router.Mount("/auth", authRoutes)
-	router.Mount("/avatar", avaRoutes)
-
 	// api routes
 	router.Route("/api/v1", func(r chi.Router) {
 		r.Use(httprate.LimitByIP(60, time.Minute))
 		r.Use(chiMW.Timeout(10 * time.Second))
 
-		tracks.NewService(api.Store).MountHandlers(r)
+		api.mountService(r, tracks.NewService(api.Store))
+		api.mountService(r, auth.NewService(api.Store))
 	})
 
 	api.addStaticRoutes(router)
 
 	return router
+}
+
+func (api *Api) mountService(router chi.Router, service Service) {
+	service.MountHandlers(router)
 }
 
 // addStaticRoutes is adding static routes

@@ -10,7 +10,7 @@ import (
 )
 
 // getMainTrackLastWorkoutsCtrl returns the exercises for the main track
-func (s *Service) getMainTrackLastWorkoutsCtrl(w http.ResponseWriter, _ *http.Request) {
+func (s *Service) getMainTrackLastWorkouts(w http.ResponseWriter, _ *http.Request) {
 	logger := log.With().Str("method", "getMainTrackLastWorkoutsCtrl").Logger()
 
 	track, err := s.store.Track.GetMainTrack()

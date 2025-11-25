@@ -1,4 +1,4 @@
-package tracks
+package auth
 
 import (
 	"github.com/go-chi/chi/v5"
@@ -14,12 +14,7 @@ func NewService(store *datastore.DataStore) *Service {
 }
 
 func (s *Service) MountHandlers(router chi.Router) {
-	// Concrete main track routes
-	router.Route("/tracks/main", func(r chi.Router) {
-		r.Get("/last_workouts", s.getMainTrackLastWorkouts)
-
-		r.Get("/workouts/{id}", s.getWorkout)
-		r.Post("/workouts", s.createWorkout)
-		r.Put("/workouts/{id}", s.updateWorkout)
+	router.Route("/auth", func(r chi.Router) {
+		r.Post("/register", s.registerUser)
 	})
 }

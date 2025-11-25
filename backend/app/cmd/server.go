@@ -89,14 +89,11 @@ func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
 		return nil, fmt.Errorf("failed to create data store: %w", err)
 	}
 
-	authService := cmd.getAuthService(dataStore)
-
 	apiServer := &api.Api{
 		Version: cmd.Revision,
 
-		Store:       dataStore,
-		AuthService: authService,
-		WebFS:       webFS,
+		Store: dataStore,
+		WebFS: webFS,
 	}
 
 	app := &serverApp{

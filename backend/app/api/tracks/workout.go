@@ -9,9 +9,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// getWorkoutCtrl returns a workout by id
-func (s *Service) getWorkoutCtrl(w http.ResponseWriter, r *http.Request) {
-	logger := log.With().Str("method", "getWorkoutCtrl").Logger()
+// getWorkout returns a workout by id
+func (s *Service) getWorkout(w http.ResponseWriter, r *http.Request) {
+	logger := log.With().Str("method", "getWorkout").Logger()
 
 	id := chi.URLParam(r, "id")
 	workout, err := s.store.Workout.Get(store.WorkoutID(id))
@@ -28,9 +28,9 @@ func (s *Service) getWorkoutCtrl(w http.ResponseWriter, r *http.Request) {
 	R.RenderJSON(w, response)
 }
 
-// updateWorkoutCtrl updates a workout
-func (s *Service) updateWorkoutCtrl(w http.ResponseWriter, r *http.Request) {
-	logger := log.With().Str("method", "updateWorkoutCtrl").Logger()
+// updateWorkout updates a workout
+func (s *Service) updateWorkout(w http.ResponseWriter, r *http.Request) {
+	logger := log.With().Str("method", "updateWorkout").Logger()
 
 	id := chi.URLParam(r, "id")
 	workout, err := s.store.Workout.Get(store.WorkoutID(id))
@@ -67,12 +67,12 @@ func (s *Service) updateWorkoutCtrl(w http.ResponseWriter, r *http.Request) {
 	R.RenderJSON(w, response)
 }
 
-// createWorkoutCtrl creates a new workout
-func (s *Service) createWorkoutCtrl(w http.ResponseWriter, r *http.Request) {
-	logger := log.With().Str("method", "createWorkoutCtrl").Logger()
+// createWorkout creates a new workout
+func (s *Service) createWorkout(w http.ResponseWriter, r *http.Request) {
+	logger := log.With().Str("method", "createWorkout").Logger()
 
 	workout := &store.Workout{}
-	workout, err := s.store.Workout.Create(workout)
+	err := R.DecodeJSON(r, workout)
 	if err != nil {
 		logger.Error().Msgf("Failed to decode workout: %s", err)
 		R.SendErrorJSON(w, r, nil, http.StatusBadRequest, err, "Failed to decode workout")

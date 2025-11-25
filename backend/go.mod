@@ -6,6 +6,7 @@ require (
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httprate v0.15.0
+	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/go-pkgz/auth/v2 v2.0.0
 	github.com/go-pkgz/rest v1.20.3
 	github.com/golang-jwt/jwt/v5 v5.2.2
@@ -20,6 +21,7 @@ require (
 
 require (
 	cloud.google.com/go/compute/metadata v0.4.0 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dghubble/oauth1 v0.7.3 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
