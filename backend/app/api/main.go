@@ -24,6 +24,7 @@ import (
 // Api is an API server
 type Api struct {
 	Version string
+	Secret  string
 
 	Store *datastore.DataStore
 	WebFS embed.FS
@@ -99,7 +100,11 @@ func (api *Api) routes() *chi.Mux {
 		r.Use(chiMW.Timeout(10 * time.Second))
 
 		api.mountService(r, tracks.NewService(api.Store))
-		api.mountService(r, auth.NewService(api.Store))
+
+		api.mountService(r, auth.NewService(api.Store, auth.Opts{
+			Issuer: "Neskuchka",
+			Secret: api.Secret,
+		}))
 	})
 
 	api.addStaticRoutes(router)

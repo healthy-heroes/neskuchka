@@ -1,16 +1,47 @@
 package auth
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
-type Service struct {
-	store *datastore.DataStore
+// VerifyTokenService defines interface accessing tokens
+type VerifyTokenService interface {
+	Token(claims jwt.Claims) (string, error)
 }
 
-func NewService(store *datastore.DataStore) *Service {
-	return &Service{store}
+type Service struct {
+	opts         Opts
+	store        *datastore.DataStore
+	tokenService VerifyTokenService
+}
+
+type Opts struct {
+	Issuer string
+	Secret string
+}
+
+func NewService(store *datastore.DataStore, opts Opts) *Service {
+	s := &Service{
+		opts:  opts,
+		store: store,
+	}
+
+	s.tokenService = token.NewService(token.Opts{
+		Issuer:         s.opts.Issuer,
+		Secret:         s.opts.Secret,
+		TokenDuration:  time.Minute * 15,
+		CookieDuration: time.Hour * 24 * 7,
+		SameSite:       http.SameSiteLaxMode,
+	})
+
+	return s
 }
 
 func (s *Service) MountHandlers(router chi.Router) {
