@@ -86,14 +86,13 @@ func (s *Service) confirmRegistration(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger.With().Str("method", "confirmRegistration").Logger()
 
 	tokenString := r.URL.Query().Get("token")
-
 	if tokenString == "" {
 		renderer.RenderError(w, logger, http.StatusBadRequest, fmt.Errorf("missing token"), "Missing token")
 		return
 	}
 
-	var claims RegistrationClaims
-	err := s.tokenService.Parse(tokenString, &claims)
+	var regClaims RegistrationClaims
+	err := s.tokenService.Parse(tokenString, &regClaims)
 	if err != nil {
 		renderer.RenderError(w, logger, http.StatusBadRequest, err, "Failed to parse token")
 		return
@@ -101,13 +100,11 @@ func (s *Service) confirmRegistration(w http.ResponseWriter, r *http.Request) {
 
 	// todo:check used jti
 
-	// todo: think about using findOrCreate
 	user, err := s.store.User.Create(&store.User{
 		ID:    store.CreateUserId(),
-		Name:  claims.Data.Name,
-		Email: claims.Data.Email,
+		Name:  regClaims.Data.Name,
+		Email: regClaims.Data.Email,
 	})
-	// todo: handle conflict creating
 	if err != nil {
 		renderer.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to create user")
 		return
@@ -115,14 +112,31 @@ func (s *Service) confirmRegistration(w http.ResponseWriter, r *http.Request) {
 
 	// todo:save jti
 
-	// todo:login user
+	jti, err := token.RandID()
+	if err != nil {
+		renderer.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to generate JTI")
+		return
+	}
+
+	claims := AccessClaims{
+		Data: &UserSchema{
+			ID:   user.ID,
+			Name: user.Name,
+		},
+		RegisteredClaims: jwt.RegisteredClaims{
+			ID:     jti,
+			Issuer: s.opts.Issuer,
+		},
+	}
+
+	err = s.tokenService.Set(w, claims)
+	if err != nil {
+		renderer.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to set token")
+	}
 
 	//todo: delete it
 	renderer.Render(w, &TempResponse{
-		Token: tokenString,
-		Claims: AccessClaims{
-			claims.RegisteredClaims,
-			user,
-		},
+		Token:  tokenString,
+		Claims: regClaims,
 	})
 }

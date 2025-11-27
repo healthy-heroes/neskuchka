@@ -16,6 +16,7 @@ import (
 type VerifyTokenService interface {
 	Token(jwt.Claims) (string, error)
 	Parse(string, jwt.Claims) error
+	Set(w http.ResponseWriter, claims jwt.Claims) error
 }
 
 type Service struct {

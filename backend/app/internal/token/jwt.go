@@ -77,6 +77,10 @@ func (js *Service) Parse(tokenString string, claims jwt.Claims) error {
 	return nil
 }
 
+func (js *Service) Set(w http.ResponseWriter, claims jwt.Claims) error {
+	return nil
+}
+
 func RandID() (string, error) {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
