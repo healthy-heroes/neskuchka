@@ -46,19 +46,17 @@ func (s *Service) registerUser(w http.ResponseWriter, r *http.Request) {
 
 	jti, err := token.RandID()
 	if err != nil {
-		renderer.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to generate JWT")
+		renderer.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to generate JTI")
 		return
 	}
 
-	claims := RegistrationClaims{
-		Data: newUser,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * time.Minute)),
-			NotBefore: jwt.NewNumericDate(time.Now().Add(-1 * time.Minute)),
-			Issuer:    s.opts.Issuer,
-			ID:        jti,
-		},
-	}
+	claims := NewRegistrationClaims(newUser, jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * time.Minute)),
+		NotBefore: jwt.NewNumericDate(time.Now().Add(-1 * time.Minute)),
+		Issuer:    s.opts.Issuer,
+		ID:        jti,
+	})
+
 	logger.Debug().Msgf("Make claims: %+v", claims)
 
 	verifyToken, err := s.tokenService.Token(claims)
@@ -72,7 +70,7 @@ func (s *Service) registerUser(w http.ResponseWriter, r *http.Request) {
 	//todo: delete it
 	renderer.Render(w, &TempResponse{
 		Token:  verifyToken,
-		Claims: &claims,
+		Claims: claims,
 	})
 }
 

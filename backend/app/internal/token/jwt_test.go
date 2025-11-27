@@ -15,12 +15,16 @@ const (
 	jti    = "test_jti"
 )
 
-type Claims struct {
+type TestClaims struct {
 	jwt.RegisteredClaims
 
 	Data struct {
 		name string
 	}
+}
+
+func (tc TestClaims) GetType() ClaimsType {
+	return "test_claims"
 }
 
 func TestJWT_New(t *testing.T) {
@@ -65,8 +69,8 @@ func TestJWT_Token(t *testing.T) {
 	// check idempotent (save result)
 }
 
-func testClaims() Claims {
-	return Claims{
+func testClaims() TestClaims {
+	return TestClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Date(2100, 2, 14, 12, 30, 59, 0, time.UTC).Local()),
 			NotBefore: jwt.NewNumericDate(time.Date(2000, 2, 14, 12, 30, 59, 0, time.UTC).Local()),

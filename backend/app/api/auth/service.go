@@ -5,15 +5,13 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/golang-jwt/jwt/v5"
-
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
 // VerifyTokenService defines interface accessing tokens
 type VerifyTokenService interface {
-	Token(claims jwt.Claims) (string, error)
+	Token(token.Claims) (string, error)
 }
 
 type Service struct {

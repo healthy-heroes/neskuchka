@@ -26,6 +26,14 @@ const (
 	defaultTokenQuery = "token"
 )
 
+type ClaimsType string
+
+type Claims interface {
+	jwt.Claims
+
+	GetType() ClaimsType
+}
+
 type Service struct {
 	Opts
 }
@@ -43,7 +51,8 @@ func NewService(opts Opts) *Service {
 }
 
 // Token makes token with claims
-func (js *Service) Token(claims jwt.Claims) (string, error) {
+func (js *Service) Token(claims Claims) (string, error) {
+
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	if js.Secret == "" {
