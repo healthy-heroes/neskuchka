@@ -104,6 +104,7 @@ func (api *Api) routes() *chi.Mux {
 		api.mountService(r, auth.NewService(api.Store, auth.Opts{
 			Issuer: "Neskuchka",
 			Secret: api.Secret,
+			Logger: log.Logger,
 		}))
 	})
 

@@ -2,28 +2,17 @@ package auth
 
 import (
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
-)
-
-const (
-	ClaimsTypeRegistration token.ClaimsType = "registration"
+	"github.com/healthy-heroes/neskuchka/backend/app/store"
 )
 
 type RegistrationClaims struct {
 	jwt.RegisteredClaims
 
-	Data       *UserRegistrationSchema `json:"data"`
-	ClaimsType token.ClaimsType        `json:"type"`
+	Data *UserRegistrationSchema `json:"data"`
 }
 
-func NewRegistrationClaims(data *UserRegistrationSchema, regClaims jwt.RegisteredClaims) RegistrationClaims {
-	return RegistrationClaims{
-		ClaimsType:       ClaimsTypeRegistration,
-		Data:             data,
-		RegisteredClaims: regClaims,
-	}
-}
+type AccessClaims struct {
+	jwt.RegisteredClaims
 
-func (r RegistrationClaims) GetType() token.ClaimsType {
-	return r.ClaimsType
+	Data *store.User
 }

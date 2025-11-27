@@ -26,14 +26,6 @@ const (
 	defaultTokenQuery = "token"
 )
 
-type ClaimsType string
-
-type Claims interface {
-	jwt.Claims
-
-	GetType() ClaimsType
-}
-
 type Service struct {
 	Opts
 }
@@ -51,7 +43,7 @@ func NewService(opts Opts) *Service {
 }
 
 // Token makes token with claims
-func (js *Service) Token(claims Claims) (string, error) {
+func (js *Service) Token(claims jwt.Claims) (string, error) {
 
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
@@ -65,6 +57,24 @@ func (js *Service) Token(claims Claims) (string, error) {
 	}
 
 	return token, nil
+}
+
+func (js *Service) Parse(tokenString string, claims jwt.Claims) error {
+	parser := jwt.NewParser(jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
+
+	token, err := parser.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(js.Secret), nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("can't parse token: %w", err)
+	}
+
+	if !token.Valid {
+		return fmt.Errorf("invalid token")
+	}
+
+	return nil
 }
 
 func RandID() (string, error) {

@@ -23,10 +23,6 @@ type TestClaims struct {
 	}
 }
 
-func (tc TestClaims) GetType() ClaimsType {
-	return "test_claims"
-}
-
 func TestJWT_New(t *testing.T) {
 	j := NewService(Opts{
 		Issuer:         issuer,
@@ -75,7 +71,7 @@ func testClaims() TestClaims {
 			ExpiresAt: jwt.NewNumericDate(time.Date(2100, 2, 14, 12, 30, 59, 0, time.UTC).Local()),
 			NotBefore: jwt.NewNumericDate(time.Date(2000, 2, 14, 12, 30, 59, 0, time.UTC).Local()),
 			Issuer:    issuer,
-			ID:        "jti",
+			ID:        jti,
 		},
 
 		Data: struct{ name string }{name: issuer},

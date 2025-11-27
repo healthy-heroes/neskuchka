@@ -5,30 +5,38 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/rs/zerolog"
+
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
 // VerifyTokenService defines interface accessing tokens
 type VerifyTokenService interface {
-	Token(token.Claims) (string, error)
+	Token(jwt.Claims) (string, error)
+	Parse(string, jwt.Claims) error
 }
 
 type Service struct {
-	opts         Opts
+	opts Opts
+
 	store        *datastore.DataStore
 	tokenService VerifyTokenService
+	logger       zerolog.Logger
 }
 
 type Opts struct {
 	Issuer string
 	Secret string
+	Logger zerolog.Logger
 }
 
 func NewService(store *datastore.DataStore, opts Opts) *Service {
 	s := &Service{
-		opts:  opts,
-		store: store,
+		opts:   opts,
+		store:  store,
+		logger: opts.Logger.With().Str("pkg", "auth").Logger(),
 	}
 
 	s.tokenService = token.NewService(token.Opts{
@@ -44,6 +52,7 @@ func NewService(store *datastore.DataStore, opts Opts) *Service {
 
 func (s *Service) MountHandlers(router chi.Router) {
 	router.Route("/auth", func(r chi.Router) {
-		r.Post("/register", s.registerUser)
+		r.Post("/register", s.register)
+		r.Post("/register/confirm", s.confirmRegistration)
 	})
 }
