@@ -14,6 +14,10 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
 )
 
+const (
+	regTokenTtlDuration = 30 * time.Minute
+)
+
 func (s *Service) register(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger.With().Str("method", "register").Logger()
 
@@ -53,7 +57,7 @@ func (s *Service) register(w http.ResponseWriter, r *http.Request) {
 	claims := RegistrationClaims{
 		Data: newUser,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(regTokenTtlDuration)),
 			NotBefore: jwt.NewNumericDate(time.Now().Add(-1 * time.Minute)),
 			Issuer:    s.opts.Issuer,
 			ID:        jti,
@@ -98,8 +102,6 @@ func (s *Service) confirmRegistration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// todo:check used jti
-
 	user, err := s.store.User.Create(&store.User{
 		ID:    store.CreateUserId(),
 		Name:  regClaims.Data.Name,
@@ -109,8 +111,6 @@ func (s *Service) confirmRegistration(w http.ResponseWriter, r *http.Request) {
 		renderer.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to create user")
 		return
 	}
-
-	// todo:save jti
 
 	jti, err := token.RandID()
 	if err != nil {

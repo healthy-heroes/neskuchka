@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/maypok86/otter/v2"
 	"github.com/rs/zerolog"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
@@ -25,6 +26,8 @@ type Service struct {
 	store        *datastore.DataStore
 	tokenService VerifyTokenService
 	logger       zerolog.Logger
+
+	jtiCache *otter.Cache[string, string]
 }
 
 type Opts struct {
@@ -46,6 +49,11 @@ func NewService(store *datastore.DataStore, opts Opts) *Service {
 		TokenDuration:  time.Minute * 15,
 		CookieDuration: time.Hour * 24 * 7,
 		SameSite:       http.SameSiteLaxMode,
+	})
+
+	s.jtiCache = otter.Must(&otter.Options[string, string]{
+		MaximumSize:     10_000,
+		InitialCapacity: 1_000,
 	})
 
 	return s
