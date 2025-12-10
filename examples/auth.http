@@ -1,0 +1,13 @@
+### Register new user
+
+POST http://localhost:8000/api/v1/auth/register HTTP/1.1
+
+{
+  "email": "user_dec_4-1@example.com",
+  "name": "New user"
+}
+
+
+### Verify registration
+
+POST http://localhost:8000/api/v1/auth/register?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJOZXNrdWNoa2EiLCJleHAiOjE3NjQ4NjIxMjYsIm5iZiI6MTc2NDg2MDI2NiwianRpIjoiYmMzYjI3NWY1MzA1MzYyZmY3YWM3OGZmMmQ1YjVlYTRlNGU0NWE5MiIsImRhdGEiOnsiTmFtZSI6Ik5ldyB1c2VyIiwiRW1haWwiOiJ1c2VyX2RlY180LTFAZXhhbXBsZS5jb20ifX0.xJpTmnVQaKAzaadkc_e_c34YC1V4IZBu_LPLUOW13WY HTTP/1.1
