@@ -15,10 +15,15 @@ echo "Project: $PROJECT_NAME"
 echo "Virtual Environment: $VIRTUAL_ENV"
 '''
 
-[tasks.test-api]
-description = "Run examples"
-run = "hurl --test examples"
-
 [tasks.pre-commit]
 description = "Pre-commit hook"
-run = "(cd frontend && mise run lint)"
+run = '''
+(cd backend && mise run checks)
+'''
+
+[tasks.pre-push]
+depends = ["pre-commit"]
+description = "Pre-push hook"
+run = '''
+(cd backend && mise run tests)
+'''
