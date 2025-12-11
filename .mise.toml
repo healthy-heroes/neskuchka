@@ -1,6 +1,9 @@
+experimental_monorepo_root = true
+
 [env]
 # Use the project name derived from the current directory
 PROJECT_NAME = "{{ config_root | basename }}"
+MISE_EXPERIMENTAL = "1"
 
 
 [tools]
@@ -12,19 +15,25 @@ jq = "latest"
 description = "Print project information"
 run = '''
 echo "Project: $PROJECT_NAME"
-echo "Virtual Environment: $VIRTUAL_ENV"
 '''
 
 [tasks.checks]
 description = "Run checks"
+usage = '''
+flag "--fix" {
+    help "Enable automatic fixes"
+}
+'''
 run = [
-    "(cd backend && mise run checks)"
+    "mise run //backend:checks ${usage_fix:+--fix}",
+    "mise run //frontend:checks ${usage_fix:+--fix}",
 ]
 
 [tasks.tests]
 description = "Run tests"
 run = [
-    "(cd backend && mise run tests)"
+    { task = "//backend:tests" },
+    { task = "//frontend:tests" },
 ]
 
 [tasks.pre-commit]

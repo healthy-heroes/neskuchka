@@ -8,15 +8,18 @@
     "dev2back": "VITE_BACKEND_PORT=8000 vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+
     "typecheck": "tsc --noEmit",
-    "lint": "pnpm run eslint && pnpm run stylelint",
     "eslint": "eslint . --cache",
+    "eslint:fix": "eslint . --fix --cache",
     "stylelint": "stylelint '**/*.css' --cache",
+    "stylelint:fix": "stylelint '**/*.css' --fix --cache",
     "prettier": "prettier --check \"**/*.{ts,tsx}\"",
     "prettier:write": "prettier --write \"**/*.{ts,tsx}\"",
+    
     "vitest": "vitest run",
     "vitest:watch": "vitest",
-    "test": "pnpm run typecheck && pnpm run prettier && pnpm run lint && pnpm run vitest && pnpm run build",
+
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build"
   },

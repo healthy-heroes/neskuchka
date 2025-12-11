@@ -13,3 +13,31 @@ run = "pnpm dev"
 [tasks.lint]
 description = "Lint the code"
 run = "pnpm lint && pnpm run test"
+
+[tasks.checks]
+description = "Run checks"
+usage = '''
+flag "--fix" {
+    help "Enable automatic fixes"
+}
+'''
+run = """
+set -x
+pnpm run typecheck
+if [ "$usage_fix" = "true" ]; then
+    pnpm run prettier:write
+    pnpm run eslint:fix
+    pnpm run stylelint:fix
+else
+    pnpm run prettier
+    pnpm run eslint
+    pnpm run stylelint
+fi
+"""
+
+[tasks.tests]
+description = "Run tests"
+run = [
+    "pnpm run vitest",
+    "pnpm run build",
+]
