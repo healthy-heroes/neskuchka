@@ -15,15 +15,27 @@ echo "Project: $PROJECT_NAME"
 echo "Virtual Environment: $VIRTUAL_ENV"
 '''
 
+[tasks.checks]
+description = "Run checks"
+run = [
+    "(cd backend && mise run checks)"
+]
+
+[tasks.tests]
+description = "Run tests"
+run = [
+    "(cd backend && mise run tests)"
+]
+
 [tasks.pre-commit]
 description = "Pre-commit hook"
-run = '''
-(cd backend && mise run checks)
-'''
+run = [
+    { task = "checks" },
+]
 
 [tasks.pre-push]
-depends = ["pre-commit"]
 description = "Pre-push hook"
-run = '''
-(cd backend && mise run tests)
-'''
+run = [
+    { task = "checks" },
+    { task = "tests" },
+]
