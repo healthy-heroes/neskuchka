@@ -4,20 +4,13 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
-	"github.com/go-pkgz/auth/v2"
-	"github.com/go-pkgz/auth/v2/avatar"
-	"github.com/go-pkgz/auth/v2/token"
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api"
-	"github.com/healthy-heroes/neskuchka/backend/app/internal/authproviders"
-	"github.com/healthy-heroes/neskuchka/backend/app/store"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/db"
 )
@@ -126,70 +119,6 @@ func (cmd *ServerCommand) makeDataStore() (*datastore.DataStore, error) {
 	default:
 		return nil, fmt.Errorf("unsupported database type: %s", cmd.Store.Type)
 	}
-}
-
-// getAuthService creates a new authentication service
-func (cmd *ServerCommand) getAuthService(ds *datastore.DataStore) *auth.Service {
-	options := auth.Opts{
-		//todo: getting secret from server command opts
-		SecretReader: token.SecretFunc(func(id string) (string, error) {
-			// secret key for JWT
-			return "secret", nil
-		}),
-		ClaimsUpd: token.ClaimsUpdFunc(func(claims token.Claims) token.Claims {
-			if claims.User == nil {
-				return claims
-			}
-
-			user, err := ds.User.Get(store.UserID(claims.User.ID))
-			if err != nil {
-				log.Error().Err(err).Msgf("Error finding user %s", claims.User.ID)
-
-				claims.User = nil
-				return claims
-			}
-
-			// update claims with actual user data
-			claims.User.Name = user.Name
-
-			return claims
-		}),
-		TokenDuration:  time.Minute * 5, // token expires in 5 minutes
-		CookieDuration: time.Hour * 24,  // cookie expires in 1 day and will enforce re-login
-		Issuer:         "neskuchka",
-		AvatarStore:    avatar.NewLocalFS("/tmp"),
-		Validator: token.ValidatorFunc(func(_ string, claims token.Claims) bool {
-			if claims.User == nil {
-				log.Error().Msgf("User nil in validator %s", claims)
-
-				return false
-			}
-
-			return true
-		}),
-	}
-
-	service := auth.NewService(options)
-	providers := authproviders.NewService(options)
-
-	// todo: make normal email sender
-	emailSender := AuthEmailSender{}
-	msgTemplate := "Confirmation email, token:  http://localhost:8081/auth/email/login?token={{.Token}}"
-
-	verify := providers.NewVerifyProvider("email", msgTemplate, emailSender,
-		func(name string, email string, r *http.Request) (string, error) {
-			user, err := ds.User.FindOrCreate(email, name)
-			if err != nil && err != store.ErrNotFound {
-				log.Error().Err(err).Msgf("Error getting user %s", email)
-
-				return "", err
-			}
-
-			return string(user.ID), nil
-		})
-	service.AddCustomHandler(verify)
-
-	return service
 }
 
 // fake email sender

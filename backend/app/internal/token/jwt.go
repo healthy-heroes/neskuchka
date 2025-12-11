@@ -10,22 +10,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-const (
-	// default names for cookies and headers
-	defaultJWTCookieName   = "JWT"
-	defaultJWTCookieDomain = ""
-	defaultJWTHeaderKey    = "X-JWT"
-	defaultXSRFCookieName  = "XSRF-TOKEN"
-	defaultXSRFHeaderKey   = "X-XSRF-TOKEN"
-
-	defaultIssuer = "go-pkgz/auth"
-
-	defaultTokenDuration  = time.Minute * 15
-	defaultCookieDuration = time.Hour * 24 * 31
-
-	defaultTokenQuery = "token"
-)
-
 type Service struct {
 	Opts
 }
