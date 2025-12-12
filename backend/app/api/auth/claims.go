@@ -4,14 +4,16 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type RegistrationClaims struct {
+// ConfirmationClaims is the claims for confirmation token
+type ConfirmationClaims struct {
 	jwt.RegisteredClaims
 
-	Data *UserRegistrationSchema `json:"data"`
+	Data *LoginSchema `json:"data"`
 }
 
-type AccessClaims struct {
+// UserClaims is the claims for user token
+type UserClaims struct {
 	jwt.RegisteredClaims
 
-	Data *UserSchema
+	Data *UserSchema `json:"data"`
 }

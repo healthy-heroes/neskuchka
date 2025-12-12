@@ -61,7 +61,7 @@ func NewService(store *datastore.DataStore, opts Opts) *Service {
 
 func (s *Service) MountHandlers(router chi.Router) {
 	router.Route("/auth", func(r chi.Router) {
-		r.Post("/register", s.register)
-		r.Post("/register/confirm", s.confirmRegistration)
+		r.Post("/login", s.login)
+		r.Post("/login/confirm", s.confirm)
 	})
 }

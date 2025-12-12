@@ -1,52 +1,39 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	R "github.com/go-pkgz/rest"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/healthy-heroes/neskuchka/backend/app/store"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api/renderer"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
 )
 
 const (
-	regTokenTtlDuration = 30 * time.Minute
+	confTokenTtlDuration = 30 * time.Minute
+	userTokenTtlDuration = 7 * 24 * time.Hour
 )
 
-func (s *Service) register(w http.ResponseWriter, r *http.Request) {
-	logger := s.logger.With().Str("method", "register").Logger()
+func (s *Service) login(w http.ResponseWriter, r *http.Request) {
+	logger := s.logger
 
-	// decode user and validation
-	newUser := &UserRegistrationSchema{}
-	err := R.DecodeJSON(r, newUser)
+	loginData := &LoginSchema{}
+	err := R.DecodeJSON(r, loginData)
 	if err != nil {
 		renderer.RenderError(w, logger, http.StatusBadRequest, err, "Failed to decode user data")
 		return
 	}
 
-	err = newUser.Validate()
+	err = loginData.Validate()
 	if err != nil {
 		renderer.RenderValidationError(w, logger, err)
 		return
 	}
 
-	logger.Debug().Msgf("Received user data: %+v", newUser)
-
-	oldUser, err := s.store.User.FindByEmail(newUser.Email)
-	if err != nil && !errors.Is(err, store.ErrNotFound) {
-		renderer.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to find user")
-		return
-	}
-
-	if oldUser != nil {
-		renderer.RenderError(w, logger, http.StatusConflict, err, "User already exists")
-		return
-	}
+	logger.Debug().Msgf("Received user data: %+v", loginData)
 
 	jti, err := token.RandID()
 	if err != nil {
@@ -54,10 +41,10 @@ func (s *Service) register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims := RegistrationClaims{
-		Data: newUser,
+	claims := ConfirmationClaims{
+		Data: loginData,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(regTokenTtlDuration)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(confTokenTtlDuration)),
 			NotBefore: jwt.NewNumericDate(time.Now().Add(-1 * time.Minute)),
 			Issuer:    s.opts.Issuer,
 			ID:        jti,
@@ -66,17 +53,17 @@ func (s *Service) register(w http.ResponseWriter, r *http.Request) {
 
 	logger.Debug().Msgf("Make claims: %+v", claims)
 
-	verifyToken, err := s.tokenService.Token(claims)
+	token, err := s.tokenService.Token(claims)
 	if err != nil {
 		renderer.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to generate verification token")
 		return
 	}
 
-	logger.Debug().Msgf("Token: %s", verifyToken)
+	logger.Debug().Msgf("Token: %s", token)
 
 	//todo: delete it
 	renderer.Render(w, &TempResponse{
-		Token:  verifyToken,
+		Token:  token,
 		Claims: claims,
 	})
 }
@@ -86,31 +73,37 @@ type TempResponse struct {
 	Token  string     `json:"token"`
 }
 
-func (s *Service) confirmRegistration(w http.ResponseWriter, r *http.Request) {
-	logger := s.logger.With().Str("method", "confirmRegistration").Logger()
+func (s *Service) confirm(w http.ResponseWriter, r *http.Request) {
+	logger := s.logger
 
-	tokenString := r.URL.Query().Get("token")
-	if tokenString == "" {
-		renderer.RenderError(w, logger, http.StatusBadRequest, fmt.Errorf("missing token"), "Missing token")
+	var data ConfirmationSchema
+	err := R.DecodeJSON(r, &data)
+	if err != nil {
+		renderer.RenderError(w, logger, http.StatusBadRequest, err, "Failed to decode confirm data")
 		return
 	}
 
-	var regClaims RegistrationClaims
-	err := s.tokenService.Parse(tokenString, &regClaims)
+	var confClaims ConfirmationClaims
+	err = s.tokenService.Parse(data.Token, &confClaims)
 	if err != nil {
 		renderer.RenderError(w, logger, http.StatusBadRequest, err, "Failed to parse token")
 		return
 	}
 
-	user, err := s.store.User.Create(&store.User{
-		ID:    store.CreateUserId(),
-		Name:  regClaims.Data.Name,
-		Email: regClaims.Data.Email,
-	})
-	if err != nil {
-		renderer.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to create user")
+	if _, ok := s.jtiCache.GetIfPresent(confClaims.ID); ok {
+		renderer.RenderError(w, logger, http.StatusBadRequest, fmt.Errorf("token already used"), "Token already used")
 		return
 	}
+
+	// todo: use instead store
+	user, err := s.store.User.FindOrCreate(confClaims.Data.Email)
+	if err != nil {
+		renderer.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to find or create user")
+		return
+	}
+
+	s.jtiCache.Set(confClaims.ID, "")
+	s.jtiCache.SetExpiresAfter(confClaims.ID, confTokenTtlDuration+time.Minute*5) // add extra time
 
 	jti, err := token.RandID()
 	if err != nil {
@@ -118,14 +111,16 @@ func (s *Service) confirmRegistration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims := AccessClaims{
+	claims := UserClaims{
 		Data: &UserSchema{
 			ID:   user.ID,
 			Name: user.Name,
 		},
 		RegisteredClaims: jwt.RegisteredClaims{
-			ID:     jti,
-			Issuer: s.opts.Issuer,
+			ID:        jti,
+			Issuer:    s.opts.Issuer,
+			NotBefore: jwt.NewNumericDate(time.Now().Add(-1 * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(userTokenTtlDuration)),
 		},
 	}
 
@@ -136,7 +131,6 @@ func (s *Service) confirmRegistration(w http.ResponseWriter, r *http.Request) {
 
 	//todo: delete it
 	renderer.Render(w, &TempResponse{
-		Token:  tokenString,
-		Claims: regClaims,
+		Claims: claims,
 	})
 }
