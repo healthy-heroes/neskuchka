@@ -12,7 +12,6 @@ on:
       - "!backend/scripts/**"
   
   pull_request:
-    types: [opened, reopened]
     paths:
       - ".github/workflows/ci.yml"
       - "frontend/**"
