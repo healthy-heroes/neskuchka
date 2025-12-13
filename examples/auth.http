@@ -12,5 +12,5 @@ POST http://localhost:8000/api/v1/auth/login HTTP/1.1
 POST http://localhost:8000/api/v1/auth/login/confirm HTTP/1.1
 
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJOZXNrdWNoa2EiLCJleHAiOjE3NjU1NjA1OTksIm5iZiI6MTc2NTU1ODczOSwianRpIjoiMjlkZjExNTk5YjdhYTI0MTA1ZDRiNjMyMjRiM2QyNmRjNzBjZGI0MiIsImRhdGEiOnsiZW1haWwiOiJuZXdfdXNlckBleGFtcGxlLmNvbSJ9fQ.kZrX0iE0dntpX8B7ngvWLGYOwiTNOp4DL2yq2eAAylg"
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJOZXNrdWNoa2EiLCJleHAiOjE3NjU2MDA4MjksIm5iZiI6MTc2NTU5ODk2OSwianRpIjoiMjIzMTlhYzYxZDhhOTU2ZWRjNjkzMjE5NjNiMzMwMTRiYjYwNjQ5ZCIsImRhdGEiOnsiZW1haWwiOiJuZXdfdXNlckBleGFtcGxlLmNvbSJ9fQ._C1tCggl8NcR9C1jLRrw8daypOVLhsX7GF_CwHqC2lo"
 }

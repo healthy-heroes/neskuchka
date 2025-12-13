@@ -8,12 +8,12 @@ import (
 type ConfirmationClaims struct {
 	jwt.RegisteredClaims
 
-	Data *LoginSchema `json:"data"`
+	Data LoginSchema `json:"data"`
 }
 
 // UserClaims is the claims for user token
 type UserClaims struct {
 	jwt.RegisteredClaims
 
-	Data *UserSchema `json:"data"`
+	Data UserSchema `json:"data"`
 }
