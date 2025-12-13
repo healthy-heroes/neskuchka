@@ -13,7 +13,6 @@ import (
 
 const (
 	confTokenTtlDuration = 30 * time.Minute
-	userTokenTtlDuration = 7 * 24 * time.Hour
 )
 
 func (s *Service) login(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +34,6 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 		Data: loginData,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(confTokenTtlDuration)),
-			NotBefore: jwt.NewNumericDate(time.Now().Add(-1 * time.Minute)),
 			Issuer:    s.opts.Issuer,
 			ID:        jti,
 		},
@@ -92,32 +90,12 @@ func (s *Service) confirm(w http.ResponseWriter, r *http.Request) {
 	s.jtiCache.Set(confClaims.ID, "")
 	s.jtiCache.SetExpiresAfter(confClaims.ID, confTokenTtlDuration+time.Minute*5) // add extra time
 
-	jti, err := token.RandID()
-	if err != nil {
-		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to generate JTI")
-		return
-	}
-
-	claims := UserClaims{
-		Data: UserSchema{
-			ID:   user.ID,
-			Name: user.Name,
-		},
-		RegisteredClaims: jwt.RegisteredClaims{
-			ID:        jti,
-			Issuer:    s.opts.Issuer,
-			NotBefore: jwt.NewNumericDate(time.Now().Add(-1 * time.Minute)),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(userTokenTtlDuration)),
-		},
-	}
-
-	err = s.tokenService.Set(w, claims)
+	err = s.setToken(w, UserSchema{
+		ID:   user.ID,
+		Name: user.Name,
+	})
 	if err != nil {
 		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to set token")
+		return
 	}
-
-	//todo: delete it
-	httpx.Render(w, &TempResponse{
-		Claims: claims,
-	})
 }

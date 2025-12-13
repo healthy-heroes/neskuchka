@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -13,11 +14,16 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
+const (
+	JWTCookieName = "JWT"
+
+	defaultSessionDuration = 7 * 24 * time.Hour
+)
+
 // VerifyTokenService defines interface accessing tokens
 type VerifyTokenService interface {
 	Token(jwt.Claims) (string, error)
 	Parse(string, jwt.Claims) error
-	Set(w http.ResponseWriter, claims jwt.Claims) error
 }
 
 type Service struct {
@@ -34,9 +40,16 @@ type Opts struct {
 	Issuer string
 	Secret string
 	Logger zerolog.Logger
+
+	SecureCookies   bool
+	SessionDuration time.Duration
 }
 
 func NewService(store *datastore.DataStore, opts Opts) *Service {
+	if opts.SessionDuration == 0 {
+		opts.SessionDuration = defaultSessionDuration
+	}
+
 	s := &Service{
 		opts:   opts,
 		store:  store,
@@ -44,11 +57,8 @@ func NewService(store *datastore.DataStore, opts Opts) *Service {
 	}
 
 	s.tokenService = token.NewService(token.Opts{
-		Issuer:         s.opts.Issuer,
-		Secret:         s.opts.Secret,
-		TokenDuration:  time.Minute * 15,
-		CookieDuration: time.Hour * 24 * 7,
-		SameSite:       http.SameSiteLaxMode,
+		Issuer: s.opts.Issuer,
+		Secret: s.opts.Secret,
 	})
 
 	s.jtiCache = otter.Must(&otter.Options[string, string]{
@@ -64,4 +74,42 @@ func (s *Service) MountHandlers(router chi.Router) {
 		r.Post("/login", s.login)
 		r.Post("/login/confirm", s.confirm)
 	})
+}
+
+func (s *Service) setToken(w http.ResponseWriter, user UserSchema) error {
+	now := time.Now().Unix()
+
+	jti, err := token.RandID()
+	if err != nil {
+		return fmt.Errorf("failed to generate JTI: %w", err)
+	}
+
+	claims := UserClaims{
+		Data: user,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        jti,
+			Issuer:    s.opts.Issuer,
+			IssuedAt:  jwt.NewNumericDate(time.Unix(now, 0)),
+			ExpiresAt: jwt.NewNumericDate(time.Unix(now, 0).Add(s.opts.SessionDuration)),
+		},
+	}
+
+	tokenString, err := s.tokenService.Token(claims)
+	if err != nil {
+		return fmt.Errorf("failed to generate token: %w", err)
+	}
+
+	jwtCookie := http.Cookie{
+		Name:     JWTCookieName,
+		Value:    tokenString,
+		HttpOnly: true,
+		Path:     "/",
+		Domain:   "",
+		MaxAge:   int(s.opts.SessionDuration.Seconds()),
+		Secure:   s.opts.SecureCookies,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(w, &jwtCookie)
+
+	return nil
 }

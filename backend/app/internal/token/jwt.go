@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"crypto/sha1"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -15,11 +14,8 @@ type Service struct {
 }
 
 type Opts struct {
-	Issuer         string
-	Secret         string
-	TokenDuration  time.Duration
-	CookieDuration time.Duration
-	SameSite       http.SameSite
+	Issuer string
+	Secret string
 }
 
 func NewService(opts Opts) *Service {
@@ -44,7 +40,10 @@ func (js *Service) Token(claims jwt.Claims) (string, error) {
 }
 
 func (js *Service) Parse(tokenString string, claims jwt.Claims) error {
-	parser := jwt.NewParser(jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
+	parser := jwt.NewParser(
+		jwt.WithLeeway(time.Minute),
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
+	)
 
 	token, err := parser.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(js.Secret), nil
@@ -58,10 +57,6 @@ func (js *Service) Parse(tokenString string, claims jwt.Claims) error {
 		return fmt.Errorf("invalid token")
 	}
 
-	return nil
-}
-
-func (js *Service) Set(w http.ResponseWriter, claims jwt.Claims) error {
 	return nil
 }
 

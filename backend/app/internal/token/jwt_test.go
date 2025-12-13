@@ -1,7 +1,6 @@
 package token
 
 import (
-	"net/http"
 	"testing"
 	"time"
 
@@ -25,19 +24,13 @@ type TestClaims struct {
 
 func TestJWT_New(t *testing.T) {
 	j := NewService(Opts{
-		Issuer:         issuer,
-		Secret:         secret,
-		TokenDuration:  time.Minute,
-		CookieDuration: time.Hour,
-		SameSite:       http.SameSiteDefaultMode,
+		Issuer: issuer,
+		Secret: secret,
 	})
 
 	assert.NotNil(t, j)
 	assert.Equal(t, issuer, j.Issuer)
 	assert.Equal(t, secret, j.Secret)
-	assert.Equal(t, time.Minute, j.TokenDuration)
-	assert.Equal(t, time.Hour, j.CookieDuration)
-	assert.Equal(t, http.SameSiteDefaultMode, j.SameSite)
 }
 
 func TestJWT_RandID(t *testing.T) {
@@ -48,11 +41,8 @@ func TestJWT_RandID(t *testing.T) {
 
 func TestJWT_Token(t *testing.T) {
 	j := NewService(Opts{
-		Issuer:         issuer,
-		Secret:         secret,
-		TokenDuration:  time.Minute,
-		CookieDuration: time.Hour,
-		SameSite:       http.SameSiteDefaultMode,
+		Issuer: issuer,
+		Secret: secret,
 	})
 
 	claims := testClaims()
