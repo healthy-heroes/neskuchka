@@ -83,9 +83,7 @@ jobs:
         run: pnpm install
 
       - name: checks
-        run: mise run checks
-        working-directory: frontend
+        run: mise run //frontend:checks
 
       - name: tests
-        run: mise run tests
-        working-directory: frontend
+        run: mise run //frontend:tests
