@@ -66,6 +66,7 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
 
       - name: install pnpm
         uses: pnpm/action-setup@v4
@@ -82,6 +83,10 @@ jobs:
       - name: install dependencies
         run: pnpm install
 
-      - name: lint & type check & test
-        run: pnpm test
+      - name: checks
+        run: mise run checks
+        working-directory: frontend
+
+      - name: tests
+        run: mise run tests
         working-directory: frontend
