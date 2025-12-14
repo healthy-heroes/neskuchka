@@ -45,16 +45,12 @@ func (js *Service) Parse(tokenString string, claims jwt.Claims) error {
 		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
 	)
 
-	token, err := parser.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+	_, err := parser.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(js.Secret), nil
 	})
 
 	if err != nil {
 		return fmt.Errorf("can't parse token: %w", err)
-	}
-
-	if !token.Valid {
-		return fmt.Errorf("invalid token")
 	}
 
 	return nil

@@ -26,4 +26,8 @@ golangci-lint run --config .golangci.yml ./... ${usage_fix:+--fix}
 
 [tasks.tests]
 description = "Run tests"
-run = "go test ./app/..."
+run = "go test -cover ./..."
+
+[tasks.coverage]
+description = "Run coverage"
+run = "go test -cover -coverprofile=profile.cov ./... && go tool cover -func=profile.cov"
