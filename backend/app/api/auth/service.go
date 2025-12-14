@@ -77,20 +77,19 @@ func (s *Service) MountHandlers(router chi.Router) {
 }
 
 func (s *Service) setToken(w http.ResponseWriter, user UserSchema) error {
-	now := time.Now().Unix()
-
 	jti, err := token.RandID()
 	if err != nil {
 		return fmt.Errorf("failed to generate JTI: %w", err)
 	}
 
+	now := time.Now()
 	claims := UserClaims{
 		Data: user,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        jti,
 			Issuer:    s.opts.Issuer,
-			IssuedAt:  jwt.NewNumericDate(time.Unix(now, 0)),
-			ExpiresAt: jwt.NewNumericDate(time.Unix(now, 0).Add(s.opts.SessionDuration)),
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(s.opts.SessionDuration)),
 		},
 	}
 
@@ -112,4 +111,34 @@ func (s *Service) setToken(w http.ResponseWriter, user UserSchema) error {
 	http.SetCookie(w, &jwtCookie)
 
 	return nil
+}
+
+func (s *Service) clearToken(w http.ResponseWriter) {
+	jwtCookie := http.Cookie{
+		Name:     JWTCookieName,
+		Value:    "",
+		HttpOnly: true,
+		Path:     "/",
+		Domain:   "",
+		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
+		Secure:   s.opts.SecureCookies,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(w, &jwtCookie)
+}
+
+func (s *Service) getUser(r *http.Request) (UserSchema, error) {
+	tokenCookie, err := r.Cookie(JWTCookieName)
+	if err != nil {
+		return UserSchema{}, fmt.Errorf("token cookie was not presented: %w", err)
+	}
+
+	claims := UserClaims{}
+	err = s.tokenService.Parse(tokenCookie.Value, &claims)
+	if err != nil {
+		return UserSchema{}, fmt.Errorf("failed to parse token: %w", err)
+	}
+
+	return claims.Data, nil
 }
