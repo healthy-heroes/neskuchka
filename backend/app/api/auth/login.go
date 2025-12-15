@@ -15,6 +15,13 @@ const (
 	confTokenTtlDuration = 30 * time.Minute
 )
 
+// сonfirmationClaims is the claims for confirmation token
+type сonfirmationClaims struct {
+	jwt.RegisteredClaims
+
+	Data LoginSchema `json:"data"`
+}
+
 func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger
 
@@ -30,7 +37,7 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims := ConfirmationClaims{
+	claims := сonfirmationClaims{
 		Data: loginData,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(confTokenTtlDuration)),
@@ -56,7 +63,7 @@ func (s *Service) confirm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var confClaims ConfirmationClaims
+	var confClaims сonfirmationClaims
 	err := s.tokenService.Parse(data.Token, &confClaims)
 	if err != nil {
 		httpx.RenderError(w, logger, http.StatusBadRequest, err, "Failed to parse token")
