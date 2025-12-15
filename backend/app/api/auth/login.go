@@ -79,12 +79,11 @@ func (s *Service) confirm(w http.ResponseWriter, r *http.Request) {
 	s.jtiCache.Set(confClaims.ID, "")
 	s.jtiCache.SetExpiresAfter(confClaims.ID, confTokenTtlDuration+time.Minute*5) // add extra time
 
-	err = s.setToken(w, UserSchema{
-		ID:   user.ID,
-		Name: user.Name,
-	})
+	err = s.sessionManager.Set(w, string(user.ID))
 	if err != nil {
-		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to set token")
+		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to set session")
 		return
 	}
+
+	httpx.Render(w, user)
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/api/auth"
 	mw "github.com/healthy-heroes/neskuchka/backend/app/api/middlewares"
 	"github.com/healthy-heroes/neskuchka/backend/app/api/tracks"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
@@ -71,6 +72,10 @@ func (api *Api) Shutdown() {
 // routes is setting up routes for the API
 func (api *Api) routes() *chi.Mux {
 	router := chi.NewRouter()
+	session := session.NewManager(session.Opts{
+		Issuer: "Neskuchka",
+		Secret: api.Secret,
+	})
 
 	// common middlewares
 	router.Use(chiMW.Logger)
@@ -101,7 +106,7 @@ func (api *Api) routes() *chi.Mux {
 
 		api.mountService(r, tracks.NewService(api.Store))
 
-		api.mountService(r, auth.NewService(api.Store, auth.Opts{
+		api.mountService(r, auth.NewService(api.Store, session, auth.Opts{
 			Issuer: "Neskuchka",
 			Secret: api.Secret,
 			Logger: log.Logger,

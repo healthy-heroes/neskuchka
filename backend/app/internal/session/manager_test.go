@@ -1,4 +1,4 @@
-package auth
+package session
 
 import (
 	"net/http"
@@ -7,43 +7,27 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
-	"github.com/healthy-heroes/neskuchka/backend/app/store"
 )
 
-func newTestService() *Service {
-	tokenService := token.NewService(token.Opts{
-		Issuer: "test_issuer",
-		Secret: "test_secret",
+func newTestManager() *Manager {
+	return NewManager(Opts{
+		Issuer:          "test_issuer",
+		Secret:          "test_secret",
+		SecureCookies:   false,
+		SessionDuration: time.Hour,
 	})
-
-	return &Service{
-		opts: Opts{
-			Issuer:          "test_issuer",
-			Secret:          "test_secret",
-			Logger:          zerolog.Nop(),
-			SecureCookies:   false,
-			SessionDuration: time.Hour,
-		},
-		tokenService: tokenService,
-	}
 }
 
-func TestService_SetToken(t *testing.T) {
+func TestManager_Set(t *testing.T) {
 	t.Run("sets valid JWT cookie", func(t *testing.T) {
-		s := newTestService()
+		m := newTestManager()
 		w := httptest.NewRecorder()
 
-		user := UserSchema{
-			ID:   store.UserID("user-123"),
-			Name: "Test User",
-		}
+		userID := "user-123"
 
-		err := s.setToken(w, user)
+		err := m.Set(w, userID)
 
 		require.NoError(t, err)
 
@@ -51,7 +35,7 @@ func TestService_SetToken(t *testing.T) {
 		require.Len(t, cookies, 1, "should set exactly one cookie")
 
 		cookie := cookies[0]
-		assert.Equal(t, JWTCookieName, cookie.Name)
+		assert.Equal(t, defaultSessionCookieName, cookie.Name)
 		assert.NotEmpty(t, cookie.Value)
 		assert.True(t, cookie.HttpOnly)
 		assert.Equal(t, "/", cookie.Path)
@@ -60,36 +44,32 @@ func TestService_SetToken(t *testing.T) {
 	})
 
 	t.Run("token contains correct user data", func(t *testing.T) {
-		s := newTestService()
+		m := newTestManager()
 		w := httptest.NewRecorder()
 
-		user := UserSchema{
-			ID:   store.UserID("user-456"),
-			Name: "Another User",
-		}
+		userID := "user-456"
 
-		err := s.setToken(w, user)
+		err := m.Set(w, userID)
 		require.NoError(t, err)
 
 		cookie := w.Result().Cookies()[0]
 
 		// Parse the token and verify claims
-		claims := UserClaims{}
-		err = s.tokenService.Parse(cookie.Value, &claims)
+		claims := Claims{}
+		err = m.tokenService.Parse(cookie.Value, &claims)
 		require.NoError(t, err)
 
-		assert.Equal(t, user.ID, claims.Data.ID)
-		assert.Equal(t, user.Name, claims.Data.Name)
-		assert.Equal(t, s.opts.Issuer, claims.Issuer)
+		assert.Equal(t, userID, claims.UserID)
+		assert.Equal(t, m.opts.Issuer, claims.Issuer)
 		assert.NotEmpty(t, claims.ID, "JTI should be set")
 	})
 
 	t.Run("respects SecureCookies option", func(t *testing.T) {
-		s := newTestService()
-		s.opts.SecureCookies = true
+		m := newTestManager()
+		m.opts.SecureCookies = true
 		w := httptest.NewRecorder()
 
-		err := s.setToken(w, UserSchema{ID: "user-1", Name: "User"})
+		err := m.Set(w, "user-1")
 		require.NoError(t, err)
 
 		cookie := w.Result().Cookies()[0]
@@ -97,18 +77,18 @@ func TestService_SetToken(t *testing.T) {
 	})
 }
 
-func TestService_ClearToken(t *testing.T) {
+func TestManager_Clear(t *testing.T) {
 	t.Run("clears JWT cookie", func(t *testing.T) {
-		s := newTestService()
+		m := newTestManager()
 		w := httptest.NewRecorder()
 
-		s.clearToken(w)
+		m.Clear(w)
 
 		cookies := w.Result().Cookies()
 		require.Len(t, cookies, 1, "should set exactly one cookie")
 
 		cookie := cookies[0]
-		assert.Equal(t, JWTCookieName, cookie.Name)
+		assert.Equal(t, defaultSessionCookieName, cookie.Name)
 		assert.Empty(t, cookie.Value, "cookie value should be empty")
 		assert.Equal(t, -1, cookie.MaxAge, "MaxAge should be -1 to delete cookie")
 		assert.True(t, cookie.HttpOnly)
@@ -117,28 +97,25 @@ func TestService_ClearToken(t *testing.T) {
 	})
 
 	t.Run("respects SecureCookies option", func(t *testing.T) {
-		s := newTestService()
-		s.opts.SecureCookies = true
+		m := newTestManager()
+		m.opts.SecureCookies = true
 		w := httptest.NewRecorder()
 
-		s.clearToken(w)
+		m.Clear(w)
 
 		cookie := w.Result().Cookies()[0]
 		assert.True(t, cookie.Secure)
 	})
 }
 
-func TestService_GetUser(t *testing.T) {
-	s := newTestService()
+func TestManager_Get(t *testing.T) {
+	m := newTestManager()
 
 	t.Run("extracts user from valid token", func(t *testing.T) {
-		expectedUser := UserSchema{
-			ID:   store.UserID("user-123"),
-			Name: "Test User",
-		}
+		expectedUserID := "user-123"
 
-		claims := UserClaims{
-			Data: expectedUser,
+		claims := Claims{
+			UserID: expectedUserID,
 			RegisteredClaims: jwt.RegisteredClaims{
 				ID:        "test_jti",
 				Issuer:    "test_issuer",
@@ -147,26 +124,26 @@ func TestService_GetUser(t *testing.T) {
 			},
 		}
 
-		tokenString, err := s.tokenService.Token(claims)
+		tokenString, err := m.tokenService.Token(claims)
 		require.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		req.AddCookie(&http.Cookie{
-			Name:  JWTCookieName,
+			Name:  defaultSessionCookieName,
 			Value: tokenString,
 		})
 
-		user, err := s.getUser(req)
+		userID, parsedClaims, err := m.Get(req)
 
 		require.NoError(t, err)
-		assert.Equal(t, expectedUser.ID, user.ID, "user ID should match")
-		assert.Equal(t, expectedUser.Name, user.Name, "user Name should match")
+		assert.Equal(t, expectedUserID, userID, "user ID should match")
+		assert.Equal(t, expectedUserID, parsedClaims.UserID)
 	})
 
 	t.Run("returns error when cookie is missing", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		_, err := s.getUser(req)
+		_, _, err := m.Get(req)
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "token cookie was not presented")
@@ -175,11 +152,11 @@ func TestService_GetUser(t *testing.T) {
 	t.Run("returns error for invalid token", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		req.AddCookie(&http.Cookie{
-			Name:  JWTCookieName,
+			Name:  defaultSessionCookieName,
 			Value: "invalid.token.here",
 		})
 
-		_, err := s.getUser(req)
+		_, _, err := m.Get(req)
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to parse token")
