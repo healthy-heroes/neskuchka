@@ -46,17 +46,6 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.Debug().Msgf("Token: %s", token)
-
-	//todo: delete it
-	httpx.Render(w, &TempResponse{
-		Token:  token,
-		Claims: claims,
-	})
-}
-
-type TempResponse struct {
-	Claims jwt.Claims `json:"claims"`
-	Token  string     `json:"token"`
 }
 
 func (s *Service) confirm(w http.ResponseWriter, r *http.Request) {

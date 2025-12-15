@@ -73,6 +73,8 @@ func (s *Service) MountHandlers(router chi.Router) {
 	router.Route("/auth", func(r chi.Router) {
 		r.Post("/login", s.login)
 		r.Post("/login/confirm", s.confirm)
+
+		r.Get("/user", s.user)
 	})
 }
 
