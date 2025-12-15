@@ -10,10 +10,3 @@ type ConfirmationClaims struct {
 
 	Data LoginSchema `json:"data"`
 }
-
-// UserClaims is the claims for user token
-type UserClaims struct {
-	jwt.RegisteredClaims
-
-	Data UserSchema `json:"data"`
-}
