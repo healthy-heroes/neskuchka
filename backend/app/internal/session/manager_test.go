@@ -146,7 +146,7 @@ func TestManager_Get(t *testing.T) {
 		_, _, err := m.Get(req)
 
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "token cookie was not presented")
+		assert.ErrorIs(t, err, ErrSessionNotFound)
 	})
 
 	t.Run("returns error for invalid token", func(t *testing.T) {

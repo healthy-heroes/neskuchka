@@ -1,7 +1,6 @@
 package tracks
 
 import (
-	"github.com/go-chi/chi/v5"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
@@ -11,15 +10,4 @@ type Service struct {
 
 func NewService(store *datastore.DataStore) *Service {
 	return &Service{store}
-}
-
-func (s *Service) MountHandlers(router chi.Router) {
-	// Concrete main track routes
-	router.Route("/tracks/main", func(r chi.Router) {
-		r.Get("/last_workouts", s.getMainTrackLastWorkouts)
-
-		r.Get("/workouts/{id}", s.getWorkout)
-		r.Post("/workouts", s.createWorkout)
-		r.Put("/workouts/{id}", s.updateWorkout)
-	})
 }

@@ -22,7 +22,7 @@ type сonfirmationClaims struct {
 	Data LoginSchema `json:"data"`
 }
 
-func (s *Service) login(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Login(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger
 
 	loginData, ok := httpx.ParseAndValidateBody[LoginSchema](w, r, logger)
@@ -55,7 +55,7 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 	logger.Debug().Msgf("Token: %s", token)
 }
 
-func (s *Service) confirm(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Confirm(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger
 
 	data, ok := httpx.ParseBody[ConfirmationSchema](w, r, logger)

@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api/auth"
+	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
 	mw "github.com/healthy-heroes/neskuchka/backend/app/api/middlewares"
 	"github.com/healthy-heroes/neskuchka/backend/app/api/tracks"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
@@ -32,10 +33,6 @@ type Api struct {
 
 	httpServer *http.Server
 	lock       sync.Mutex
-}
-
-type Service interface {
-	MountHandlers(router chi.Router)
 }
 
 // Run the listener and request's router, starts the API server
@@ -73,12 +70,14 @@ func (api *Api) Shutdown() {
 func (api *Api) routes() *chi.Mux {
 	router := chi.NewRouter()
 	session := session.NewManager(session.Opts{
+		Logger: log.Logger,
 		Issuer: "Neskuchka",
 		Secret: api.Secret,
 	})
 
 	// common middlewares
 	router.Use(chiMW.Logger)
+	router.Use(session.Verifier())
 
 	// CORS middleware
 	corsMw := cors.New(cors.Options{
@@ -104,13 +103,8 @@ func (api *Api) routes() *chi.Mux {
 		r.Use(httprate.LimitByIP(60, time.Minute))
 		r.Use(chiMW.Timeout(10 * time.Second))
 
-		api.mountService(r, tracks.NewService(api.Store))
-
-		api.mountService(r, auth.NewService(api.Store, session, auth.Opts{
-			Issuer: "Neskuchka",
-			Secret: api.Secret,
-			Logger: log.Logger,
-		}))
+		api.addAuthRoutes(r, session)
+		api.addTracksRoutes(r, session)
 	})
 
 	api.addStaticRoutes(router)
@@ -118,8 +112,38 @@ func (api *Api) routes() *chi.Mux {
 	return router
 }
 
-func (api *Api) mountService(router chi.Router, service Service) {
-	service.MountHandlers(router)
+// addAuthRoutes is adding auth routes
+func (api *Api) addAuthRoutes(router chi.Router, session *session.Manager) {
+	h := auth.NewService(api.Store, session, auth.Opts{
+		Issuer: "Neskuchka",
+		Secret: api.Secret,
+		Logger: log.Logger,
+	})
+
+	router.Route("/auth", func(r chi.Router) {
+		r.Post("/login", h.Login)
+		r.Post("/login/confirm", h.Confirm)
+		r.Post("/logout", h.Logout)
+
+		r.With(session.Authenticator(httpx.RenderUnauthorized)).Get("/user", h.User)
+	})
+}
+
+// addTracksRoutes is adding tracks routes
+// temporary working with concrete main track routes
+func (api *Api) addTracksRoutes(router chi.Router, session *session.Manager) {
+	h := tracks.NewService(api.Store)
+
+	auth := session.Authenticator(httpx.RenderUnauthorized)
+
+	router.Route("/tracks/main", func(r chi.Router) {
+		r.Get("/last_workouts", h.GetMainTrackLastWorkouts)
+
+		r.Get("/workouts/{id}", h.GetWorkout)
+
+		r.With(auth).Post("/workouts", h.CreateWorkout)
+		r.With(auth).Put("/workouts/{id}", h.UpdateWorkout)
+	})
 }
 
 // addStaticRoutes is adding static routes

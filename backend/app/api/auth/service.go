@@ -3,12 +3,10 @@ package auth
 import (
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/maypok86/otter/v2"
 	"github.com/rs/zerolog"
 
-	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
@@ -21,7 +19,7 @@ type VerifyTokenService interface {
 
 type SessionManager interface {
 	Set(w http.ResponseWriter, userID string) error
-	Get(r *http.Request) (string, *session.Claims, error)
+	Clear(w http.ResponseWriter)
 }
 
 type Service struct {
@@ -61,13 +59,4 @@ func NewService(store *datastore.DataStore, session SessionManager, opts Opts) *
 	}
 
 	return s
-}
-
-func (s *Service) MountHandlers(router chi.Router) {
-	router.Route("/auth", func(r chi.Router) {
-		r.Post("/login", s.login)
-		r.Post("/login/confirm", s.confirm)
-
-		r.Get("/user", s.user)
-	})
 }

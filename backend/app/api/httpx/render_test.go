@@ -67,3 +67,15 @@ func TestRenderValidationError(t *testing.T) {
 		assert.Equal(t, expected, response.Body.String())
 	})
 }
+
+func TestRenderUnauthorized(t *testing.T) {
+	t.Run("returns 401 with JSON error", func(t *testing.T) {
+		response := httptest.NewRecorder()
+
+		RenderUnauthorized(response)
+
+		assert.Equal(t, "application/json; charset=utf-8", response.Header().Get("Content-Type"))
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+		assert.Equal(t, body(`{"error":"Unauthorized"}`), response.Body.String())
+	})
+}

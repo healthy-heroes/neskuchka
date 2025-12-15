@@ -62,6 +62,12 @@ func RenderValidationError(w http.ResponseWriter, l zerolog.Logger, err error) {
 	renderJSONWithStatus(w, response, http.StatusUnprocessableEntity)
 }
 
+func RenderUnauthorized(w http.ResponseWriter) {
+	renderJSONWithStatus(w, ErrorResponse{
+		Error: "Unauthorized",
+	}, http.StatusUnauthorized)
+}
+
 func renderJSONWithStatus(w http.ResponseWriter, data interface{}, code int) {
 	buf := &bytes.Buffer{}
 	enc := json.NewEncoder(buf)

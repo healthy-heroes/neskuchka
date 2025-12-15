@@ -10,7 +10,7 @@ import (
 )
 
 // getWorkout returns a workout by id
-func (s *Service) getWorkout(w http.ResponseWriter, r *http.Request) {
+func (s *Service) GetWorkout(w http.ResponseWriter, r *http.Request) {
 	logger := log.With().Str("method", "getWorkout").Logger()
 
 	id := chi.URLParam(r, "id")
@@ -29,7 +29,7 @@ func (s *Service) getWorkout(w http.ResponseWriter, r *http.Request) {
 }
 
 // updateWorkout updates a workout
-func (s *Service) updateWorkout(w http.ResponseWriter, r *http.Request) {
+func (s *Service) UpdateWorkout(w http.ResponseWriter, r *http.Request) {
 	logger := log.With().Str("method", "updateWorkout").Logger()
 
 	id := chi.URLParam(r, "id")
@@ -68,7 +68,7 @@ func (s *Service) updateWorkout(w http.ResponseWriter, r *http.Request) {
 }
 
 // createWorkout creates a new workout
-func (s *Service) createWorkout(w http.ResponseWriter, r *http.Request) {
+func (s *Service) CreateWorkout(w http.ResponseWriter, r *http.Request) {
 	logger := log.With().Str("method", "createWorkout").Logger()
 
 	workout := &store.Workout{}

@@ -1,18 +1,22 @@
 package session
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
+	"github.com/rs/zerolog"
 )
 
 const (
 	defaultSessionCookieName = "JWT"
 	defaultSessionDuration   = 7 * 24 * time.Hour
 )
+
+var ErrSessionNotFound = errors.New("session not found")
 
 type TokenService interface {
 	Token(claims jwt.Claims) (string, error)
@@ -27,13 +31,16 @@ type Claims struct {
 
 // Manager is the session manager
 type Manager struct {
-	opts Opts
+	opts   Opts
+	logger zerolog.Logger
 
 	tokenService TokenService
 }
 
 // Opts are the options for the session manager
 type Opts struct {
+	Logger zerolog.Logger
+
 	SecureCookies     bool
 	SessionCookieName string
 	SessionDuration   time.Duration
@@ -53,7 +60,8 @@ func NewManager(opts Opts) *Manager {
 	}
 
 	m := &Manager{
-		opts: opts,
+		opts:   opts,
+		logger: opts.Logger.With().Str("pkg", "session").Logger(),
 
 		tokenService: token.NewService(token.Opts{
 			Issuer: opts.Issuer,
@@ -112,7 +120,7 @@ func (m *Manager) setCookie(w http.ResponseWriter, value string, maxAge int) {
 func (m *Manager) Get(r *http.Request) (string, *Claims, error) {
 	tokenCookie, err := r.Cookie(m.opts.SessionCookieName)
 	if err != nil {
-		return "", nil, fmt.Errorf("token cookie was not presented: %w", err)
+		return "", nil, ErrSessionNotFound
 	}
 
 	claims := Claims{}
