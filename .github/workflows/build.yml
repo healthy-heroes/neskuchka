@@ -2,7 +2,7 @@ name: Building app
 
 on:
   push:
-    branches: [main]
+    # branches: [main]
     tags: [v*]
     paths:
       - ".github/workflows/build.yml"
@@ -11,14 +11,14 @@ on:
       - ".dockerignore"
       - "Dockerfile"
       - "!**.md"
-  pull_request:
-    paths:
-      - ".github/workflows/build.yml"
-      - "backend/**"
-      - "frontend/**"
-      - ".dockerignore"
-      - "Dockerfile"
-      - "!**.md"
+  # pull_request:
+  #   paths:
+  #     - ".github/workflows/build.yml"
+  #     - "backend/**"
+  #     - "frontend/**"
+  #     - ".dockerignore"
+  #     - "Dockerfile"
+  #     - "!**.md"
 
 jobs:
   build-and-push:

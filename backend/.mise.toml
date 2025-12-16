@@ -9,7 +9,25 @@ golangci-lint = "latest"
 [tasks.app]
 description = "Run the application"
 
-[tasks.lint]
-description = "Lint the code"
-run = "go test ./app/... && golangci-lint run"
+[tasks.checks]
+description = "Run checks"
+sources = [
+    "./**/*.go",
+]
+usage = '''
+flag "--fix" {
+    help "Enable automatic fixes"
+}
+'''
+run = '''
+set -x
+golangci-lint run --config .golangci.yml ./... ${usage_fix:+--fix}
+'''
 
+[tasks.tests]
+description = "Run tests"
+run = "go test -cover ./..."
+
+[tasks.coverage]
+description = "Run coverage"
+run = "go test -cover -coverprofile=profile.cov ./... && go tool cover -func=profile.cov"

@@ -29,7 +29,7 @@ RUN \
 RUN pnpm build
 
 
-FROM umputun/baseimage:buildgo-v1.15.0 AS build-backend
+FROM umputun/baseimage:buildgo-v1.18.0 AS build-backend
 
 ARG SKIP_BACKEND_TEST
 
@@ -59,7 +59,7 @@ RUN \
     go build -o neskuchka -ldflags "-X main.revision=${version} -s -w" ./app
 
 
-FROM umputun/baseimage:app-v1.15.0
+FROM umputun/baseimage:app-v1.18.0
 
 WORKDIR /srv
 

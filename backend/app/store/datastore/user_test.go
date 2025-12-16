@@ -111,22 +111,20 @@ func TestUserDBStore_FindOrCreate(t *testing.T) {
 	require.NoError(t, err)
 
 	// Should find the existing user (not create a new one)
-	found, err := ds.User.FindOrCreate(existingUser.Email, "ShouldNotBeUsed")
+	found, err := ds.User.FindOrCreate(existingUser.Email)
 	require.NoError(t, err)
 	assert.Equal(t, existingUser, found)
 
 	// Should create a new user if not found
 	newEmail := "newuser@example.com"
-	newName := "New User"
-	created, err := ds.User.FindOrCreate(newEmail, newName)
+	created, err := ds.User.FindOrCreate(newEmail)
 	require.NoError(t, err)
 	assert.Equal(t, newEmail, created.Email)
-	assert.Equal(t, newName, created.Name)
 	assert.NotEmpty(t, created.ID)
 	assert.NotEqual(t, existingUser.ID, created.ID)
 
 	// Should find the newly created user if called again
-	foundAgain, err := ds.User.FindOrCreate(newEmail, "ShouldNotBeUsedAgain")
+	foundAgain, err := ds.User.FindOrCreate(newEmail)
 	require.NoError(t, err)
 	assert.Equal(t, created, foundAgain)
 }

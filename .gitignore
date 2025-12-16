@@ -10,4 +10,5 @@
 
 tmp
 
+/backend/bin/app.db
 /backend/app/cmd/web

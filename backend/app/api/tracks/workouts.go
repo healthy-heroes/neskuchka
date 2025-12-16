@@ -1,30 +1,26 @@
-package public_api
+package tracks
 
 import (
 	"net/http"
 
 	R "github.com/go-pkgz/rest"
-	"github.com/healthy-heroes/neskuchka/backend/app/store"
 	"github.com/rs/zerolog/log"
+
+	"github.com/healthy-heroes/neskuchka/backend/app/store"
 )
 
-type TrackWorkoutsSchema struct {
-	Workouts  []*store.Workout
-	Exercises map[store.ExerciseSlug]store.Exercise
-}
+// getMainTrackLastWorkoutsCtrl returns the exercises for the main track
+func (s *Service) GetMainTrackLastWorkouts(w http.ResponseWriter, _ *http.Request) {
+	logger := log.With().Str("method", "getMainTrackLastWorkoutsCtrl").Logger()
 
-// getMainTrackLastExercisesCtrl returns the exercises for the main track
-func (api *PublicAPI) getMainTrackLastExercisesCtrl(w http.ResponseWriter, _ *http.Request) {
-	logger := log.With().Str("method", "getMainTrackLastExercisesCtrl").Logger()
-
-	track, err := api.store.Track.GetMainTrack()
+	track, err := s.store.Track.GetMainTrack()
 	if err != nil {
 		logger.Error().Msgf("Failed to get main track: %s", err)
 		R.RenderJSON(w, err)
 		return
 	}
 
-	workouts, err := api.store.Workout.Find(&store.WorkoutFindCriteria{
+	workouts, err := s.store.Workout.Find(&store.WorkoutFindCriteria{
 		TrackID: track.ID,
 		Limit:   10,
 	})
@@ -36,7 +32,7 @@ func (api *PublicAPI) getMainTrackLastExercisesCtrl(w http.ResponseWriter, _ *ht
 	}
 
 	slugs := store.ExtractSlugsFromWorkouts(workouts)
-	exercises, err := api.store.Exercise.Find(&store.ExerciseFindCriteria{
+	exercises, err := s.store.Exercise.Find(&store.ExerciseFindCriteria{
 		Slugs: slugs,
 		Limit: len(slugs),
 	})
@@ -51,9 +47,8 @@ func (api *PublicAPI) getMainTrackLastExercisesCtrl(w http.ResponseWriter, _ *ht
 		exercisesMap[exercise.Slug] = *exercise
 	}
 
-	response := TrackWorkoutsSchema{
-		Workouts:  workouts,
-		Exercises: exercisesMap,
+	response := WorkoutsSchema{
+		Workouts: workouts,
 	}
 
 	R.RenderJSON(w, response)

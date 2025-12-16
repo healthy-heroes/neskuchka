@@ -8,8 +8,49 @@ run = "pnpm i"
 
 [tasks.app]
 description = "Run the application"
-run = "pnpm dev"
+usage = '''
+flag "--back" {
+    help "Run the application with backend proxy"
+}
+'''
+run = '''
+if [ "$usage_back" = "true" ]; then
+    pnpm run dev2back
+else
+    pnpm run dev
+fi
+'''
 
-[tasks.lint]
-description = "Lint the code"
-run = "pnpm lint && pnpm run test"
+[tasks.checks]
+description = "Run checks"
+sources = [
+    "./**/*.{ts,tsx,js,jsx}",
+    "./**/*.css",
+    "./**/*.svg",
+    "./**/*.html",
+]
+usage = '''
+flag "--fix" {
+    help "Enable automatic fixes"
+}
+'''
+run = """
+set -x
+pnpm run typecheck
+if [ "$usage_fix" = "true" ]; then
+    pnpm run prettier:write
+    pnpm run eslint:fix
+    pnpm run stylelint:fix
+else
+    pnpm run prettier
+    pnpm run eslint
+    pnpm run stylelint
+fi
+"""
+
+[tasks.tests]
+description = "Run tests"
+run = [
+    "pnpm run vitest",
+    "pnpm run build",
+]

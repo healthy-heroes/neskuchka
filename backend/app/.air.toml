@@ -3,7 +3,7 @@ testdata_dir = "testdata"
 tmp_dir = "tmp"
 
 [build]
-  args_bin = ["server", "--port", "8000", "--store.type", "sqlite", "--store.sqlite.source", "../bin/app.db"]
+  args_bin = ["server", "--port", "8000", "--secret", "__SECRET__", "--store.type", "sqlite", "--store.sqlite.source", "../bin/app.db"]
   bin = "./tmp/main"
   cmd = "go build -o ./tmp/main ."
   delay = 1000

@@ -10,29 +10,29 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	chi_mw "github.com/go-chi/chi/v5/middleware"
+	chiMW "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
-	"github.com/go-pkgz/auth/v2"
 	"github.com/rs/zerolog/log"
 
+	"github.com/healthy-heroes/neskuchka/backend/app/api/auth"
+	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
 	mw "github.com/healthy-heroes/neskuchka/backend/app/api/middlewares"
-	"github.com/healthy-heroes/neskuchka/backend/app/api/public_api"
+	"github.com/healthy-heroes/neskuchka/backend/app/api/tracks"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
-// Api is a API server
+// Api is an API server
 type Api struct {
 	Version string
+	Secret  string
 
-	Store       *datastore.DataStore
-	AuthService *auth.Service
-	WebFS       embed.FS
+	Store *datastore.DataStore
+	WebFS embed.FS
 
 	httpServer *http.Server
 	lock       sync.Mutex
-
-	public *public_api.PublicAPI
 }
 
 // Run the listener and request's router, starts the API server
@@ -69,11 +69,15 @@ func (api *Api) Shutdown() {
 // routes is setting up routes for the API
 func (api *Api) routes() *chi.Mux {
 	router := chi.NewRouter()
-
-	api.public = public_api.NewPublicAPI(api.Store)
+	session := session.NewManager(session.Opts{
+		Logger: log.Logger,
+		Issuer: "Neskuchka",
+		Secret: api.Secret,
+	})
 
 	// common middlewares
-	router.Use(chi_mw.Logger)
+	router.Use(chiMW.Logger)
+	router.Use(session.Verifier())
 
 	// CORS middleware
 	corsMw := cors.New(cors.Options{
@@ -94,22 +98,52 @@ func (api *Api) routes() *chi.Mux {
 		w.Write([]byte("pong"))
 	})
 
-	// setup auth routes
-	authRoutes, avaRoutes := api.AuthService.Handlers()
-	router.Mount("/auth", authRoutes)
-	router.Mount("/avatar", avaRoutes)
-
 	// api routes
 	router.Route("/api/v1", func(r chi.Router) {
 		r.Use(httprate.LimitByIP(60, time.Minute))
-		r.Use(chi_mw.Timeout(10 * time.Second))
+		r.Use(chiMW.Timeout(10 * time.Second))
 
-		api.public.InitRoutes(r)
+		api.addAuthRoutes(r, session)
+		api.addTracksRoutes(r, session)
 	})
 
 	api.addStaticRoutes(router)
 
 	return router
+}
+
+// addAuthRoutes is adding auth routes
+func (api *Api) addAuthRoutes(router chi.Router, session *session.Manager) {
+	h := auth.NewService(api.Store, session, auth.Opts{
+		Issuer: "Neskuchka",
+		Secret: api.Secret,
+		Logger: log.Logger,
+	})
+
+	router.Route("/auth", func(r chi.Router) {
+		r.Post("/login", h.Login)
+		r.Post("/login/confirm", h.Confirm)
+		r.Post("/logout", h.Logout)
+
+		r.With(session.Authenticator(httpx.RenderUnauthorized)).Get("/user", h.User)
+	})
+}
+
+// addTracksRoutes is adding tracks routes
+// temporary working with concrete main track routes
+func (api *Api) addTracksRoutes(router chi.Router, session *session.Manager) {
+	h := tracks.NewService(api.Store)
+
+	auth := session.Authenticator(httpx.RenderUnauthorized)
+
+	router.Route("/tracks/main", func(r chi.Router) {
+		r.Get("/last_workouts", h.GetMainTrackLastWorkouts)
+
+		r.Get("/workouts/{id}", h.GetWorkout)
+
+		r.With(auth).Post("/workouts", h.CreateWorkout)
+		r.With(auth).Put("/workouts/{id}", h.UpdateWorkout)
+	})
 }
 
 // addStaticRoutes is adding static routes
@@ -123,7 +157,7 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 
 	router.Route("/", func(r chi.Router) {
 		r.Use(httprate.LimitByIP(60, time.Minute))
-		r.Use(chi_mw.Timeout(10 * time.Second))
+		r.Use(chiMW.Timeout(10 * time.Second))
 		r.Use(mw.CacheControl(10*time.Minute, api.Version))
 
 		r.Handle("/favicon.*", http.FileServer(http.FS(staticFS)))

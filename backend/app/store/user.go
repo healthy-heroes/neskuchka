@@ -21,5 +21,5 @@ type UserStore interface {
 	Create(user *User) (*User, error)
 	Get(id UserID) (*User, error)
 	FindByEmail(email string) (*User, error)
-	FindOrCreate(email, name string) (*User, error)
+	FindOrCreate(email string) (*User, error)
 }

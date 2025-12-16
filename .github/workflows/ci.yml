@@ -12,7 +12,6 @@ on:
       - "!backend/scripts/**"
   
   pull_request:
-    types: [opened, reopened]
     paths:
       - ".github/workflows/ci.yml"
       - "frontend/**"
@@ -31,7 +30,7 @@ jobs:
       - name: install go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
+          go-version: "1.25"
           cache-dependency-path: backend
 
       - name: test and build backend
@@ -44,10 +43,11 @@ jobs:
           TZ: "Europe/Moscow"
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v7
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.0
-          working-directory: backend/app
+          version: v2.7.2
+          args: --config=.golangci.yml
+          working-directory: backend
 
       - name: submit coverage
         run: |
@@ -66,6 +66,9 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+        with:
+          experimental: true
 
       - name: install pnpm
         uses: pnpm/action-setup@v4
@@ -82,6 +85,8 @@ jobs:
       - name: install dependencies
         run: pnpm install
 
-      - name: lint & type check & test
-        run: pnpm test
-        working-directory: frontend
+      - name: checks
+        run: mise run //frontend:checks
+
+      - name: tests
+        run: mise run //frontend:tests

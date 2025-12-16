@@ -39,7 +39,7 @@ func (ds *UserDBStore) FindByEmail(email string) (*store.User, error) {
 	return user, nil
 }
 
-func (ds *UserDBStore) FindOrCreate(email, name string) (*store.User, error) {
+func (ds *UserDBStore) FindOrCreate(email string) (*store.User, error) {
 	user, err := ds.FindByEmail(email)
 	if err != nil && err != store.ErrNotFound {
 		log.Error().Err(err).Msgf("Error while finding user by email %s", email)
@@ -51,8 +51,9 @@ func (ds *UserDBStore) FindOrCreate(email, name string) (*store.User, error) {
 		log.Info().Msgf("Creating new user %s", email)
 
 		user, err = ds.User.Create(&store.User{
-			ID:    store.CreateUserId(),
-			Name:  name,
+			ID: store.CreateUserId(),
+			// todo: generate new name
+			Name:  "New User",
 			Email: email,
 		})
 

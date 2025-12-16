@@ -33,14 +33,14 @@ export class WorkoutsService extends Service {
 	getWorkoutQuery(id: string): UseQueryOptions<TrackWorkout> {
 		return {
 			queryKey: WorkoutsKeys.workout(id),
-			queryFn: () => this.api.get<TrackWorkout>(`workouts/${id}`),
+			queryFn: () => this.api.get<TrackWorkout>(`tracks/main/workouts/${id}`),
 		};
 	}
 
 	updateWorkoutMutation(): UseMutationOptions<TrackWorkout, Error, Workout> {
 		return {
 			mutationFn: (workout: Workout) => {
-				return this.api.put<TrackWorkout>(`workouts/${workout.ID}`, workout);
+				return this.api.put<TrackWorkout>(`tracks/main/workouts/${workout.ID}`, workout);
 			},
 		};
 	}
@@ -48,7 +48,7 @@ export class WorkoutsService extends Service {
 	createWorkoutMutation(): UseMutationOptions<TrackWorkout, Error, Workout> {
 		return {
 			mutationFn: (workout: Workout) => {
-				return this.api.post<TrackWorkout>(`workouts`, workout);
+				return this.api.post<TrackWorkout>(`tracks/main/workouts`, workout);
 			},
 		};
 	}

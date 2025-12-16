@@ -1,4 +1,4 @@
-package public_api
+package tracks
 
 import (
 	"net/http"
@@ -9,16 +9,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type WorkoutSchema struct {
-	Workout *store.Workout
-}
-
-// getWorkoutCtrl returns a workout by id
-func (api *PublicAPI) getWorkoutCtrl(w http.ResponseWriter, r *http.Request) {
-	logger := log.With().Str("method", "getWorkoutCtrl").Logger()
+// getWorkout returns a workout by id
+func (s *Service) GetWorkout(w http.ResponseWriter, r *http.Request) {
+	logger := log.With().Str("method", "getWorkout").Logger()
 
 	id := chi.URLParam(r, "id")
-	workout, err := api.store.Workout.Get(store.WorkoutID(id))
+	workout, err := s.store.Workout.Get(store.WorkoutID(id))
 	if err != nil {
 		logger.Error().Msgf("Failed to get workout by id: %s", err)
 		R.SendErrorJSON(w, r, nil, http.StatusNotFound, err, "Workout not found")
@@ -32,12 +28,12 @@ func (api *PublicAPI) getWorkoutCtrl(w http.ResponseWriter, r *http.Request) {
 	R.RenderJSON(w, response)
 }
 
-// updateWorkoutCtrl updates a workout
-func (api *PublicAPI) updateWorkoutCtrl(w http.ResponseWriter, r *http.Request) {
-	logger := log.With().Str("method", "updateWorkoutCtrl").Logger()
+// updateWorkout updates a workout
+func (s *Service) UpdateWorkout(w http.ResponseWriter, r *http.Request) {
+	logger := log.With().Str("method", "updateWorkout").Logger()
 
 	id := chi.URLParam(r, "id")
-	workout, err := api.store.Workout.Get(store.WorkoutID(id))
+	workout, err := s.store.Workout.Get(store.WorkoutID(id))
 	if err != nil {
 		logger.Error().Msgf("Failed to get workout by id: %s", err)
 		R.SendErrorJSON(w, r, nil, http.StatusNotFound, err, "Workout not found")
@@ -57,7 +53,7 @@ func (api *PublicAPI) updateWorkoutCtrl(w http.ResponseWriter, r *http.Request) 
 	workout.Notes = newWorkout.Notes
 	store.ClearUnknownExercisesSlugs(workout, map[store.ExerciseSlug]bool{})
 
-	workout, err = api.store.Workout.Update(workout)
+	workout, err = s.store.Workout.Update(workout)
 	if err != nil {
 		logger.Error().Msgf("Failed to update workout by id: %s", err)
 		R.SendErrorJSON(w, r, nil, http.StatusInternalServerError, err, "Failed to update workout")
@@ -71,9 +67,9 @@ func (api *PublicAPI) updateWorkoutCtrl(w http.ResponseWriter, r *http.Request) 
 	R.RenderJSON(w, response)
 }
 
-// createWorkoutCtrl creates a new workout
-func (api *PublicAPI) createWorkoutCtrl(w http.ResponseWriter, r *http.Request) {
-	logger := log.With().Str("method", "createWorkoutCtrl").Logger()
+// createWorkout creates a new workout
+func (s *Service) CreateWorkout(w http.ResponseWriter, r *http.Request) {
+	logger := log.With().Str("method", "createWorkout").Logger()
 
 	workout := &store.Workout{}
 	err := R.DecodeJSON(r, workout)
@@ -83,7 +79,7 @@ func (api *PublicAPI) createWorkoutCtrl(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	track, err := api.store.Track.GetMainTrack()
+	track, err := s.store.Track.GetMainTrack()
 	if err != nil {
 		logger.Error().Msgf("Failed to get main track: %s", err)
 		R.SendErrorJSON(w, r, nil, http.StatusInternalServerError, err, "Failed to get main track")
@@ -94,7 +90,7 @@ func (api *PublicAPI) createWorkoutCtrl(w http.ResponseWriter, r *http.Request) 
 	workout.TrackID = track.ID
 	store.ClearUnknownExercisesSlugs(workout, map[store.ExerciseSlug]bool{})
 
-	workout, err = api.store.Workout.Create(workout)
+	workout, err = s.store.Workout.Create(workout)
 	if err != nil {
 		logger.Error().Msgf("Failed to create workout: %s", err)
 		R.SendErrorJSON(w, r, nil, http.StatusInternalServerError, err, "Failed to create workout")
