@@ -1,27 +1,11 @@
-import ApiClient from '../client';
 import ApiService from '../service';
 import { AuthService } from '../services/auth';
 import { WorkoutsService } from '../services/workouts';
 
-/**
- * Mock ApiClient that throws on unexpected calls
- */
-export class ApiClientMock extends ApiClient {
-	get<T>(): Promise<T> {
-		throw new Error('ApiClientMock.get: Not implemented');
-	}
-
-	put<T>(): Promise<T> {
-		throw new Error('ApiClientMock.put: Not implemented');
-	}
-
-	post<T>(): Promise<T> {
-		throw new Error('ApiClientMock.post: Not implemented');
-	}
-}
 
 /**
- * Mock services that throw on unexpected calls
+ * Creates a strict service mock using Proxy
+ * Any unmocked method will throw an error with clear message
  */
 function createStrictServiceMock<T extends object>(name: string): T {
 	return new Proxy({} as T, {
@@ -40,6 +24,18 @@ type ApiServiceMockOptions = {
 
 /**
  * Creates a mock ApiService where unmocked methods throw errors
+ *
+ * @example
+ * const mock = createApiServiceMock({
+ *   auth: createAuthServiceMock({ user: mockUser }),
+ * });
+ *
+ * @example
+ * const mock = createApiServiceMock({
+ *   workouts: {
+ *     getWorkoutQuery: () => ({ queryKey: ['workout'], queryFn: async () => workout }),
+ *   },
+ * });
  */
 export function createApiServiceMock(options: ApiServiceMockOptions = {}): ApiService {
 	const strictAuth = createStrictServiceMock<AuthService>('AuthService');
@@ -49,12 +45,4 @@ export function createApiServiceMock(options: ApiServiceMockOptions = {}): ApiSe
 		auth: { ...strictAuth, ...options.auth },
 		workouts: { ...strictWorkouts, ...options.workouts },
 	} as ApiService;
-}
-
-// Legacy exports for backwards compatibility
-export const ApiMock = ApiClientMock;
-export class ApiServiceMock extends ApiService {
-	constructor() {
-		super(new ApiClientMock());
-	}
 }
