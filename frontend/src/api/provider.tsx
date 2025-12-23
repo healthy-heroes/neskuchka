@@ -1,39 +1,21 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import ApiClient from './client';
 import ApiService from './service';
 
-type ApiContextProps = {
-	service: ApiService;
-};
+export const ApiContext = createContext<ApiService | null>(null);
 
-export const ApiContext = createContext<ApiContextProps | null>(null);
+const service = new ApiService(new ApiClient());
 
-export function useApiService(): ApiContextProps {
-	const context = useContext(ApiContext);
-	if (context === null) {
-		throw new Error('useApiService must be used within a ApiProvider');
-	}
-
-	return context;
-}
-
-type ApiProviderProps = {
-	children: React.ReactNode;
-};
-
-export function ApiProvider({ children }: ApiProviderProps) {
-	const api = new ApiClient();
-	const service = new ApiService(api);
-
+export function ApiProvider({ children }: { children: React.ReactNode }) {
 	//todo: add defaults
 	const queryClient = new QueryClient({
 		defaultOptions: {},
 	});
 
 	return (
-		<ApiContext.Provider value={{ service }}>
+		<ApiContext.Provider value={service}>
 			<QueryClientProvider client={queryClient}>
 				{children}
 				<ReactQueryDevtools />

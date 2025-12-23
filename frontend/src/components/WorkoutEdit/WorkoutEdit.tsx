@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Navigate, useNavigate } from '@tanstack/react-router';
 import { Box, Title } from '@mantine/core';
-import { useApiService } from '@/api/provider';
+import { useApi } from '@/api/hooks';
 import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
 import { WorkoutForm } from '../WorkoutForm/WorkoutForm';
 
@@ -11,9 +11,7 @@ interface WorkoutEditProps {
 
 export function WorkoutEdit({ workoutId }: WorkoutEditProps) {
 	const navigate = useNavigate();
-	const {
-		service: { workouts },
-	} = useApiService();
+	const { workouts } = useApi();
 
 	const mutation = useMutation(workouts.updateWorkoutMutation());
 	const { data, isSuccess, isLoading } = useQuery(workouts.getWorkoutQuery(workoutId));

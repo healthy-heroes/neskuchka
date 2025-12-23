@@ -35,7 +35,7 @@ export function StoryPreview(props: StoryPreviewProps) {
 	const service = props.apiService ?? new ApiServiceMock();
 
 	return (
-		<ApiContext.Provider value={{ service }}>
+		<ApiContext.Provider value={service}>
 			<QueryClientProvider client={queryClient}>
 				{getPageWrapper(props)}
 				<ReactQueryDevtools />

@@ -1,13 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { Box, Title } from '@mantine/core';
-import { useApiService } from '@/api/provider';
+import { useApi } from '@/api/hooks';
 import { WorkoutCard } from '../WorkoutCard/WorkoutCard';
 import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
 
 export function Workouts() {
-	const {
-		service: { workouts },
-	} = useApiService();
+	const { workouts } = useApi();
 
 	//todo: handle errors
 	const { data, isSuccess, isLoading } = useQuery(workouts.getMainTrackWorkoutsQuery());
