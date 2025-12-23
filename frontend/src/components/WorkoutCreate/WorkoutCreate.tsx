@@ -1,15 +1,13 @@
 import { useMutation } from '@tanstack/react-query';
 import { Navigate, useNavigate } from '@tanstack/react-router';
 import { Box, Title } from '@mantine/core';
-import { useApiService } from '@/api/provider';
+import { useApi } from '@/api/hooks';
 import { WorkoutForm } from '../WorkoutForm/WorkoutForm';
 
 export function WorkoutCreate() {
 	const navigate = useNavigate();
 
-	const {
-		service: { workouts },
-	} = useApiService();
+	const { workouts } = useApi();
 
 	const mutation = useMutation(workouts.createWorkoutMutation());
 

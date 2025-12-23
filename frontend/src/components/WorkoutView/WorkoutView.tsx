@@ -1,7 +1,7 @@
 import { IconArrowLeft } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { Box, Divider, Grid, Image, List, Text, Title } from '@mantine/core';
-import { useApiService } from '@/api/provider';
+import { useApi } from '@/api/hooks';
 import { formatIsoDate } from '@/utils/dates';
 import { RouteLink } from '../RouteLink/RouteLink';
 import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
@@ -12,9 +12,7 @@ interface WorkoutViewProps {
 }
 
 export function WorkoutView({ workoutId }: WorkoutViewProps) {
-	const {
-		service: { workouts },
-	} = useApiService();
+	const { workouts } = useApi();
 
 	//todo: handle errors
 	const { data, isSuccess, isLoading } = useQuery(workouts.getWorkoutQuery(workoutId));
