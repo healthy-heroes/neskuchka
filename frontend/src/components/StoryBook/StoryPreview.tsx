@@ -8,7 +8,7 @@ import {
 	RouterProvider,
 } from '@tanstack/react-router';
 import { Paper, PaperProps } from '@mantine/core';
-import { ApiServiceMock } from '@/api/fixtures/api';
+import { createApiServiceMock } from '@/api/fixtures/api';
 import { ApiContext } from '@/api/provider';
 import ApiService from '@/api/service';
 
@@ -32,7 +32,7 @@ export interface StoryPreviewProps {
 
 export function StoryPreview(props: StoryPreviewProps) {
 	const queryClient = new QueryClient();
-	const service = props.apiService ?? new ApiServiceMock();
+	const service = props.apiService ?? createApiServiceMock();
 
 	return (
 		<ApiContext.Provider value={service}>

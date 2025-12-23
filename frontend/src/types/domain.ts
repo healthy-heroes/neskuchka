@@ -1,3 +1,8 @@
+export interface User {
+	ID: string;
+	Name: string;
+}
+
 export interface Exercise {
 	Slug: string;
 	Name: string;
