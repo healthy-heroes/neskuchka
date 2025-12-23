@@ -2,7 +2,6 @@ import ApiService from '../service';
 import { AuthService } from '../services/auth';
 import { WorkoutsService } from '../services/workouts';
 
-
 /**
  * Creates a strict service mock using Proxy
  * Any unmocked method will throw an error with clear message
