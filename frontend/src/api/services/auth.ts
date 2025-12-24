@@ -6,14 +6,18 @@ export const AuthKeys = {
 	user: ['auth', 'user'] as const,
 };
 
+type UserResponse = {
+	data: User;
+};
+
 export class AuthService extends Service {
 	/**
 	 * Get the current user if authenticated else returns error with status 401
 	 */
-	getUserQuery(): UseQueryOptions<User> {
+	getUserQuery(): UseQueryOptions<UserResponse> {
 		return {
 			queryKey: AuthKeys.user,
-			queryFn: () => this.api.get<User>(`auth/user`),
+			queryFn: () => this.api.get<UserResponse>(`auth/user`),
 			retry: false,
 			staleTime: 5 * 60 * 1000, // 5 minutes
 		};
