@@ -12,6 +12,10 @@ type AuthServiceMockOptions = {
 	logoutError?: Error;
 };
 
+type UserResponse = {
+	data: User;
+};
+
 /**
  * Creates a mock AuthService for testing
  */
@@ -21,11 +25,11 @@ export function createAuthServiceMock(options: AuthServiceMockOptions = {}) {
 	return {
 		getUserQuery: () => ({
 			queryKey: AuthKeys.user,
-			queryFn: async (): Promise<User> => {
+			queryFn: async (): Promise<UserResponse> => {
 				if (user === null) {
 					throw new Error('Unauthorized');
 				}
-				return user;
+				return { data: user };
 			},
 			retry: false,
 		}),

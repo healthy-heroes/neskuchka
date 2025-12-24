@@ -13,7 +13,7 @@ POST http://localhost:8000/api/v1/auth/login HTTP/1.1
 POST http://localhost:8000/api/v1/auth/login/confirm HTTP/1.1
 
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJOZXNrdWNoa2EiLCJleHAiOjE3NjU4MTcyODYsImp0aSI6ImNiZjBjMDdlMmVjOWFhMzdkMTdkMTk3MTIzNGMwMTNhZjUxMmFlMzgiLCJkYXRhIjp7ImVtYWlsIjoibmV3X3VzZXJAZXhhbXBsZS5jb20ifX0.rD9niMH0IMqBwzF5PgUZLIGy8bv5RKrnvVHEcXiv61s"
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJOZXNrdWNoa2EiLCJleHAiOjE3NjY1ODc1MDEsImp0aSI6ImZlZjM0OGQ2NDJhZWE4MDY1NWM4MTczZTdhMjg5OGVhNTAzM2Y0M2MiLCJkYXRhIjp7ImVtYWlsIjoic29tZUBzb21lLmNvbSJ9fQ.-jb5GLYuIIDRF2fLBytjuTydJxSgaLOVotRy-pRiefA"
 }
 
 ### Logout
