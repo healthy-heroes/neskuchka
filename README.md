@@ -121,6 +121,16 @@ mise run app --back     # Фронт нацелен на локальный бе
 
 В обоих случаях фронт поднимается на http://localhost:5173/ с вотчером изменений.
 
+### Storybook
+Для разработки компонентов можно использовать Storybook:
+
+```
+cd frontend
+mise run storybook
+```
+
+Storybook поднимается на http://localhost:6006/
+
 
 
 
