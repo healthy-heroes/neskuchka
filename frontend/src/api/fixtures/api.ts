@@ -1,14 +1,21 @@
 import ApiService from '../service';
 import { AuthService } from '../services/auth';
 import { WorkoutsService } from '../services/workouts';
+import { createAuthServiceMock } from './auth';
 
 /**
  * Creates a strict service mock using Proxy
- * Any unmocked method will throw an error with clear message
+ * Returns provided mock methods, throws error for unmocked ones
  */
-function createStrictServiceMock<T extends object>(name: string): T {
-	return new Proxy({} as T, {
-		get(_, prop) {
+function createStrictServiceMock<T extends object>(
+	name: string,
+	mockMethods: Partial<T> = {}
+): T {
+	return new Proxy(mockMethods as T, {
+		get(target, prop) {
+			if (prop in target) {
+				return target[prop as keyof T];
+			}
 			return () => {
 				throw new Error(`${name}.${String(prop)}: Not implemented`);
 			};
@@ -23,6 +30,7 @@ type ApiServiceMockOptions = {
 
 /**
  * Creates a mock ApiService where unmocked methods throw errors
+ * Auth service is mocked by default (unauthorized user)
  *
  * @example
  * const mock = createApiServiceMock({
@@ -37,11 +45,10 @@ type ApiServiceMockOptions = {
  * });
  */
 export function createApiServiceMock(options: ApiServiceMockOptions = {}): ApiService {
-	const strictAuth = createStrictServiceMock<AuthService>('AuthService');
-	const strictWorkouts = createStrictServiceMock<WorkoutsService>('WorkoutsService');
+	const defaultAuth = createAuthServiceMock({ user: null });
 
 	return {
-		auth: { ...strictAuth, ...options.auth },
-		workouts: { ...strictWorkouts, ...options.workouts },
+		auth: createStrictServiceMock<AuthService>('AuthService', options.auth ?? defaultAuth),
+		workouts: createStrictServiceMock<WorkoutsService>('WorkoutsService', options.workouts),
 	} as ApiService;
 }
