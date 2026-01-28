@@ -1,37 +1,15 @@
-import { Box, Button, Group } from '@mantine/core';
-import { useAuth } from '@/auth/hooks';
+import { Box, Group } from '@mantine/core';
 import { Logo } from '../Logo/Logo';
-import { RouteLink } from '../RouteLink/RouteLink';
+import { UserMenu } from './UserMenu';
 import classes from './Header.module.css';
 
 export function Header() {
-	const { user, isAuthenticated, isLoading } = useAuth();
-
-	function userInfo() {
-		if (isLoading) {
-			return;
-		}
-
-		console.log(isAuthenticated, user);
-
-		if (isAuthenticated && user) {
-			return <div>{user.Name}</div>;
-		}
-
-		return (
-			<Button component={RouteLink} to="/login">
-				Войти
-			</Button>
-		);
-	}
-
 	return (
 		<Box>
 			<header className={classes.header}>
 				<Group justify="space-between" h="100%">
 					<Logo />
-
-					<Group>{userInfo()}</Group>
+					<UserMenu />
 				</Group>
 			</header>
 		</Box>
