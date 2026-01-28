@@ -14,8 +14,9 @@ describe('Utils: dates.formatIsoDate', () => {
 	});
 
 	it('should return the correct date with year', () => {
-		const date = `${new Date().getFullYear() - 2}-02-28`;
+		const year = new Date().getFullYear() - 2;
+		const date = `${year}-02-28`;
 		const formattedDate = formatIsoDate(date);
-		expect(formattedDate).toBe('28 февраля 2023');
+		expect(formattedDate).toBe(`28 февраля ${year}`);
 	});
 });
