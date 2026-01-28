@@ -7,10 +7,7 @@ import { createAuthServiceMock } from './auth';
  * Creates a strict service mock using Proxy
  * Returns provided mock methods, throws error for unmocked ones
  */
-function createStrictServiceMock<T extends object>(
-	name: string,
-	mockMethods: Partial<T> = {}
-): T {
+function createStrictServiceMock<T extends object>(name: string, mockMethods: Partial<T> = {}): T {
 	return new Proxy(mockMethods as T, {
 		get(target, prop) {
 			if (prop in target) {
