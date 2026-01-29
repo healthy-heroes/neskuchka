@@ -1,11 +1,17 @@
-import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
-import { Welcome } from '../components/Welcome/Welcome';
+import { Navigate } from '@tanstack/react-router';
+import { useAuth } from '@/auth/hooks';
+import { PageSkeleton } from '@/components/PageSkeleton/PageSkeleton';
 
 export function HomePage() {
-	return (
-		<>
-			<Welcome />
-			<ColorSchemeToggle />
-		</>
-	);
+	const { isAuthenticated, isLoading } = useAuth();
+
+	if (isLoading) {
+		return <PageSkeleton />;
+	}
+
+	if (isAuthenticated) {
+		return <Navigate to="/workouts" />;
+	}
+
+	return <Navigate to="/welcome" />;
 }

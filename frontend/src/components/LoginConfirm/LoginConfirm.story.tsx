@@ -40,7 +40,7 @@ export const Success: Story = {
 		const apiService = createApiServiceMock({
 			auth: {
 				confirmLoginMutation: () => ({
-					mutationFn: () => Promise.resolve({ success: true }),
+					mutationFn: () => Promise.resolve(),
 				}),
 			},
 		});

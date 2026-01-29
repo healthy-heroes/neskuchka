@@ -6,16 +6,16 @@ import ApiService from './service';
 
 export const ApiContext = createContext<ApiService | null>(null);
 
-const service = new ApiService(new ApiClient());
+const apiService = new ApiService(new ApiClient());
+
+//todo: add defaults
+const queryClient = new QueryClient({
+	defaultOptions: {},
+});
 
 export function ApiProvider({ children }: { children: React.ReactNode }) {
-	//todo: add defaults
-	const queryClient = new QueryClient({
-		defaultOptions: {},
-	});
-
 	return (
-		<ApiContext.Provider value={service}>
+		<ApiContext.Provider value={apiService}>
 			<QueryClientProvider client={queryClient}>
 				{children}
 				<ReactQueryDevtools />
