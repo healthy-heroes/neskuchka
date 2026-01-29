@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
+import { IconAlertCircle, IconCheck } from '@tabler/icons-react';
 import { useMutation } from '@tanstack/react-query';
 import { Alert, Container, Loader, Stack, Text } from '@mantine/core';
-import { IconAlertCircle, IconCheck } from '@tabler/icons-react';
-import { RouteLink } from '@/components/RouteLink/RouteLink';
 import { useApi } from '@/api/hooks';
+import { RouteLink } from '@/components/RouteLink/RouteLink';
 
 export type LoginConfirmProps = {
 	token?: string;
@@ -86,7 +86,13 @@ export function LoginConfirm({ token }: LoginConfirmProps) {
 
 	return (
 		<Container size={600} my={30}>
-			<Alert icon={<Loader size={24} />} title="Подтверждение входа..." color="blue" variant="light" p="xl">
+			<Alert
+				icon={<Loader size={24} />}
+				title="Подтверждение входа..."
+				color="blue"
+				variant="light"
+				p="xl"
+			>
 				<Text size="md" mt="xs">
 					Пожалуйста, подождите, мы проверяем вашу ссылку...
 				</Text>

@@ -1,4 +1,4 @@
-import { Box, Container, Skeleton, Stack } from '@mantine/core';
+import { Container, Skeleton, Stack } from '@mantine/core';
 import { Header } from '../Header/Header';
 
 export function PageSkeleton() {
