@@ -39,10 +39,13 @@ export class AuthService extends Service {
 		};
 	}
 
-	confirmLoginQuery(token: string): UseQueryOptions<void> {
+	confirmLoginQuery(token: string): UseQueryOptions<null> {
 		return {
 			queryKey: AuthKeys.confirm(token),
-			queryFn: () => this.api.post<void>(`auth/login/confirm`, { token }),
+			queryFn: async () => {
+				await this.api.post(`auth/login/confirm`, { token });
+				return null;
+			},
 			retry: false,
 		};
 	}

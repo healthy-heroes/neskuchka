@@ -53,7 +53,12 @@ export function createAuthServiceMock(options: AuthServiceMockOptions = {}) {
 
 		confirmLoginQuery: (token: string) => ({
 			queryKey: AuthKeys.confirm(token),
-			queryFn: confirmLoginFn ? () => confirmLoginFn(token) : async () => {},
+			queryFn: async () => {
+				if (confirmLoginFn) {
+					await confirmLoginFn(token);
+				}
+				return null;
+			},
 			retry: false,
 		}),
 	};
