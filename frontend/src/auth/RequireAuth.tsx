@@ -15,7 +15,7 @@ export function RequireAuth({ children, loadingComponent, guestOnly }: RequireAu
 	}
 
 	if (guestOnly) {
-		isAuthenticated ? <Navigate to="/" /> : children;
+		return isAuthenticated ? <Navigate to="/" /> : children;
 	}
 
 	return isAuthenticated ? children : <Navigate to="/login" />;

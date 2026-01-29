@@ -40,7 +40,7 @@ export class WorkoutsService extends Service {
 	updateWorkoutMutation(): UseMutationOptions<TrackWorkout, Error, Workout> {
 		return {
 			mutationFn: (workout: Workout) => {
-				return this.api.put<TrackWorkout>(`tracks/main/workouts/${workout.ID}`, workout);
+				return this.api.put<TrackWorkout, Workout>(`tracks/main/workouts/${workout.ID}`, workout);
 			},
 		};
 	}
@@ -48,7 +48,7 @@ export class WorkoutsService extends Service {
 	createWorkoutMutation(): UseMutationOptions<TrackWorkout, Error, Workout> {
 		return {
 			mutationFn: (workout: Workout) => {
-				return this.api.post<TrackWorkout>(`tracks/main/workouts`, workout);
+				return this.api.post<TrackWorkout, Workout>(`tracks/main/workouts`, workout);
 			},
 		};
 	}
