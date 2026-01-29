@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { LoginConfirm } from '@/components/Login/Login';
+import { LoginConfirm } from '@/components/LoginConfirm/LoginConfirm';
 
 export const Route = createFileRoute('/login/confirm')({
 	component: () => {
