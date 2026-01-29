@@ -21,6 +21,10 @@ else
 fi
 '''
 
+[tasks.storybook]
+description = "Run Storybook"
+run = "pnpm run storybook"
+
 [tasks.checks]
 description = "Run checks"
 sources = [

@@ -1,0 +1,33 @@
+# Project Rules and Conventions
+
+## Task Management with Mise
+
+### Running tasks from project root
+When running `mise` commands from the project root (`/Users/dzlk/Dev/neskuchka/`), you must use prefixes:
+- `mise run //frontend:checks --fix`
+- `mise run //backend:checks`
+- `mise run //frontend:tests`
+
+### Running tasks from subdirectories
+When running `mise` commands from within a specific directory (e.g., `frontend/` or `backend/`), you can omit the prefix:
+- `cd frontend/` then `mise run checks --fix`
+- `cd backend/` then `mise run tests`
+
+### Best practices
+- Always prefer using `mise` over direct tool calls (`pnpm`, `go`, etc.)
+- Use `mise run //frontend:checks --fix` to automatically fix formatting issues before committing
+- The project has pre-commit hooks that run checks, so ensure formatting is correct before committing
+
+## Project Structure
+- This is a monorepo with `backend/` (Go) and `frontend/` (TypeScript/React)
+- Each part has its own tasks defined in mise configuration
+- Pre-commit hooks run checks automatically
+
+## Frontend Stack
+- React + Mantine UI + TanStack Router + TanStack Query
+- Auth state via `useAuth()` hook from `@/auth/hooks`
+
+## Frontend Patterns
+- Auth redirects: do in Page components (not route-level `beforeLoad`) using `<Navigate to="..." />`
+- Loading states: use `<PageSkeleton />` component
+- Route links: use `<RouteLink />` component from `@/components/RouteLink`

@@ -30,7 +30,7 @@ export function useAuth(): AuthState {
 	const userQuery = useQuery(api.auth.getUserQuery());
 
 	return {
-		user: userQuery.data ?? null,
+		user: userQuery.data?.data ?? null,
 		isAuthenticated: !!userQuery.data,
 		isLoading: userQuery.isPending,
 		logout: logout.mutateAsync,

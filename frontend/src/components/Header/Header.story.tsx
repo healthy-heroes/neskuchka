@@ -1,19 +1,13 @@
+import { createApiServiceMock } from '@/api/fixtures/api';
+import { createAuthServiceMock, mockUser } from '@/api/fixtures/auth';
 import { StoryPreview } from '../StoryBook/StoryPreview';
 import { Header } from './Header';
 
 export default {
 	title: 'Header',
-	viewport: {
-		options: {
-			kindleFire2: {
-				name: 'Kindle Fire 2',
-				styles: { width: '600px', height: '963px' },
-			},
-		},
-	},
 };
 
-export function Default() {
+export function LoggedOut() {
 	return (
 		<StoryPreview>
 			<Header />
@@ -21,22 +15,14 @@ export function Default() {
 	);
 }
 
-// Дополнительная история специально для мобильного вида
-export function Mobile() {
+export function LoggedIn() {
+	const apiService = createApiServiceMock({
+		auth: createAuthServiceMock({ user: mockUser }),
+	});
+
 	return (
-		<StoryPreview>
+		<StoryPreview apiService={apiService}>
 			<Header />
 		</StoryPreview>
 	);
 }
-
-Mobile.parameters = {
-	viewport: {
-		options: {
-			kindleFire2: {
-				name: 'Kindle Fire 2',
-				styles: { width: '600px', height: '963px' },
-			},
-		},
-	},
-};

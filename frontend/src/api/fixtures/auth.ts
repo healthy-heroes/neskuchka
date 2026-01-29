@@ -10,22 +10,27 @@ type AuthServiceMockOptions = {
 	user?: User | null;
 	loginError?: Error;
 	logoutError?: Error;
+	confirmLoginFn?: (token: string) => Promise<void>;
+};
+
+type UserResponse = {
+	data: User;
 };
 
 /**
  * Creates a mock AuthService for testing
  */
 export function createAuthServiceMock(options: AuthServiceMockOptions = {}) {
-	const { user = mockUser, loginError, logoutError } = options;
+	const { user = mockUser, loginError, logoutError, confirmLoginFn } = options;
 
 	return {
 		getUserQuery: () => ({
 			queryKey: AuthKeys.user,
-			queryFn: async (): Promise<User> => {
+			queryFn: async (): Promise<UserResponse> => {
 				if (user === null) {
 					throw new Error('Unauthorized');
 				}
-				return user;
+				return { data: user };
 			},
 			retry: false,
 		}),
@@ -46,8 +51,15 @@ export function createAuthServiceMock(options: AuthServiceMockOptions = {}) {
 			},
 		}),
 
-		confirmLoginMutation: () => ({
-			mutationFn: async (_token: string): Promise<void> => {},
+		confirmLoginQuery: (token: string) => ({
+			queryKey: AuthKeys.confirm(token),
+			queryFn: async () => {
+				if (confirmLoginFn) {
+					await confirmLoginFn(token);
+				}
+				return null;
+			},
+			retry: false,
 		}),
 	};
 }

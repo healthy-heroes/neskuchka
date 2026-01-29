@@ -60,7 +60,7 @@ describe('useAuth', () => {
 		const queryClient = createTestQueryClient();
 
 		// Pre-fill cache with user data
-		queryClient.setQueryData(AuthKeys.user, mockUser);
+		queryClient.setQueryData(AuthKeys.user, { data: mockUser });
 
 		const authMock = createAuthServiceMock({ user: mockUser });
 		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ auth: authMock }));
@@ -87,7 +87,7 @@ describe('useAuth', () => {
 
 	it('should handle logout error gracefully', async () => {
 		const queryClient = createTestQueryClient();
-		queryClient.setQueryData(AuthKeys.user, mockUser);
+		queryClient.setQueryData(AuthKeys.user, { data: mockUser });
 
 		const logoutError = new Error('Network error');
 		const authMock = createAuthServiceMock({ user: mockUser, logoutError });
