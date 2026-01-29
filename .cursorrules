@@ -22,3 +22,12 @@ When running `mise` commands from within a specific directory (e.g., `frontend/`
 - This is a monorepo with `backend/` (Go) and `frontend/` (TypeScript/React)
 - Each part has its own tasks defined in mise configuration
 - Pre-commit hooks run checks automatically
+
+## Frontend Stack
+- React + Mantine UI + TanStack Router + TanStack Query
+- Auth state via `useAuth()` hook from `@/auth/hooks`
+
+## Frontend Patterns
+- Auth redirects: do in Page components (not route-level `beforeLoad`) using `<Navigate to="..." />`
+- Loading states: use `<PageSkeleton />` component
+- Route links: use `<RouteLink />` component from `@/components/RouteLink`
