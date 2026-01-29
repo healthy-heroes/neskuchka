@@ -1,17 +1,17 @@
-import { Navigate } from '@tanstack/react-router';
+import { useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '@/auth/hooks';
 import { PageSkeleton } from '@/components/PageSkeleton/PageSkeleton';
 
 export function HomePage() {
 	const { isAuthenticated, isLoading } = useAuth();
+	const navigate = useNavigate();
 
-	if (isLoading) {
-		return <PageSkeleton />;
-	}
+	useEffect(() => {
+		if (!isLoading) {
+			navigate({ to: isAuthenticated ? '/workouts' : '/welcome' });
+		}
+	}, [isLoading, isAuthenticated, navigate]);
 
-	if (isAuthenticated) {
-		return <Navigate to="/workouts" />;
-	}
-
-	return <Navigate to="/welcome" />;
+	return <PageSkeleton />;
 }

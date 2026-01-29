@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { createApiServiceMock } from '@/api/fixtures/api';
+import { createAuthServiceMock } from '@/api/fixtures/auth';
 import { StoryPreview } from '../StoryBook/StoryPreview';
 import { LoginConfirm } from './LoginConfirm';
 
@@ -19,11 +20,9 @@ type Story = StoryObj<typeof LoginConfirm>;
 export const Loading: Story = {
 	render: () => {
 		const apiService = createApiServiceMock({
-			auth: {
-				confirmLoginMutation: () => ({
-					mutationFn: () => new Promise(() => {}), // Never resolves to stay in loading
-				}),
-			},
+			auth: createAuthServiceMock({
+				confirmLoginFn: () => new Promise(() => {}), // Never resolves to stay in loading
+			}),
 		});
 
 		return (
@@ -38,11 +37,9 @@ export const Loading: Story = {
 export const Success: Story = {
 	render: () => {
 		const apiService = createApiServiceMock({
-			auth: {
-				confirmLoginMutation: () => ({
-					mutationFn: () => Promise.resolve(),
-				}),
-			},
+			auth: createAuthServiceMock({
+				confirmLoginFn: () => Promise.resolve(),
+			}),
 		});
 
 		return (
@@ -66,11 +63,9 @@ export const NoToken: Story = {
 export const WithError: Story = {
 	render: () => {
 		const apiService = createApiServiceMock({
-			auth: {
-				confirmLoginMutation: () => ({
-					mutationFn: () => Promise.reject(new Error('Токен недействителен или истёк')),
-				}),
-			},
+			auth: createAuthServiceMock({
+				confirmLoginFn: () => Promise.reject(new Error('Токен недействителен или истёк')),
+			}),
 		});
 
 		return (

@@ -10,7 +10,12 @@ const apiService = new ApiService(new ApiClient());
 
 //todo: add defaults
 const queryClient = new QueryClient({
-	defaultOptions: {},
+	defaultOptions: {
+		queries: {
+			retry: 3,
+			retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+		},
+	},
 });
 
 export function ApiProvider({ children }: { children: React.ReactNode }) {

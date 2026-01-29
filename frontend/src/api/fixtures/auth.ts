@@ -10,6 +10,7 @@ type AuthServiceMockOptions = {
 	user?: User | null;
 	loginError?: Error;
 	logoutError?: Error;
+	confirmLoginFn?: (token: string) => Promise<void>;
 };
 
 type UserResponse = {
@@ -20,7 +21,7 @@ type UserResponse = {
  * Creates a mock AuthService for testing
  */
 export function createAuthServiceMock(options: AuthServiceMockOptions = {}) {
-	const { user = mockUser, loginError, logoutError } = options;
+	const { user = mockUser, loginError, logoutError, confirmLoginFn } = options;
 
 	return {
 		getUserQuery: () => ({
@@ -50,8 +51,10 @@ export function createAuthServiceMock(options: AuthServiceMockOptions = {}) {
 			},
 		}),
 
-		confirmLoginMutation: () => ({
-			mutationFn: async (_token: string): Promise<void> => {},
+		confirmLoginQuery: (token: string) => ({
+			queryKey: AuthKeys.confirm(token),
+			queryFn: confirmLoginFn ? () => confirmLoginFn(token) : async () => {},
+			retry: false,
 		}),
 	};
 }

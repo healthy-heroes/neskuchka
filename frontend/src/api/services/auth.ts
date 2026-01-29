@@ -1,9 +1,11 @@
 import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
+import axios from 'axios';
 import { User } from '@/types/domain';
 import Service from './service';
 
 export const AuthKeys = {
 	user: ['auth', 'user'] as const,
+	confirm: (token: string) => ['auth', 'confirm', token] as const,
 };
 
 type UserResponse = {
@@ -12,13 +14,21 @@ type UserResponse = {
 
 export class AuthService extends Service {
 	/**
-	 * Get the current user if authenticated else returns error with status 401
+	 * Get the current user if authenticated, null if not authenticated (401)
 	 */
-	getUserQuery(): UseQueryOptions<UserResponse> {
+	getUserQuery(): UseQueryOptions<UserResponse | null> {
 		return {
 			queryKey: AuthKeys.user,
-			queryFn: () => this.api.get<UserResponse>(`auth/user`),
-			retry: false,
+			queryFn: async () => {
+				try {
+					return await this.api.get<UserResponse>(`auth/user`);
+				} catch (error) {
+					if (axios.isAxiosError(error) && error.response?.status === 401) {
+						return null;
+					}
+					throw error;
+				}
+			},
 			staleTime: 5 * 60 * 1000, // 5 minutes
 		};
 	}
@@ -29,9 +39,11 @@ export class AuthService extends Service {
 		};
 	}
 
-	confirmLoginMutation(): UseMutationOptions<void, Error, string> {
+	confirmLoginQuery(token: string): UseQueryOptions<void> {
 		return {
-			mutationFn: (token: string) => this.api.post<void>(`auth/login/confirm`, { token }),
+			queryKey: AuthKeys.confirm(token),
+			queryFn: () => this.api.post<void>(`auth/login/confirm`, { token }),
+			retry: false,
 		};
 	}
 
