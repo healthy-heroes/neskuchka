@@ -9,18 +9,23 @@ interface WorkoutEditProps {
 	workoutId: string;
 }
 
+/**
+ * Component for editing a workout
+ *
+ * @attention This component don't check owner of the workout
+ */
 export function WorkoutEdit({ workoutId }: WorkoutEditProps) {
 	const navigate = useNavigate();
 	const { workouts } = useApi();
 
-	const mutation = useMutation(workouts.updateWorkoutMutation());
-	const { data, isSuccess, isLoading } = useQuery(workouts.getWorkoutQuery(workoutId));
+	const workoutUpdating = useMutation(workouts.updateWorkoutMutation());
+	const { data, isSuccess, isPending } = useQuery(workouts.getWorkoutQuery(workoutId));
 
-	if (mutation.isSuccess) {
+	if (workoutUpdating.isSuccess) {
 		return <Navigate to="/workouts/$workoutId" params={{ workoutId }} />;
 	}
 
-	if (isLoading || !isSuccess) {
+	if (isPending || !isSuccess) {
 		return (
 			<Box p="md">
 				<Title order={2} my="md">
@@ -45,10 +50,10 @@ export function WorkoutEdit({ workoutId }: WorkoutEditProps) {
 
 			<WorkoutForm
 				data={workout}
-				isSubmitting={mutation.isPending}
-				onSubmit={mutation.mutate}
+				isSubmitting={workoutUpdating.isPending}
+				onSubmit={workoutUpdating.mutate}
 				onCancel={handleCancel}
-				error={mutation.error}
+				error={workoutUpdating.error}
 			/>
 		</Box>
 	);

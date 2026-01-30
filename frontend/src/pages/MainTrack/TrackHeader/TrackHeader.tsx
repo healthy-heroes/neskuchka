@@ -1,11 +1,16 @@
 import { Avatar, Box, Group, Text, Title } from '@mantine/core';
+import { TrackData } from '@/api/services/workouts';
 import classes from './TrackHeader.module.css';
 
-export function TrackHeader() {
+interface TrackHeaderProps {
+	track: TrackData;
+}
+
+export function TrackHeader({ track }: TrackHeaderProps) {
 	return (
 		<Box p="lg" py="xl" bg="blue.1">
 			<Title order={1} mb="xl">
-				Нескучный спорт
+				{track.Track.Name}
 			</Title>
 
 			<Text size="xl">Тренируйтесь с нами — где бы вы ни находились!</Text>

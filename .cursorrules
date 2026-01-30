@@ -31,3 +31,21 @@ When running `mise` commands from within a specific directory (e.g., `frontend/`
 - Auth redirects: do in Page components (not route-level `beforeLoad`) using `<Navigate to="..." />`
 - Loading states: use `<PageSkeleton />` component
 - Route links: use `<RouteLink />` component from `@/components/RouteLink`
+
+## TanStack Query (React Query v5)
+- Use `isPending` instead of `isLoading` for checking loading state
+- Prefer `data?.field` over `isSuccess && data.field` for simple cases
+- Use `select` option to unwrap API responses (e.g., `{ data: T }` → `T`)
+- Layout components load shared data; children get it from cache instantly
+- See `docs/concepts/queries.md` for detailed patterns
+
+## Route Guards
+- Use `<RequireAuth>` for auth-only pages (checks authentication)
+- Use `<TrackOwnerOnly>` for owner-only pages (checks track ownership)
+- Guards go in route component, wrap the page component
+- See `docs/concepts/routing.md` for examples
+
+## Permissions & Authorization
+- Backend returns `IsOwner: bool` in API response, not raw `OwnerID`
+- Frontend checks permissions via response field, not by comparing IDs
+- This keeps authorization logic on backend, frontend just reads the flag

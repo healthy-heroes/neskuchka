@@ -1,8 +1,18 @@
 import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
-import { Workout } from '@/types/domain';
+import { Track, Workout } from '@/types/domain';
 import Service from './service';
 
-export interface TrackWorkouts {
+//todo: move out of this file
+interface ApiResponse<T> {
+	data: T;
+}
+
+export interface TrackData {
+	Track: Track;
+	IsOwner: boolean;
+}
+
+export interface TrackWorkoutsData {
 	Workouts: Array<Workout>;
 }
 
@@ -11,19 +21,35 @@ export interface TrackWorkout {
 }
 
 export const WorkoutsKeys = {
-	all: ['workouts'] as const,
-	byTrack: () => [...WorkoutsKeys.all, 'track:main'],
-	workout: (id: string) => [...WorkoutsKeys.all, 'workout', id],
+	track: () => ['track:main'] as const,
+	workouts: () => [...WorkoutsKeys.track(), 'workouts'],
+	workout: (id: string) => [...WorkoutsKeys.track(), 'workout', id],
 };
 
 export class WorkoutsService extends Service {
 	/**
+	 * Get the main track
+	 */
+	getMainTrackQuery(): UseQueryOptions<ApiResponse<TrackData>, Error, TrackData> {
+		return {
+			queryKey: WorkoutsKeys.track(),
+			queryFn: () => this.api.get<ApiResponse<TrackData>>(`tracks/main`),
+			select: (response) => response.data,
+		};
+	}
+
+	/**
 	 * Get the last workouts for the main track
 	 */
-	getMainTrackWorkoutsQuery(): UseQueryOptions<TrackWorkouts> {
+	getMainTrackWorkoutsQuery(): UseQueryOptions<
+		ApiResponse<TrackWorkoutsData>,
+		Error,
+		TrackWorkoutsData
+	> {
 		return {
-			queryKey: WorkoutsKeys.byTrack(),
-			queryFn: () => this.api.get<TrackWorkouts>(`tracks/main/last_workouts`),
+			queryKey: WorkoutsKeys.workouts(),
+			queryFn: () => this.api.get<ApiResponse<TrackWorkoutsData>>(`tracks/main/last_workouts`),
+			select: (response) => response.data,
 		};
 	}
 
@@ -40,7 +66,7 @@ export class WorkoutsService extends Service {
 	updateWorkoutMutation(): UseMutationOptions<TrackWorkout, Error, Workout> {
 		return {
 			mutationFn: (workout: Workout) => {
-				return this.api.put<TrackWorkout>(`tracks/main/workouts/${workout.ID}`, workout);
+				return this.api.put<TrackWorkout, Workout>(`tracks/main/workouts/${workout.ID}`, workout);
 			},
 		};
 	}
@@ -48,7 +74,7 @@ export class WorkoutsService extends Service {
 	createWorkoutMutation(): UseMutationOptions<TrackWorkout, Error, Workout> {
 		return {
 			mutationFn: (workout: Workout) => {
-				return this.api.post<TrackWorkout>(`tracks/main/workouts`, workout);
+				return this.api.post<TrackWorkout, Workout>(`tracks/main/workouts`, workout);
 			},
 		};
 	}

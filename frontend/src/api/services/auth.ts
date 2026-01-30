@@ -12,6 +12,14 @@ type UserResponse = {
 	data: User;
 };
 
+type LoginPayload = {
+	email: string;
+};
+
+type ConfirmLoginPayload = {
+	token: string;
+};
+
 export class AuthService extends Service {
 	/**
 	 * Get the current user if authenticated, null if not authenticated (401)
@@ -35,16 +43,20 @@ export class AuthService extends Service {
 
 	loginMutation(): UseMutationOptions<void, Error, string> {
 		return {
-			mutationFn: (email: string) => this.api.post<void>(`auth/login`, { email }),
+			mutationFn: (email: string) => this.api.post<void, LoginPayload>(`auth/login`, { email }),
 		};
 	}
 
-	confirmLoginQuery(token: string): UseQueryOptions<null> {
+	/**
+	 * Confirm a login attempt by providing a token
+	 *
+	 * @note Using query instead of mutation because need fight with double useEffect hooks in dev
+	 */
+	confirmLoginQuery(token: string): UseQueryOptions<void> {
 		return {
 			queryKey: AuthKeys.confirm(token),
 			queryFn: async () => {
-				await this.api.post(`auth/login/confirm`, { token });
-				return null;
+				return this.api.post<void, ConfirmLoginPayload>(`auth/login/confirm`, { token });
 			},
 			retry: false,
 		};
