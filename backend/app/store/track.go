@@ -10,6 +10,10 @@ type Track struct {
 	OwnerID UserID
 }
 
+func (t *Track) IsOwner(userID UserID) bool {
+	return userID != "" && t.OwnerID == userID
+}
+
 func CreateTrackId() TrackID {
 	return TrackID(uuid.New().String())
 }

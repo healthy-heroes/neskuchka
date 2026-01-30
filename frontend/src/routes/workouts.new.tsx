@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { RequireAuth } from '@/auth/RequireAuth';
 import { PageSkeleton } from '@/components/PageSkeleton/PageSkeleton';
 import { WorkoutCreate } from '@/components/WorkoutCreate/WorkoutCreate';
 import { TrackOwnerOnly } from '@/guards/TrackOwnerOnly';
@@ -11,8 +12,10 @@ function RouteComponent() {
 	const loadingComponent = <PageSkeleton hideHeader />;
 
 	return (
-		<TrackOwnerOnly loadingComponent={loadingComponent} redirectTo="/workouts">
-			<WorkoutCreate />
-		</TrackOwnerOnly>
+		<RequireAuth loadingComponent={loadingComponent}>
+			<TrackOwnerOnly loadingComponent={loadingComponent} redirectTo="/workouts">
+				<WorkoutCreate />
+			</TrackOwnerOnly>
+		</RequireAuth>
 	);
 }
