@@ -10,7 +10,7 @@ type AuthServiceMockOptions = {
 	user?: User | null;
 	loginError?: Error;
 	logoutError?: Error;
-	confirmLoginFn?: (token: string) => Promise<void>;
+	confirmLoginFn?: (token: string) => Promise<null>;
 };
 
 type UserResponse = {
@@ -53,10 +53,11 @@ export function createAuthServiceMock(options: AuthServiceMockOptions = {}) {
 
 		confirmLoginQuery: (token: string) => ({
 			queryKey: AuthKeys.confirm(token),
-			queryFn: async (): Promise<void> => {
+			queryFn: async (): Promise<null> => {
 				if (confirmLoginFn) {
-					await confirmLoginFn(token);
+					return confirmLoginFn(token);
 				}
+				return null;
 			},
 			retry: false,
 		}),
