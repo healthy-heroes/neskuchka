@@ -1,10 +1,14 @@
 import { Container, Skeleton, Stack } from '@mantine/core';
 import { Header } from '../Header/Header';
 
-export function PageSkeleton() {
+type PageSkeletonProps = {
+	hideHeader?: boolean;
+};
+
+export function PageSkeleton({ hideHeader }: PageSkeletonProps) {
 	return (
 		<>
-			<Header />
+			{!hideHeader && <Header />}
 			<Container size="sm" py="xl">
 				<Stack gap="md">
 					<Skeleton height={32} width="40%" radius="md" />

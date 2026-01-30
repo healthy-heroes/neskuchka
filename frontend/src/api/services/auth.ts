@@ -49,7 +49,7 @@ export class AuthService extends Service {
 
 	/**
 	 * Confirm a login attempt by providing a token
-	 * 
+	 *
 	 * @note Using query instead of mutation because need fight with double useEffect hooks in dev
 	 */
 	confirmLoginQuery(token: string): UseQueryOptions<void> {

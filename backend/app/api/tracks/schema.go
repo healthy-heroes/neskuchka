@@ -9,3 +9,13 @@ type WorkoutSchema struct {
 type WorkoutsSchema struct {
 	Workouts []*store.Workout
 }
+
+type TrackInfo struct {
+	ID   string
+	Name string
+}
+
+type TrackSchema struct {
+	Track   TrackInfo
+	IsOwner bool
+}

@@ -55,11 +55,11 @@ Guard component для проверки авторизации. Использу
 ### Protected route (только для авторизованных)
 
 ```tsx
-// routes/workouts.new.tsx
+// routes/profile.tsx
 function RouteComponent() {
   return (
     <RequireAuth loadingComponent={<PageSkeleton />}>
-      <WorkoutCreate />
+      <ProfilePage />
     </RequireAuth>
   )
 }
@@ -78,16 +78,20 @@ function RouteComponent() {
 }
 ```
 
-### Protected + Owner check
+### Protected + Owner check (TrackOwnerOnly)
 
 ```tsx
 // routes/workouts.$workoutId_.edit.tsx
 function RouteComponent() {
   const { workoutId } = Route.useParams()
+  
   return (
-    <RequireAuth loadingComponent={<PageSkeleton />}>
+    <TrackOwnerOnly 
+      loadingComponent={<PageSkeleton hideHeader />} 
+      redirectTo={`/workouts/${workoutId}`}
+    >
       <WorkoutEdit workoutId={workoutId} />
-    </RequireAuth>
+    </TrackOwnerOnly>
   )
 }
 ```
@@ -95,18 +99,13 @@ function RouteComponent() {
 ```tsx
 // components/WorkoutEdit/WorkoutEdit.tsx
 function WorkoutEdit({ workoutId }: { workoutId: string }) {
+  // Owner check уже гарантирован TrackOwnerOnly
+  // Компонент загружает только данные workout
   const { workouts } = useApi()
   const { data, isLoading } = useQuery(workouts.getWorkoutQuery(workoutId))
-  const isOwner = useIsOwner(data?.OwnerID)
 
-  // Auth уже гарантирован RequireAuth, ждём только данные
   if (isLoading) {
     return <PageSkeleton />
-  }
-
-  // Owner check — после загрузки данных
-  if (!isOwner) {
-    return <Navigate to="/workouts/$workoutId" params={{ workoutId }} />
   }
 
   return <WorkoutForm data={data.Workout} ... />
@@ -122,6 +121,67 @@ function RouteComponent() {
   return <WorkoutView workoutId={workoutId} />  // Без RequireAuth
 }
 ```
+
+---
+
+## TrackOwnerOnly
+
+Guard component для проверки что текущий пользователь — владелец трека. Используется **в route component** для owner-only страниц.
+
+### Когда использовать
+
+| Сценарий | Решение |
+|----------|---------|
+| Создание workout | `<TrackOwnerOnly>` |
+| Редактирование workout | `<TrackOwnerOnly>` |
+| Удаление workout | `<TrackOwnerOnly>` |
+
+### Как работает
+
+1. Загружает track через `getMainTrackQuery()`
+2. Если `isPending` — показывает `loadingComponent`
+3. Если `!IsOwner` — редирект на `redirectTo`
+4. Если owner — рендерит children
+
+### Гарантии TrackOwnerOnly
+
+Компонент внутри `TrackOwnerOnly` получает гарантии:
+- ✅ Track загружен и в кеше
+- ✅ Текущий пользователь — владелец трека
+
+### Пример
+
+```tsx
+// routes/workouts.new.tsx
+function RouteComponent() {
+  return (
+    <TrackOwnerOnly 
+      loadingComponent={<PageSkeleton hideHeader />} 
+      redirectTo="/workouts"
+    >
+      <WorkoutCreate />
+    </TrackOwnerOnly>
+  )
+}
+```
+
+```tsx
+// routes/workouts.$workoutId_.edit.tsx
+function RouteComponent() {
+  const { workoutId } = Route.useParams()
+  
+  return (
+    <TrackOwnerOnly 
+      loadingComponent={<PageSkeleton hideHeader />} 
+      redirectTo={`/workouts/${workoutId}`}
+    >
+      <WorkoutEdit workoutId={workoutId} />
+    </TrackOwnerOnly>
+  )
+}
+```
+
+---
 
 ## Trade-offs
 
@@ -140,5 +200,6 @@ function RouteComponent() {
 ## См. также
 
 - `@/auth/RequireAuth` — guard component для auth проверок
+- `@/guards/TrackOwnerOnly` — guard component для owner-only страниц
 - `@/auth/hooks` — хуки `useAuth()`, `useIsOwner()`
 - `@/components/PageSkeleton` — компонент для loading state

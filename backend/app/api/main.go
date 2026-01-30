@@ -132,11 +132,14 @@ func (api *Api) addAuthRoutes(router chi.Router, session *session.Manager) {
 // addTracksRoutes is adding tracks routes
 // temporary working with concrete main track routes
 func (api *Api) addTracksRoutes(router chi.Router, session *session.Manager) {
-	h := tracks.NewService(api.Store)
+	h := tracks.NewService(api.Store, session, tracks.Opts{
+		Logger: log.Logger,
+	})
 
 	auth := session.Authenticator(httpx.RenderUnauthorized)
 
 	router.Route("/tracks/main", func(r chi.Router) {
+		r.Get("/", h.GetMainTrack)
 		r.Get("/last_workouts", h.GetMainTrackLastWorkouts)
 
 		r.Get("/workouts/{id}", h.GetWorkout)

@@ -21,7 +21,9 @@ export default class ApiClient {
 	 * wraps axios.put
 	 */
 	async put<TResponse, TPayload = unknown>(path: string, payload: TPayload): Promise<TResponse> {
-		return axios.put<TResponse>(`${this.apiPath}/${path}`, payload).then((response) => response.data);
+		return axios
+			.put<TResponse>(`${this.apiPath}/${path}`, payload)
+			.then((response) => response.data);
 	}
 
 	/**
@@ -29,6 +31,8 @@ export default class ApiClient {
 	 * wraps axios.post
 	 */
 	async post<TResponse, TPayload = unknown>(path: string, payload: TPayload): Promise<TResponse> {
-		return axios.post<TResponse>(`${this.apiPath}/${path}`, payload).then((response) => response.data);
+		return axios
+			.post<TResponse>(`${this.apiPath}/${path}`, payload)
+			.then((response) => response.data);
 	}
 }

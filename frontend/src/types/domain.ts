@@ -3,6 +3,11 @@ export interface User {
 	Name: string;
 }
 
+export interface Track {
+	ID: string;
+	Name: string;
+}
+
 export interface Exercise {
 	Slug: string;
 	Name: string;
