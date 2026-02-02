@@ -27,6 +27,7 @@ func (m *Manager) Verifier() func(http.Handler) http.Handler {
 			if err != nil {
 				if !errors.Is(err, ErrSessionNotFound) {
 					m.logger.Error().Err(err).Msg("failed to verify session")
+					m.Clear(w)
 				}
 
 				next.ServeHTTP(w, r)
