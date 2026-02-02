@@ -27,6 +27,7 @@ services:
       - ADDRESS=0.0.0.0
       - STORE_TYPE=sqlite
       - STORE_SQLITE_SOURCE=./bin/app.db
+      - SECRET=top
 
     volumes:
       - ./backend/bin:/srv/bin
