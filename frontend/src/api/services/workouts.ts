@@ -16,7 +16,7 @@ export interface TrackWorkoutsData {
 	Workouts: Array<Workout>;
 }
 
-export interface TrackWorkout {
+export interface TrackWorkoutData {
 	Workout: Workout;
 }
 
@@ -56,25 +56,36 @@ export class WorkoutsService extends Service {
 	/**
 	 * Get concrete workout by id
 	 */
-	getWorkoutQuery(id: string): UseQueryOptions<TrackWorkout> {
+	getWorkoutQuery(
+		id: string
+	): UseQueryOptions<ApiResponse<TrackWorkoutData>, Error, TrackWorkoutData> {
 		return {
 			queryKey: WorkoutsKeys.workout(id),
-			queryFn: () => this.api.get<TrackWorkout>(`tracks/main/workouts/${id}`),
+			queryFn: () => this.api.get<ApiResponse<TrackWorkoutData>>(`tracks/main/workouts/${id}`),
+			select: (response) => response.data,
 		};
 	}
 
-	updateWorkoutMutation(): UseMutationOptions<TrackWorkout, Error, Workout> {
+	updateWorkoutMutation(): UseMutationOptions<TrackWorkoutData, Error, Workout> {
 		return {
-			mutationFn: (workout: Workout) => {
-				return this.api.put<TrackWorkout, Workout>(`tracks/main/workouts/${workout.ID}`, workout);
+			mutationFn: async (workout: Workout) => {
+				const response = await this.api.put<ApiResponse<TrackWorkoutData>, Workout>(
+					`tracks/main/workouts/${workout.ID}`,
+					workout
+				);
+				return response.data;
 			},
 		};
 	}
 
-	createWorkoutMutation(): UseMutationOptions<TrackWorkout, Error, Workout> {
+	createWorkoutMutation(): UseMutationOptions<TrackWorkoutData, Error, Workout> {
 		return {
-			mutationFn: (workout: Workout) => {
-				return this.api.post<TrackWorkout, Workout>(`tracks/main/workouts`, workout);
+			mutationFn: async (workout: Workout) => {
+				const response = await this.api.post<ApiResponse<TrackWorkoutData>, Workout>(
+					`tracks/main/workouts`,
+					workout
+				);
+				return response.data;
 			},
 		};
 	}

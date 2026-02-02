@@ -38,7 +38,7 @@ export const Success: Story = {
 	render: () => {
 		const apiService = createApiServiceMock({
 			auth: createAuthServiceMock({
-				confirmLoginFn: () => Promise.resolve(),
+				confirmLoginFn: () => Promise.resolve(null),
 			}),
 		});
 

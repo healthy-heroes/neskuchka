@@ -84,11 +84,11 @@ func ExtractSlugsFromWorkouts(workouts []*Workout) []ExerciseSlug {
 	return slugsList
 }
 
-func ClearUnknownExercisesSlugs(workout *Workout, knownSlugs map[ExerciseSlug]bool) {
-	for i := range workout.Sections {
-		for j := range workout.Sections[i].Exercises {
-			if _, ok := knownSlugs[workout.Sections[i].Exercises[j].ExerciseSlug]; !ok {
-				workout.Sections[i].Exercises[j].ExerciseSlug = ""
+func (w *Workout) ClearUnknownExercisesSlugs(knownSlugs map[ExerciseSlug]bool) {
+	for i := range w.Sections {
+		for j := range w.Sections[i].Exercises {
+			if _, ok := knownSlugs[w.Sections[i].Exercises[j].ExerciseSlug]; !ok {
+				w.Sections[i].Exercises[j].ExerciseSlug = ""
 			}
 		}
 	}

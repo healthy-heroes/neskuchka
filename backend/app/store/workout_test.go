@@ -324,7 +324,7 @@ func TestClearUnknownExercisesSlugs(t *testing.T) {
 				Sections: tt.sections,
 			}
 
-			ClearUnknownExercisesSlugs(&workout, tt.knownSlugs)
+			workout.ClearUnknownExercisesSlugs(tt.knownSlugs)
 			assert.Equal(t, tt.expected, workout.Sections)
 		})
 	}

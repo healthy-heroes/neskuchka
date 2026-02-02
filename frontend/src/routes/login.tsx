@@ -8,7 +8,6 @@ export const Route = createFileRoute('/login')({
 });
 
 function RouteComponent() {
-	console.log('Login route');
 	return (
 		<RequireAuth loadingComponent={<PageSkeleton />} guestOnly>
 			<AuthPage />

@@ -13,7 +13,8 @@ const apiService = createApiServiceMock({
 	workouts: {
 		getWorkoutQuery: () => ({
 			queryKey: ['workout', workout.ID],
-			queryFn: () => Promise.resolve({ Workout: workout }),
+			queryFn: () => Promise.resolve({ data: { Workout: workout } }),
+			select: (response) => response.data,
 		}),
 	},
 });

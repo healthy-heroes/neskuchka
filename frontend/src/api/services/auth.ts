@@ -51,12 +51,14 @@ export class AuthService extends Service {
 	 * Confirm a login attempt by providing a token
 	 *
 	 * @note Using query instead of mutation because need fight with double useEffect hooks in dev
+	 * @note Returns null instead of void because TanStack Query v5 doesn't allow undefined as query data
 	 */
-	confirmLoginQuery(token: string): UseQueryOptions<void> {
+	confirmLoginQuery(token: string): UseQueryOptions<null> {
 		return {
 			queryKey: AuthKeys.confirm(token),
 			queryFn: async () => {
-				return this.api.post<void, ConfirmLoginPayload>(`auth/login/confirm`, { token });
+				await this.api.post<void, ConfirmLoginPayload>(`auth/login/confirm`, { token });
+				return null;
 			},
 			retry: false,
 		};
