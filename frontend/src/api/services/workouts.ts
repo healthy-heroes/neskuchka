@@ -56,11 +56,9 @@ export class WorkoutsService extends Service {
 	/**
 	 * Get concrete workout by id
 	 */
-	getWorkoutQuery(id: string): UseQueryOptions<
-		ApiResponse<TrackWorkoutData>,
-		Error,
-		TrackWorkoutData
-	> {
+	getWorkoutQuery(
+		id: string
+	): UseQueryOptions<ApiResponse<TrackWorkoutData>, Error, TrackWorkoutData> {
 		return {
 			queryKey: WorkoutsKeys.workout(id),
 			queryFn: () => this.api.get<ApiResponse<TrackWorkoutData>>(`tracks/main/workouts/${id}`),
