@@ -46,21 +46,6 @@ func (s *Service) GetMainTrackLastWorkouts(w http.ResponseWriter, _ *http.Reques
 		return
 	}
 
-	slugs := store.ExtractSlugsFromWorkouts(workouts)
-	exercises, err := s.store.Exercise.Find(&store.ExerciseFindCriteria{
-		Slugs: slugs,
-		Limit: len(slugs),
-	})
-	if err != nil {
-		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to get exercises")
-		return
-	}
-
-	exercisesMap := make(map[store.ExerciseSlug]store.Exercise)
-	for _, exercise := range exercises {
-		exercisesMap[exercise.Slug] = *exercise
-	}
-
 	httpx.Render(w, WorkoutsSchema{
 		Workouts: workouts,
 	})
