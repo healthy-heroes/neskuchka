@@ -258,6 +258,11 @@ func TestUpdateWorkout(t *testing.T) {
 
 func TestFindWorkouts(t *testing.T) {
 	t.Run("should find workouts", func(t *testing.T) {
+		usedCriteria := WorkoutFindCriteria{
+			TrackID: TrackID("1"),
+			Limit:   10,
+		}
+
 		workouts := []Workout{
 			{
 				ID: WorkoutID("1"),
@@ -266,7 +271,8 @@ func TestFindWorkouts(t *testing.T) {
 		service := NewService(Opts{
 			WorkoutStore: WorkoutStoreStub{
 				FindFunc: func(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
-					return []Workout{}, nil
+					usedCriteria = criteria
+					return workouts, nil
 				},
 			},
 		})
@@ -275,6 +281,10 @@ func TestFindWorkouts(t *testing.T) {
 		})
 		assert.Nil(t, err)
 		assert.Equal(t, workouts, foundWorkouts)
+		assert.Equal(t, usedCriteria, WorkoutFindCriteria{
+			TrackID: TrackID("1"),
+			Limit:   10,
+		})
 	})
 
 	t.Run("should return error if track id is empty", func(t *testing.T) {
@@ -305,7 +315,7 @@ func TestFindWorkouts(t *testing.T) {
 			0:  10,
 			1:  1,
 			50: 50,
-			51: 50,
+			51: 10,
 		}
 		for limit, expected := range tcs {
 			_, err := service.FindWorkouts(context.Background(), WorkoutFindCriteria{
