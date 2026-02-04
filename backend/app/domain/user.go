@@ -22,17 +22,9 @@ type User struct {
 	Email Email
 }
 
-// UserRepo is a interface for user storage
-type UserRepo interface {
-	Get(context.Context, UserID) (User, error)
-	GetByEmail(context.Context, Email) (User, error)
-	Create(context.Context, User) (User, error)
-	Update(context.Context, User) (User, error)
-}
-
 // GetUser gets a user by id
 func (s *Store) GetUser(ctx context.Context, id UserID) (User, error) {
-	return s.userRepo.Get(ctx, id)
+	return s.dataStorage.GetUser(ctx, id)
 }
 
 // FindOrCreateUser finds a user by email or creates a new user
@@ -41,7 +33,7 @@ func (s *Store) FindOrCreateUser(ctx context.Context, u User) (User, error) {
 		return User{}, errors.New("email is required")
 	}
 
-	user, err := s.userRepo.GetByEmail(ctx, u.Email)
+	user, err := s.dataStorage.GetUserByEmail(ctx, u.Email)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return User{}, err
@@ -51,18 +43,18 @@ func (s *Store) FindOrCreateUser(ctx context.Context, u User) (User, error) {
 	}
 
 	u.ID = NewUserID()
-	return s.userRepo.Create(ctx, u)
+	return s.dataStorage.CreateUser(ctx, u)
 }
 
 // UpdateUser updates a user
 // updates only safe fields, other should be ignored
 func (s *Store) UpdateUser(ctx context.Context, u User) (User, error) {
-	user, err := s.userRepo.Get(ctx, u.ID)
+	user, err := s.dataStorage.GetUser(ctx, u.ID)
 	if err != nil {
 		return User{}, err
 	}
 
 	user.Name = u.Name
 
-	return s.userRepo.Update(ctx, user)
+	return s.dataStorage.UpdateUser(ctx, user)
 }

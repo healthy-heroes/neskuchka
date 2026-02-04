@@ -66,17 +66,9 @@ type WorkoutFindCriteria struct {
 	Limit   int
 }
 
-// WorkoutRepo is a interface for workout storage
-type WorkoutRepo interface {
-	Get(context.Context, WorkoutID) (Workout, error)
-	Find(context.Context, WorkoutFindCriteria) ([]Workout, error)
-	Create(context.Context, Workout) (Workout, error)
-	Update(context.Context, Workout) (Workout, error)
-}
-
 // GetWorkout gets a workout by id
 func (s *Store) GetWorkout(ctx context.Context, id WorkoutID) (Workout, error) {
-	return s.workoutRepo.Get(ctx, id)
+	return s.dataStorage.GetWorkout(ctx, id)
 }
 
 // CreateWorkout creates a new workout
@@ -86,7 +78,7 @@ func (s *Store) CreateWorkout(ctx context.Context, w Workout) (Workout, error) {
 	w.ID = NewWorkoutID()
 	w.clearSlugs()
 
-	return s.workoutRepo.Create(ctx, w)
+	return s.dataStorage.CreateWorkout(ctx, w)
 }
 
 // UpdateWorkout updates a workout
@@ -96,7 +88,7 @@ func (s *Store) CreateWorkout(ctx context.Context, w Workout) (Workout, error) {
 // todo: immutable date
 // todo: clearing slugs should not affect incoming workout
 func (s *Store) UpdateWorkout(ctx context.Context, w Workout) (Workout, error) {
-	workout, err := s.workoutRepo.Get(ctx, w.ID)
+	workout, err := s.dataStorage.GetWorkout(ctx, w.ID)
 	if err != nil {
 		return Workout{}, err
 	}
@@ -106,7 +98,7 @@ func (s *Store) UpdateWorkout(ctx context.Context, w Workout) (Workout, error) {
 	workout.Notes = w.Notes
 	workout.clearSlugs()
 
-	return s.workoutRepo.Update(ctx, workout)
+	return s.dataStorage.UpdateWorkout(ctx, workout)
 }
 
 // FindWorkouts finds workouts by criteria
@@ -119,5 +111,5 @@ func (s *Store) FindWorkouts(ctx context.Context, criteria WorkoutFindCriteria) 
 		criteria.Limit = 10
 	}
 
-	return s.workoutRepo.Find(ctx, criteria)
+	return s.dataStorage.FindWorkouts(ctx, criteria)
 }

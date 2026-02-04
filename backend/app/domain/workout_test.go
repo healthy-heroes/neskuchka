@@ -8,29 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type WorkoutRepoStub struct {
-	GetFunc    func(context.Context, WorkoutID) (Workout, error)
-	FindFunc   func(context.Context, WorkoutFindCriteria) ([]Workout, error)
-	CreateFunc func(context.Context, Workout) (Workout, error)
-	UpdateFunc func(context.Context, Workout) (Workout, error)
-}
-
-func (s WorkoutRepoStub) Get(ctx context.Context, id WorkoutID) (Workout, error) {
-	return s.GetFunc(ctx, id)
-}
-
-func (s WorkoutRepoStub) Find(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
-	return s.FindFunc(ctx, criteria)
-}
-
-func (s WorkoutRepoStub) Create(ctx context.Context, workout Workout) (Workout, error) {
-	return s.CreateFunc(ctx, workout)
-}
-
-func (s WorkoutRepoStub) Update(ctx context.Context, workout Workout) (Workout, error) {
-	return s.UpdateFunc(ctx, workout)
-}
-
 func TestNewWorkoutID(t *testing.T) {
 	t.Run("should generate a new workout id", func(t *testing.T) {
 		workoutID := NewWorkoutID()
@@ -126,8 +103,8 @@ func TestGetWorkout(t *testing.T) {
 		}
 
 		service := NewStore(Opts{
-			WorkoutRepo: WorkoutRepoStub{
-				GetFunc: func(ctx context.Context, id WorkoutID) (Workout, error) {
+			DataStorage: &DataStorageStub{
+				GetWorkoutFunc: func(ctx context.Context, id WorkoutID) (Workout, error) {
 					return existingWorkout, nil
 				},
 			},
@@ -154,8 +131,8 @@ func TestCreateWorkout(t *testing.T) {
 		}
 
 		service := NewStore(Opts{
-			WorkoutRepo: WorkoutRepoStub{
-				CreateFunc: func(ctx context.Context, workout Workout) (Workout, error) {
+			DataStorage: &DataStorageStub{
+				CreateWorkoutFunc: func(ctx context.Context, workout Workout) (Workout, error) {
 					return workout, nil
 				},
 			},
@@ -213,11 +190,11 @@ func TestUpdateWorkout(t *testing.T) {
 			Notes: "Test notes 2",
 		}
 		service := NewStore(Opts{
-			WorkoutRepo: WorkoutRepoStub{
-				GetFunc: func(ctx context.Context, id WorkoutID) (Workout, error) {
+			DataStorage: &DataStorageStub{
+				GetWorkoutFunc: func(ctx context.Context, id WorkoutID) (Workout, error) {
 					return existingWorkout, nil
 				},
-				UpdateFunc: func(ctx context.Context, workout Workout) (Workout, error) {
+				UpdateWorkoutFunc: func(ctx context.Context, workout Workout) (Workout, error) {
 					return workout, nil
 				},
 			},
@@ -241,8 +218,8 @@ func TestUpdateWorkout(t *testing.T) {
 
 	t.Run("should return error if workout not found", func(t *testing.T) {
 		service := NewStore(Opts{
-			WorkoutRepo: WorkoutRepoStub{
-				GetFunc: func(ctx context.Context, id WorkoutID) (Workout, error) {
+			DataStorage: &DataStorageStub{
+				GetWorkoutFunc: func(ctx context.Context, id WorkoutID) (Workout, error) {
 					return Workout{}, ErrNotFound
 				},
 			},
@@ -269,8 +246,8 @@ func TestFindWorkouts(t *testing.T) {
 			},
 		}
 		service := NewStore(Opts{
-			WorkoutRepo: WorkoutRepoStub{
-				FindFunc: func(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
+			DataStorage: &DataStorageStub{
+				FindWorkoutsFunc: func(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
 					usedCriteria = criteria
 					return workouts, nil
 				},
@@ -289,8 +266,8 @@ func TestFindWorkouts(t *testing.T) {
 
 	t.Run("should return error if track id is empty", func(t *testing.T) {
 		service := NewStore(Opts{
-			WorkoutRepo: WorkoutRepoStub{
-				FindFunc: func(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
+			DataStorage: &DataStorageStub{
+				FindWorkoutsFunc: func(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
 					return []Workout{}, nil
 				},
 			},
@@ -302,8 +279,8 @@ func TestFindWorkouts(t *testing.T) {
 	t.Run("should set default limit if limit is less than 0 or greater than 50", func(t *testing.T) {
 		var usedLimit int
 		service := NewStore(Opts{
-			WorkoutRepo: WorkoutRepoStub{
-				FindFunc: func(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
+			DataStorage: &DataStorageStub{
+				FindWorkoutsFunc: func(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
 					usedLimit = criteria.Limit
 					return []Workout{}, nil
 				},
