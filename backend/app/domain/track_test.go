@@ -7,11 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type TrackStoreStub struct {
+type TrackRepoStub struct {
 	GetBySlugFunc func(context.Context, TrackSlug) (Track, error)
 }
 
-func (s TrackStoreStub) GetBySlug(ctx context.Context, slug TrackSlug) (Track, error) {
+func (s TrackRepoStub) GetBySlug(ctx context.Context, slug TrackSlug) (Track, error) {
 	return s.GetBySlugFunc(ctx, slug)
 }
 
@@ -24,8 +24,8 @@ func TestNewTrackID(t *testing.T) {
 
 func TestGetMainTrack(t *testing.T) {
 	t.Run("should return main track", func(t *testing.T) {
-		service := NewService(Opts{
-			TrackStore: &TrackStoreStub{
+		service := NewStore(Opts{
+			TrackRepo: &TrackRepoStub{
 				GetBySlugFunc: func(ctx context.Context, slug TrackSlug) (Track, error) {
 					return Track{
 						ID:   TrackID("1"),

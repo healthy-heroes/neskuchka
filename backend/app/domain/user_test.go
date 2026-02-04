@@ -8,26 +8,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type UserStoreStub struct {
+type UserRepoStub struct {
 	GetFunc        func(context.Context, UserID) (User, error)
 	GetByEmailFunc func(context.Context, Email) (User, error)
 	CreateFunc     func(context.Context, User) (User, error)
 	UpdateFunc     func(context.Context, User) (User, error)
 }
 
-func (s UserStoreStub) Get(ctx context.Context, id UserID) (User, error) {
+func (s UserRepoStub) Get(ctx context.Context, id UserID) (User, error) {
 	return s.GetFunc(ctx, id)
 }
 
-func (s UserStoreStub) GetByEmail(ctx context.Context, email Email) (User, error) {
+func (s UserRepoStub) GetByEmail(ctx context.Context, email Email) (User, error) {
 	return s.GetByEmailFunc(ctx, email)
 }
 
-func (s UserStoreStub) Create(ctx context.Context, user User) (User, error) {
+func (s UserRepoStub) Create(ctx context.Context, user User) (User, error) {
 	return s.CreateFunc(ctx, user)
 }
 
-func (s UserStoreStub) Update(ctx context.Context, user User) (User, error) {
+func (s UserRepoStub) Update(ctx context.Context, user User) (User, error) {
 	return s.UpdateFunc(ctx, user)
 }
 
@@ -44,8 +44,8 @@ func TestGetUser(t *testing.T) {
 			ID:   UserID("1"),
 			Name: "Test User",
 		}
-		service := NewService(Opts{
-			UserStore: UserStoreStub{
+		service := NewStore(Opts{
+			UserRepo: UserRepoStub{
 				GetFunc: func(ctx context.Context, id UserID) (User, error) {
 					return existingUser, nil
 				},
@@ -65,8 +65,8 @@ func TestFindOrCreateUser(t *testing.T) {
 			Email: Email("test@example.com"),
 			Name:  "Test User",
 		}
-		service := NewService(Opts{
-			UserStore: UserStoreStub{
+		service := NewStore(Opts{
+			UserRepo: UserRepoStub{
 				GetByEmailFunc: func(ctx context.Context, email Email) (User, error) {
 					return existingUser, nil
 				},
@@ -82,8 +82,8 @@ func TestFindOrCreateUser(t *testing.T) {
 	})
 
 	t.Run("should create new user", func(t *testing.T) {
-		service := NewService(Opts{
-			UserStore: UserStoreStub{
+		service := NewStore(Opts{
+			UserRepo: UserRepoStub{
 				GetByEmailFunc: func(ctx context.Context, email Email) (User, error) {
 					return User{}, ErrNotFound
 				},
@@ -108,7 +108,7 @@ func TestFindOrCreateUser(t *testing.T) {
 	})
 
 	t.Run("should check required email", func(t *testing.T) {
-		service := NewService(Opts{})
+		service := NewStore(Opts{})
 		_, err := service.FindOrCreateUser(context.Background(), User{
 			Name: "Test User",
 		})
@@ -119,8 +119,8 @@ func TestFindOrCreateUser(t *testing.T) {
 
 	t.Run("should return error", func(t *testing.T) {
 		expectedErr := errors.New("some error")
-		service := NewService(Opts{
-			UserStore: UserStoreStub{
+		service := NewStore(Opts{
+			UserRepo: UserRepoStub{
 				GetByEmailFunc: func(ctx context.Context, email Email) (User, error) {
 					return User{}, expectedErr
 				},
@@ -142,8 +142,8 @@ func TestUpdateUser(t *testing.T) {
 			Email: Email("test@example.com"),
 			Name:  "Test User",
 		}
-		service := NewService(Opts{
-			UserStore: UserStoreStub{
+		service := NewStore(Opts{
+			UserRepo: UserRepoStub{
 				GetFunc: func(ctx context.Context, id UserID) (User, error) {
 					return existingUser, nil
 				},
@@ -165,8 +165,8 @@ func TestUpdateUser(t *testing.T) {
 	})
 
 	t.Run("should return error if user not found", func(t *testing.T) {
-		service := NewService(Opts{
-			UserStore: UserStoreStub{
+		service := NewStore(Opts{
+			UserRepo: UserRepoStub{
 				GetFunc: func(ctx context.Context, id UserID) (User, error) {
 					return User{}, ErrNotFound
 				},

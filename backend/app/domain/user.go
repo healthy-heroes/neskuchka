@@ -22,8 +22,8 @@ type User struct {
 	Email Email
 }
 
-// UserStore is a interface for user storage
-type UserStore interface {
+// UserRepo is a interface for user storage
+type UserRepo interface {
 	Get(context.Context, UserID) (User, error)
 	GetByEmail(context.Context, Email) (User, error)
 	Create(context.Context, User) (User, error)
@@ -31,17 +31,17 @@ type UserStore interface {
 }
 
 // GetUser gets a user by id
-func (s *Service) GetUser(ctx context.Context, id UserID) (User, error) {
-	return s.userStore.Get(ctx, id)
+func (s *Store) GetUser(ctx context.Context, id UserID) (User, error) {
+	return s.userRepo.Get(ctx, id)
 }
 
 // FindOrCreateUser finds a user by email or creates a new user
-func (s *Service) FindOrCreateUser(ctx context.Context, u User) (User, error) {
+func (s *Store) FindOrCreateUser(ctx context.Context, u User) (User, error) {
 	if u.Email == "" {
 		return User{}, errors.New("email is required")
 	}
 
-	user, err := s.userStore.GetByEmail(ctx, u.Email)
+	user, err := s.userRepo.GetByEmail(ctx, u.Email)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return User{}, err
@@ -51,18 +51,18 @@ func (s *Service) FindOrCreateUser(ctx context.Context, u User) (User, error) {
 	}
 
 	u.ID = NewUserID()
-	return s.userStore.Create(ctx, u)
+	return s.userRepo.Create(ctx, u)
 }
 
 // UpdateUser updates a user
 // updates only safe fields, other should be ignored
-func (s *Service) UpdateUser(ctx context.Context, u User) (User, error) {
-	user, err := s.userStore.Get(ctx, u.ID)
+func (s *Store) UpdateUser(ctx context.Context, u User) (User, error) {
+	user, err := s.userRepo.Get(ctx, u.ID)
 	if err != nil {
 		return User{}, err
 	}
 
 	user.Name = u.Name
 
-	return s.userStore.Update(ctx, user)
+	return s.userRepo.Update(ctx, user)
 }

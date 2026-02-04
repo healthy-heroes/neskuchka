@@ -1,23 +1,23 @@
 package domain
 
-type Service struct {
-	userStore    UserStore
-	trackStore   TrackStore
-	workoutStore WorkoutStore
+type Store struct {
+	userRepo    UserRepo
+	trackRepo   TrackRepo
+	workoutRepo WorkoutRepo
 }
 
 type Opts struct {
-	UserStore    UserStore
-	TrackStore   TrackStore
-	WorkoutStore WorkoutStore
+	UserRepo    UserRepo
+	TrackRepo   TrackRepo
+	WorkoutRepo WorkoutRepo
 }
 
-// NewService creates a domain service
+// NewStore creates a domain service
 // its entry point for all domain services
-func NewService(opts Opts) *Service {
-	return &Service{
-		userStore:    opts.UserStore,
-		trackStore:   opts.TrackStore,
-		workoutStore: opts.WorkoutStore,
+func NewStore(opts Opts) *Store {
+	return &Store{
+		userRepo:    opts.UserRepo,
+		trackRepo:   opts.TrackRepo,
+		workoutRepo: opts.WorkoutRepo,
 	}
 }
