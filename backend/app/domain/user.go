@@ -35,7 +35,7 @@ func (s *Store) FindOrCreateUser(ctx context.Context, u User) (User, error) {
 
 	user, err := s.dataStorage.GetUserByEmail(ctx, u.Email)
 	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
+		if err != ErrNotFound {
 			return User{}, err
 		}
 	} else {

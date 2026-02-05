@@ -7,8 +7,8 @@ import (
 	"github.com/maypok86/otter/v2"
 	"github.com/rs/zerolog"
 
+	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
-	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
 // VerifyTokenService defines interface accessing tokens
@@ -26,7 +26,7 @@ type Service struct {
 	opts   Opts
 	logger zerolog.Logger
 
-	store          *datastore.DataStore
+	dataStore      *domain.Store
 	tokenService   VerifyTokenService
 	sessionManager SessionManager
 
@@ -39,12 +39,12 @@ type Opts struct {
 	Logger zerolog.Logger
 }
 
-func NewService(store *datastore.DataStore, session SessionManager, opts Opts) *Service {
+func NewService(dataStore *domain.Store, session SessionManager, opts Opts) *Service {
 	s := &Service{
 		opts:   opts,
 		logger: opts.Logger.With().Str("pkg", "auth").Logger(),
 
-		store:          store,
+		dataStore:      dataStore,
 		sessionManager: session,
 
 		tokenService: token.NewService(token.Opts{

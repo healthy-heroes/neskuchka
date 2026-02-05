@@ -19,6 +19,7 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
 	mw "github.com/healthy-heroes/neskuchka/backend/app/api/middlewares"
 	"github.com/healthy-heroes/neskuchka/backend/app/api/tracks"
+	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
@@ -28,8 +29,9 @@ type Api struct {
 	Version string
 	Secret  string
 
-	Store *datastore.DataStore
-	WebFS embed.FS
+	DataStore *domain.Store
+	Store     *datastore.DataStore
+	WebFS     embed.FS
 
 	httpServer *http.Server
 	lock       sync.Mutex
@@ -114,7 +116,7 @@ func (api *Api) routes() *chi.Mux {
 
 // addAuthRoutes is adding auth routes
 func (api *Api) addAuthRoutes(router chi.Router, session *session.Manager) {
-	h := auth.NewService(api.Store, session, auth.Opts{
+	h := auth.NewService(api.DataStore, session, auth.Opts{
 		Issuer: "Neskuchka",
 		Secret: api.Secret,
 		Logger: log.Logger,

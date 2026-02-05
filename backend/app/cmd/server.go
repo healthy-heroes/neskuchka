@@ -11,6 +11,8 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api"
+	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/storage/database"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 	"github.com/healthy-heroes/neskuchka/backend/app/store/db"
 )
@@ -44,6 +46,7 @@ type serverApp struct {
 
 	apiServer *api.Api
 	store     *datastore.DataStore
+	dataStore *domain.Store
 
 	CommonOptions
 }
@@ -77,7 +80,7 @@ func (cmd *ServerCommand) Execute(args []string) error {
 }
 
 func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
-	dataStore, err := cmd.makeDataStore()
+	dataStore, newDataStore, err := cmd.makeDataStore()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create data store: %w", err)
 	}
@@ -86,38 +89,51 @@ func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
 		Version: cmd.Revision,
 		Secret:  cmd.Secret,
 
-		Store: dataStore,
-		WebFS: webFS,
+		DataStore: newDataStore,
+		Store:     dataStore,
+		WebFS:     webFS,
 	}
 
 	app := &serverApp{
 		ServerCommand: cmd,
 		apiServer:     apiServer,
 		store:         dataStore,
+		dataStore:     newDataStore,
 	}
 
 	return app, nil
 }
 
 // makeDataStore creates a new data store
-func (cmd *ServerCommand) makeDataStore() (*datastore.DataStore, error) {
+func (cmd *ServerCommand) makeDataStore() (*datastore.DataStore, *domain.Store, error) {
 	log.Info().Msgf("Creating store: %s", cmd.Store.Type)
 
 	switch cmd.Store.Type {
 	case db.Sqlite:
 		if cmd.Store.Sqlite.Source == "" {
-			return nil, fmt.Errorf("sqlite source is not set")
+			return nil, nil, fmt.Errorf("sqlite source is not set")
 		}
 
+		// todo remove
 		db, err := db.NewSqlite(cmd.Store.Sqlite.Source)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create sqlite database: %w", err)
+			return nil, nil, fmt.Errorf("failed to create sqlite database: %w", err)
 		}
 
-		return datastore.NewDataStore(db), nil
+		engine, err := database.NewSqliteEngine(cmd.Store.Sqlite.Source, log.Logger)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to create sqlite engine: %w", err)
+		}
+
+		oldDataStore := datastore.NewDataStore(db)
+		newDataStore := domain.NewStore(domain.Opts{
+			DataStorage: database.NewDataStorage(engine, log.Logger),
+		})
+
+		return oldDataStore, newDataStore, nil
 
 	default:
-		return nil, fmt.Errorf("unsupported database type: %s", cmd.Store.Type)
+		return nil, nil, fmt.Errorf("unsupported database type: %s", cmd.Store.Type)
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
+	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
 )
 
@@ -76,7 +77,10 @@ func (s *Service) Confirm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := s.store.User.FindOrCreate(confClaims.Data.Email)
+	user, err := s.dataStore.FindOrCreateUser(r.Context(), domain.User{
+		Email: domain.Email(confClaims.Data.Email),
+		Name:  "New user",
+	})
 	if err != nil {
 		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to find or create user")
 		return
