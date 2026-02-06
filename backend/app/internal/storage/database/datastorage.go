@@ -39,10 +39,6 @@ type dataStorage interface {
 }
 */
 
-func (ds *DataStorage) GetTrackBySlug(_ context.Context, _ domain.TrackSlug) (domain.Track, error) {
-	return domain.Track{}, fmt.Errorf("not implemented")
-}
-
 func (ds *DataStorage) GetWorkout(_ context.Context, _ domain.WorkoutID) (domain.Workout, error) {
 	return domain.Workout{}, fmt.Errorf("not implemented")
 }

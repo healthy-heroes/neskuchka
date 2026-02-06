@@ -6,6 +6,6 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func setupTestDataStorage(t *testing.T, engine *Engine) *DataStorage {
-	return NewDataStorage(engine, zerolog.Nop())
+func setupTestDataStorage(t *testing.T) *DataStorage {
+	return NewDataStorage(setupTestSqliteDB(t), zerolog.Nop())
 }

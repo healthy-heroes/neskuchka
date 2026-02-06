@@ -17,6 +17,17 @@ const (
 			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 		)
 	`
+	trackSchema = `
+		CREATE TABLE IF NOT EXISTS track (
+			id TEXT PRIMARY KEY NOT NULL,
+			slug TEXT NOT NULL UNIQUE,
+			name TEXT NOT NULL,
+			description TEXT NOT NULL,
+			owner_id TEXT NOT NULL,
+			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+		)
+	`
 )
 
 func NewSqliteEngine(fileSource string, logger zerolog.Logger) (*Engine, error) {
@@ -40,9 +51,15 @@ func NewSqliteEngine(fileSource string, logger zerolog.Logger) (*Engine, error) 
 }
 
 func (e *Engine) createSqliteSchema() error {
+	schemas := map[string]string{
+		"user":  userSchema,
+		"track": trackSchema,
+	}
 
-	if _, err := e.Exec(userSchema); err != nil {
-		return fmt.Errorf("failed to create user table: %w", err)
+	for table, schema := range schemas {
+		if _, err := e.Exec(schema); err != nil {
+			return fmt.Errorf("failed to create %s table: %w", table, err)
+		}
 	}
 
 	return nil

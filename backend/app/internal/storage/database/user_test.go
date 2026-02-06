@@ -10,8 +10,8 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 )
 
-func getUserDb(t *testing.T, engine *Engine, id string) userDb {
-	user := userDb{}
+func userFromDB(t *testing.T, engine *Engine, id string) userRow {
+	user := userRow{}
 	err := engine.Get(&user, "SELECT * FROM user WHERE id = ?", id)
 	require.NoError(t, err)
 
@@ -19,35 +19,35 @@ func getUserDb(t *testing.T, engine *Engine, id string) userDb {
 }
 
 func Test_User_Create(t *testing.T) {
-	ds := setupTestDataStorage(t, setupTestSqliteDB(t))
+	ds := setupTestDataStorage(t)
 	defer ds.engine.Close()
 
-	user := domain.User{
+	newUser := domain.User{
 		ID:    domain.NewUserID(),
 		Name:  "Test User",
 		Email: "test@example.com",
 	}
 
-	created, err := ds.CreateUser(context.Background(), user)
+	createdUser, err := ds.CreateUser(context.Background(), newUser)
 	require.NoError(t, err)
-	assert.Equal(t, user, created)
+	assert.Equal(t, newUser, createdUser)
 
-	getByID, err := ds.GetUser(context.Background(), user.ID)
+	userByID, err := ds.GetUser(context.Background(), newUser.ID)
 	assert.NoError(t, err)
-	assert.Equal(t, user, getByID)
+	assert.Equal(t, newUser, userByID)
 
-	getByEmail, err := ds.GetUserByEmail(context.Background(), user.Email)
+	userByEmail, err := ds.GetUserByEmail(context.Background(), newUser.Email)
 	assert.NoError(t, err)
-	assert.Equal(t, user, getByEmail)
+	assert.Equal(t, newUser, userByEmail)
 
 	// checks system fields
-	userDb := getUserDb(t, ds.engine, string(created.ID))
-	assert.NotZero(t, userDb.CreatedAt)
-	assert.NotZero(t, userDb.UpdatedAt)
+	createdRow := userFromDB(t, ds.engine, string(createdUser.ID))
+	assert.NotZero(t, createdRow.CreatedAt)
+	assert.NotZero(t, createdRow.UpdatedAt)
 }
 
 func Test_User_Update(t *testing.T) {
-	ds := setupTestDataStorage(t, setupTestSqliteDB(t))
+	ds := setupTestDataStorage(t)
 	defer ds.engine.Close()
 
 	existingUser := domain.User{
@@ -58,7 +58,7 @@ func Test_User_Update(t *testing.T) {
 	_, err := ds.CreateUser(context.Background(), existingUser)
 	require.NoError(t, err)
 
-	createdUser := getUserDb(t, ds.engine, string(existingUser.ID))
+	createdUserRow := userFromDB(t, ds.engine, string(existingUser.ID))
 
 	updateUser := domain.User{
 		ID:    existingUser.ID,
@@ -76,7 +76,7 @@ func Test_User_Update(t *testing.T) {
 	assert.Equal(t, domain.ErrNotFound, err)
 
 	// checks system fields
-	updatedUser := getUserDb(t, ds.engine, string(u.ID))
-	assert.Equal(t, createdUser.CreatedAt, updatedUser.CreatedAt)
-	assert.Greater(t, updatedUser.UpdatedAt, createdUser.UpdatedAt)
+	updatedUserRow := userFromDB(t, ds.engine, string(u.ID))
+	assert.Equal(t, createdUserRow.CreatedAt, updatedUserRow.CreatedAt)
+	assert.Greater(t, updatedUserRow.UpdatedAt, createdUserRow.UpdatedAt)
 }
