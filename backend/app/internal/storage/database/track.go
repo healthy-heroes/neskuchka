@@ -19,6 +19,7 @@ type trackRow struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
+// makeTrack converts a domain.Track to a trackRow
 func makeTrack(t domain.Track) trackRow {
 	return trackRow{
 		ID:          string(t.ID),
@@ -31,6 +32,7 @@ func makeTrack(t domain.Track) trackRow {
 	}
 }
 
+// toDomain converts a trackRow to a domain.Track
 func (t trackRow) toDomain() domain.Track {
 	return domain.Track{
 		ID:          domain.TrackID(t.ID),
@@ -41,6 +43,7 @@ func (t trackRow) toDomain() domain.Track {
 	}
 }
 
+// GetTrack returns a track by id
 func (ds *DataStorage) GetTrack(ctx context.Context, id domain.TrackID) (domain.Track, error) {
 	t := trackRow{}
 	err := ds.engine.Get(&t, "SELECT * FROM track WHERE id = ?", id)
@@ -48,6 +51,7 @@ func (ds *DataStorage) GetTrack(ctx context.Context, id domain.TrackID) (domain.
 	return t.toDomain(), handleSqlError(err)
 }
 
+// GetTrackBySlug returns a track by slug
 func (ds *DataStorage) GetTrackBySlug(ctx context.Context, slug domain.TrackSlug) (domain.Track, error) {
 	t := trackRow{}
 	err := ds.engine.Get(&t, "SELECT * FROM track WHERE slug = ?", slug)
@@ -55,6 +59,7 @@ func (ds *DataStorage) GetTrackBySlug(ctx context.Context, slug domain.TrackSlug
 	return t.toDomain(), handleSqlError(err)
 }
 
+// CreateTrack creates a new track and returns it
 func (ds *DataStorage) CreateTrack(ctx context.Context, track domain.Track) (domain.Track, error) {
 	t := makeTrack(track)
 

@@ -28,6 +28,19 @@ const (
 			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 		)
 	`
+
+	workoutSchema = `
+		CREATE TABLE IF NOT EXISTS workout (
+			id TEXT PRIMARY KEY NOT NULL,
+			date TEXT NOT NULL,
+			track_id TEXT NOT NULL,
+			sections TEXT NOT NULL,
+			notes TEXT,
+			schema_version INTEGER NOT NULL,
+			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+		)
+	`
 )
 
 func NewSqliteEngine(fileSource string, logger zerolog.Logger) (*Engine, error) {
@@ -52,8 +65,9 @@ func NewSqliteEngine(fileSource string, logger zerolog.Logger) (*Engine, error) 
 
 func (e *Engine) createSqliteSchema() error {
 	schemas := map[string]string{
-		"user":  userSchema,
-		"track": trackSchema,
+		"user":    userSchema,
+		"track":   trackSchema,
+		"workout": workoutSchema,
 	}
 
 	for table, schema := range schemas {

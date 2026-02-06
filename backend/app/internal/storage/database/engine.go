@@ -7,7 +7,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
 
-	"github.com/healthy-heroes/neskuchka/backend/app/store"
+	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 )
 
 // Engine wraps sqlx.DB
@@ -20,7 +20,7 @@ type Opts struct {
 
 func handleSqlError(err error) error {
 	if errors.Is(err, sql.ErrNoRows) {
-		return store.ErrNotFound
+		return domain.ErrNotFound
 	}
 
 	return err

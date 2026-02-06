@@ -80,3 +80,14 @@ func Test_User_Update(t *testing.T) {
 	assert.Equal(t, createdUserRow.CreatedAt, updatedUserRow.CreatedAt)
 	assert.Greater(t, updatedUserRow.UpdatedAt, createdUserRow.UpdatedAt)
 }
+
+func Test_User_NotFound(t *testing.T) {
+	ds := setupTestDataStorage(t)
+	defer ds.engine.Close()
+
+	_, err := ds.GetUser(context.Background(), domain.UserID("non-existent-id"))
+	assert.ErrorIs(t, err, domain.ErrNotFound)
+
+	_, err = ds.GetUserByEmail(context.Background(), domain.Email("non-existent-email"))
+	assert.ErrorIs(t, err, domain.ErrNotFound)
+}

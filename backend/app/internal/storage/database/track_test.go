@@ -47,3 +47,14 @@ func Test_Track_Create(t *testing.T) {
 	assert.NotZero(t, createdRow.CreatedAt)
 	assert.NotZero(t, createdRow.UpdatedAt)
 }
+
+func Test_Track_NotFound(t *testing.T) {
+	ds := setupTestDataStorage(t)
+	defer ds.engine.Close()
+
+	_, err := ds.GetTrack(context.Background(), domain.TrackID("non-existent-id"))
+	assert.ErrorIs(t, err, domain.ErrNotFound)
+
+	_, err = ds.GetTrackBySlug(context.Background(), domain.TrackSlug("non-existent-slug"))
+	assert.ErrorIs(t, err, domain.ErrNotFound)
+}

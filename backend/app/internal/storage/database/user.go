@@ -16,6 +16,7 @@ type userRow struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
+// makeUser converts a domain.User to a userRow
 func makeUser(u domain.User) userRow {
 	return userRow{
 		ID:    string(u.ID),
@@ -26,6 +27,7 @@ func makeUser(u domain.User) userRow {
 	}
 }
 
+// toDomain converts a userRow to a domain.User
 func (u userRow) toDomain() domain.User {
 	return domain.User{
 		ID:    domain.UserID(u.ID),

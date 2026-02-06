@@ -9,12 +9,6 @@ import (
 )
 
 type WorkoutID string
-type WorkoutSlug string
-type WorkoutStatus string
-
-const (
-	WorkoutStatusPublished = WorkoutStatus("published")
-)
 
 // NewWorkoutID generates a new workout id
 func NewWorkoutID() WorkoutID {
@@ -24,16 +18,12 @@ func NewWorkoutID() WorkoutID {
 // Workout is a workout aggregate
 type Workout struct {
 	ID      WorkoutID
-	Slug    WorkoutSlug
 	TrackID TrackID
 
-	Date   time.Time
-	Status WorkoutStatus
-	Notes  string
+	Date  time.Time
+	Notes string
 
 	Sections []WorkoutSection
-
-	PublishedAt time.Time
 }
 
 // WorkoutSection is a section of a workout

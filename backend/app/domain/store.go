@@ -2,6 +2,8 @@ package domain
 
 import "context"
 
+type UrlSuffix string
+
 type dataStorage interface {
 	GetUser(context.Context, UserID) (User, error)
 	GetUserByEmail(context.Context, Email) (User, error)

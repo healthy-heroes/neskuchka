@@ -154,11 +154,8 @@ func TestCreateWorkout(t *testing.T) {
 func TestUpdateWorkout(t *testing.T) {
 	t.Run("should update workout", func(t *testing.T) {
 		existingWorkout := Workout{
-			ID:          WorkoutID("1"),
-			TrackID:     TrackID("1"),
-			Slug:        WorkoutSlug("workout-1"),
-			Status:      WorkoutStatusPublished,
-			PublishedAt: time.Now(),
+			ID:      WorkoutID("1"),
+			TrackID: TrackID("1"),
 
 			Date: time.Now(),
 			Sections: []WorkoutSection{
@@ -172,11 +169,8 @@ func TestUpdateWorkout(t *testing.T) {
 			Notes: "Test notes",
 		}
 		newWorkout := Workout{
-			ID:          WorkoutID(existingWorkout.ID),
-			TrackID:     TrackID("wrong-track-id"),
-			Slug:        WorkoutSlug("wrong-slug"),
-			Status:      WorkoutStatus("wrong-status"),
-			PublishedAt: time.Now().Add(1 * time.Hour),
+			ID:      WorkoutID(existingWorkout.ID),
+			TrackID: TrackID("wrong-track-id"),
 
 			Date: time.Now().Add(1 * time.Hour),
 			Sections: []WorkoutSection{
@@ -205,9 +199,6 @@ func TestUpdateWorkout(t *testing.T) {
 		// Protected fields
 		assert.Equal(t, existingWorkout.ID, workout.ID)
 		assert.Equal(t, existingWorkout.TrackID, workout.TrackID)
-		assert.Equal(t, existingWorkout.Slug, workout.Slug)
-		assert.Equal(t, existingWorkout.Status, workout.Status)
-		assert.Equal(t, existingWorkout.PublishedAt, workout.PublishedAt)
 
 		// Changable fields
 		assert.Equal(t, newWorkout.Date, workout.Date)
