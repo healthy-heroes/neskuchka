@@ -9,12 +9,6 @@ import (
 )
 
 type WorkoutID string
-type WorkoutSlug string
-type WorkoutStatus string
-
-const (
-	WorkoutStatusPublished = WorkoutStatus("published")
-)
 
 // NewWorkoutID generates a new workout id
 func NewWorkoutID() WorkoutID {
@@ -24,16 +18,12 @@ func NewWorkoutID() WorkoutID {
 // Workout is a workout aggregate
 type Workout struct {
 	ID      WorkoutID
-	Slug    WorkoutSlug
 	TrackID TrackID
 
-	Date   time.Time
-	Status WorkoutStatus
-	Notes  string
+	Date  time.Time
+	Notes string
 
 	Sections []WorkoutSection
-
-	PublishedAt time.Time
 }
 
 // WorkoutSection is a section of a workout
@@ -66,27 +56,19 @@ type WorkoutFindCriteria struct {
 	Limit   int
 }
 
-// WorkoutStore is a interface for workout storage
-type WorkoutStore interface {
-	Get(context.Context, WorkoutID) (Workout, error)
-	Find(context.Context, WorkoutFindCriteria) ([]Workout, error)
-	Create(context.Context, Workout) (Workout, error)
-	Update(context.Context, Workout) (Workout, error)
-}
-
 // GetWorkout gets a workout by id
-func (s *Service) GetWorkout(ctx context.Context, id WorkoutID) (Workout, error) {
-	return s.workoutStore.Get(ctx, id)
+func (s *Store) GetWorkout(ctx context.Context, id WorkoutID) (Workout, error) {
+	return s.dataStorage.GetWorkout(ctx, id)
 }
 
 // CreateWorkout creates a new workout
 // Generates a new workout id
 // todo: clearing slugs should not affect incoming workout
-func (s *Service) CreateWorkout(ctx context.Context, w Workout) (Workout, error) {
+func (s *Store) CreateWorkout(ctx context.Context, w Workout) (Workout, error) {
 	w.ID = NewWorkoutID()
 	w.clearSlugs()
 
-	return s.workoutStore.Create(ctx, w)
+	return s.dataStorage.CreateWorkout(ctx, w)
 }
 
 // UpdateWorkout updates a workout
@@ -95,8 +77,8 @@ func (s *Service) CreateWorkout(ctx context.Context, w Workout) (Workout, error)
 // todo: generate slug
 // todo: immutable date
 // todo: clearing slugs should not affect incoming workout
-func (s *Service) UpdateWorkout(ctx context.Context, w Workout) (Workout, error) {
-	workout, err := s.workoutStore.Get(ctx, w.ID)
+func (s *Store) UpdateWorkout(ctx context.Context, w Workout) (Workout, error) {
+	workout, err := s.dataStorage.GetWorkout(ctx, w.ID)
 	if err != nil {
 		return Workout{}, err
 	}
@@ -106,11 +88,11 @@ func (s *Service) UpdateWorkout(ctx context.Context, w Workout) (Workout, error)
 	workout.Notes = w.Notes
 	workout.clearSlugs()
 
-	return s.workoutStore.Update(ctx, workout)
+	return s.dataStorage.UpdateWorkout(ctx, workout)
 }
 
 // FindWorkouts finds workouts by criteria
-func (s *Service) FindWorkouts(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
+func (s *Store) FindWorkouts(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
 	if criteria.TrackID == "" {
 		return nil, errors.New("TrackID is required")
 	}
@@ -119,5 +101,5 @@ func (s *Service) FindWorkouts(ctx context.Context, criteria WorkoutFindCriteria
 		criteria.Limit = 10
 	}
 
-	return s.workoutStore.Find(ctx, criteria)
+	return s.dataStorage.FindWorkouts(ctx, criteria)
 }

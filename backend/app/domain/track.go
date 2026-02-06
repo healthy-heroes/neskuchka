@@ -24,11 +24,7 @@ type Track struct {
 	OwnerID UserID
 }
 
-// TrackStore is a interface for track storage
-type TrackStore interface {
-	GetBySlug(context.Context, TrackSlug) (Track, error)
-}
-
-func (s *Service) GetMainTrack(ctx context.Context) (Track, error) {
-	return s.trackStore.GetBySlug(ctx, TrackSlug("main"))
+// GetMainTrack gets the main track
+func (s *Store) GetMainTrack(ctx context.Context) (Track, error) {
+	return s.dataStorage.GetTrackBySlug(ctx, TrackSlug("main"))
 }

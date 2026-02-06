@@ -3,8 +3,6 @@ package auth
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
-
-	"github.com/healthy-heroes/neskuchka/backend/app/store"
 )
 
 // LoginSchema is the schema for the login request
@@ -25,6 +23,6 @@ type ConfirmationSchema struct {
 
 // UserSchema is the schema for data about logged user
 type UserSchema struct {
-	ID   store.UserID
+	ID   string
 	Name string
 }
