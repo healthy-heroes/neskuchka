@@ -3,8 +3,8 @@ package tracks
 import (
 	"net/http"
 
+	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
-	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 	"github.com/rs/zerolog"
 )
 
@@ -15,9 +15,9 @@ type SessionManager interface {
 
 // Service represents tracks endpoints
 type Service struct {
-	store   *datastore.DataStore
-	session SessionManager
-	logger  zerolog.Logger
+	dataStore *domain.Store
+	session   SessionManager
+	logger    zerolog.Logger
 }
 
 // Opts contains options for the service
@@ -25,10 +25,10 @@ type Opts struct {
 	Logger zerolog.Logger
 }
 
-func NewService(store *datastore.DataStore, session SessionManager, opts Opts) *Service {
+func NewService(dataStore *domain.Store, session SessionManager, opts Opts) *Service {
 	return &Service{
-		store:   store,
-		session: session,
-		logger:  opts.Logger.With().Str("pkg", "tracks").Logger(),
+		dataStore: dataStore,
+		session:   session,
+		logger:    opts.Logger.With().Str("pkg", "tracks").Logger(),
 	}
 }

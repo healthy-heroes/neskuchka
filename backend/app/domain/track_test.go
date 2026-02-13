@@ -32,3 +32,19 @@ func TestGetMainTrack(t *testing.T) {
 		assert.Equal(t, track.Slug, TrackSlug("main"))
 	})
 }
+
+func TestTrack_IsOwner(t *testing.T) {
+	t.Run("should return true if user is the owner", func(t *testing.T) {
+		track := Track{
+			OwnerID: UserID("user-1"),
+		}
+		assert.True(t, track.IsOwner(UserID("user-1")))
+	})
+	t.Run("should return false if user is not the owner", func(t *testing.T) {
+		track := Track{
+			OwnerID: UserID("user-1"),
+		}
+		assert.False(t, track.IsOwner(UserID("user-2")))
+		assert.False(t, track.IsOwner(UserID("")))
+	})
+}

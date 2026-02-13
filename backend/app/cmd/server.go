@@ -12,9 +12,7 @@ import (
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
-	"github.com/healthy-heroes/neskuchka/backend/app/internal/storage/database"
-	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
-	"github.com/healthy-heroes/neskuchka/backend/app/store/db"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/database"
 )
 
 //go:embed web
@@ -34,7 +32,7 @@ type ServerCommand struct {
 
 // StoreOptions defines options for the storage
 type StoreOptions struct {
-	Type   db.Type `long:"type" env:"TYPE" description:"type of storage" default:"sqlite"`
+	Type   database.Type `long:"type" env:"TYPE" description:"type of storage" default:"sqlite"`
 	Sqlite struct {
 		Source string `long:"source" env:"SOURCE" description:"file name or :memory:"`
 	} `group:"sqlite" namespace:"sqlite" env-namespace:"SQLITE"`
@@ -45,7 +43,6 @@ type serverApp struct {
 	*ServerCommand
 
 	apiServer *api.Api
-	store     *datastore.DataStore
 	dataStore *domain.Store
 
 	CommonOptions
@@ -80,7 +77,7 @@ func (cmd *ServerCommand) Execute(args []string) error {
 }
 
 func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
-	dataStore, newDataStore, err := cmd.makeDataStore()
+	dataStore, err := cmd.makeDataStore()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create data store: %w", err)
 	}
@@ -89,51 +86,40 @@ func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
 		Version: cmd.Revision,
 		Secret:  cmd.Secret,
 
-		DataStore: newDataStore,
-		Store:     dataStore,
+		DataStore: dataStore,
 		WebFS:     webFS,
 	}
 
 	app := &serverApp{
 		ServerCommand: cmd,
 		apiServer:     apiServer,
-		store:         dataStore,
-		dataStore:     newDataStore,
+		dataStore:     dataStore,
 	}
 
 	return app, nil
 }
 
 // makeDataStore creates a new data store
-func (cmd *ServerCommand) makeDataStore() (*datastore.DataStore, *domain.Store, error) {
+func (cmd *ServerCommand) makeDataStore() (*domain.Store, error) {
 	log.Info().Msgf("Creating store: %s", cmd.Store.Type)
 
 	switch cmd.Store.Type {
-	case db.Sqlite:
+	case database.Sqlite:
 		if cmd.Store.Sqlite.Source == "" {
-			return nil, nil, fmt.Errorf("sqlite source is not set")
-		}
-
-		// todo remove
-		db, err := db.NewSqlite(cmd.Store.Sqlite.Source)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to create sqlite database: %w", err)
+			return nil, fmt.Errorf("sqlite source is not set")
 		}
 
 		engine, err := database.NewSqliteEngine(cmd.Store.Sqlite.Source, log.Logger)
 		if err != nil {
-			return nil, nil, fmt.Errorf("failed to create sqlite engine: %w", err)
+			return nil, fmt.Errorf("failed to create sqlite engine: %w", err)
 		}
 
-		oldDataStore := datastore.NewDataStore(db)
-		newDataStore := domain.NewStore(domain.Opts{
+		return domain.NewStore(domain.Opts{
 			DataStorage: database.NewDataStorage(engine, log.Logger),
-		})
-
-		return oldDataStore, newDataStore, nil
+		}), nil
 
 	default:
-		return nil, nil, fmt.Errorf("unsupported database type: %s", cmd.Store.Type)
+		return nil, fmt.Errorf("unsupported database type: %s", cmd.Store.Type)
 	}
 }
 

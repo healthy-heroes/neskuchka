@@ -4,14 +4,14 @@ import (
 	"net/http"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
-	"github.com/healthy-heroes/neskuchka/backend/app/store"
+	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 )
 
 // GetMainTrack returns the main track and owner flag
 func (s *Service) GetMainTrack(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger
 
-	track, err := s.store.Track.GetMainTrack()
+	track, err := s.dataStore.GetMainTrack(r.Context())
 	if err != nil {
 		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to get main track")
 		return
@@ -27,17 +27,17 @@ func (s *Service) GetMainTrack(w http.ResponseWriter, r *http.Request) {
 }
 
 // getMainTrackLastWorkoutsCtrl returns the exercises for the main track
-func (s *Service) GetMainTrackLastWorkouts(w http.ResponseWriter, _ *http.Request) {
+func (s *Service) GetMainTrackLastWorkouts(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger
 
-	track, err := s.store.Track.GetMainTrack()
+	track, err := s.dataStore.GetMainTrack(r.Context())
 	if err != nil {
 		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to get main track")
 		return
 	}
 
-	workouts, err := s.store.Workout.Find(&store.WorkoutFindCriteria{
-		TrackID: track.ID,
+	workouts, err := s.dataStore.FindWorkouts(r.Context(), domain.WorkoutFindCriteria{
+		TrackID: domain.TrackID(track.ID),
 		Limit:   10,
 	})
 
@@ -47,6 +47,6 @@ func (s *Service) GetMainTrackLastWorkouts(w http.ResponseWriter, _ *http.Reques
 	}
 
 	httpx.Render(w, WorkoutsSchema{
-		Workouts: workouts,
+		Workouts: MakeWorkoutInfos(workouts),
 	})
 }
