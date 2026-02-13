@@ -64,8 +64,9 @@ func (s *Store) GetWorkout(ctx context.Context, id WorkoutID) (Workout, error) {
 // CreateWorkout creates a new workout
 // Generates a new workout id
 // todo: clearing slugs should not affect incoming workout
-func (s *Store) CreateWorkout(ctx context.Context, w Workout) (Workout, error) {
+func (s *Store) CreateWorkout(ctx context.Context, trackID TrackID, w Workout) (Workout, error) {
 	w.ID = NewWorkoutID()
+	w.TrackID = trackID
 	w.clearSlugs()
 
 	return s.dataStorage.CreateWorkout(ctx, w)
@@ -77,15 +78,15 @@ func (s *Store) CreateWorkout(ctx context.Context, w Workout) (Workout, error) {
 // todo: generate slug
 // todo: immutable date
 // todo: clearing slugs should not affect incoming workout
-func (s *Store) UpdateWorkout(ctx context.Context, w Workout) (Workout, error) {
-	workout, err := s.dataStorage.GetWorkout(ctx, w.ID)
+func (s *Store) UpdateWorkout(ctx context.Context, id WorkoutID, wp Workout) (Workout, error) {
+	workout, err := s.dataStorage.GetWorkout(ctx, id)
 	if err != nil {
 		return Workout{}, err
 	}
 
-	workout.Date = w.Date
-	workout.Sections = w.Sections
-	workout.Notes = w.Notes
+	workout.Date = wp.Date
+	workout.Sections = wp.Sections
+	workout.Notes = wp.Notes
 	workout.clearSlugs()
 
 	return s.dataStorage.UpdateWorkout(ctx, workout)

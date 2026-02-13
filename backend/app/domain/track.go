@@ -24,6 +24,10 @@ type Track struct {
 	OwnerID UserID
 }
 
+func (t *Track) IsOwner(userID UserID) bool {
+	return userID != "" && t.OwnerID == userID
+}
+
 // GetMainTrack gets the main track
 func (s *Store) GetMainTrack(ctx context.Context) (Track, error) {
 	return s.dataStorage.GetTrackBySlug(ctx, TrackSlug("main"))

@@ -92,7 +92,7 @@ func (ds *DataStorage) GetWorkout(ctx context.Context, id domain.WorkoutID) (dom
 func (ds *DataStorage) FindWorkouts(ctx context.Context, criteria domain.WorkoutFindCriteria) ([]domain.Workout, error) {
 	workouts := []workoutRow{}
 	err := ds.engine.Select(&workouts,
-		"SELECT * FROM workout WHERE track_id = ? ORDER BY date DESC LIMIT ?",
+		"SELECT * FROM workout WHERE track_id = ? ORDER BY date DESC, created_at DESC LIMIT ?",
 		criteria.TrackID, criteria.Limit,
 	)
 	if err != nil {

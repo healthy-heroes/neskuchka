@@ -6,6 +6,13 @@ air = "latest"
 go = "latest"
 golangci-lint = "latest"
 
+[tasks.fill-db]
+description = "Fill database"
+run = """
+rm -f ./bin/app.db
+go run scripts/fill_db/fill_db.go
+"""
+
 [tasks.app]
 description = "Run the application"
 

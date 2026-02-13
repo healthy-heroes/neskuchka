@@ -1,19 +1,22 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
-	"github.com/google/uuid"
+	"github.com/rs/zerolog"
 
-	"github.com/healthy-heroes/neskuchka/backend/app/store"
-	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
-	"github.com/healthy-heroes/neskuchka/backend/app/store/db"
+	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/database"
 )
 
 func main() {
+	logger := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
+
 	// Database file path
 	dbPath := "./bin/app.db"
 
@@ -32,33 +35,19 @@ func main() {
 	}
 
 	// Initialize DB
-	database, err := db.NewSqlite(dbPath)
+	engine, err := database.NewSqliteEngine(dbPath, logger)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		logger.Fatal().Err(err).Msg("Failed to connect to database")
 	}
-	defer database.Close()
+	defer engine.Close()
 
-	// Create datastore
-	ds := datastore.NewDataStore(database)
-
-	// Initialize tables
-	if err := ds.Exercise.InitTables(); err != nil {
-		log.Fatalf("Failed to initialize exercise tables: %v", err)
-	}
-	if err := ds.User.InitTables(); err != nil {
-		log.Fatalf("Failed to initialize user tables: %v", err)
-	}
-	if err := ds.Track.InitTables(); err != nil {
-		log.Fatalf("Failed to initialize track tables: %v", err)
-	}
-	if err := ds.Workout.InitTables(); err != nil {
-		log.Fatalf("Failed to initialize workout tables: %v", err)
-	}
+	dataStorage := database.NewDataStorage(engine, logger)
 
 	// Begin transaction
-	tx, err := database.Beginx()
+	ctx := context.Background()
+	tx, err := engine.Beginx()
 	if err != nil {
-		log.Fatalf("Failed to begin transaction: %v", err)
+		logger.Fatal().Err(err).Msg("Failed to begin transaction")
 	}
 	defer func() {
 		if err != nil {
@@ -67,238 +56,139 @@ func main() {
 		}
 		err = tx.Commit()
 		if err != nil {
-			log.Fatalf("Failed to commit transaction: %v", err)
+			logger.Fatal().Err(err).Msg("Failed to commit transaction")
 		}
 	}()
 
 	// Create user
-	userLogin := "first_user"
-	userID := store.UserID("usr_" + userLogin)
-	firstUser := &store.User{
-		ID:    userID,
-		Name:  "First User",
-		Email: "first_user@example.com",
+	admin := domain.User{
+		ID:    domain.NewUserID(),
+		Name:  "Admin",
+		Email: "admin@example.com",
 	}
-	fmt.Printf("Creating user: %+v\n", firstUser)
-	if _, err = ds.User.Create(firstUser); err != nil {
-		log.Fatalf("Failed to create user: %v", err)
+	_, err = dataStorage.CreateUser(ctx, admin)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed to create user")
 	}
 
 	// Create track
-	trackID := store.TrackID(uuid.New().String())
-	sportsTrack := &store.Track{
-		ID:      trackID,
-		Name:    "Нескучный спорт",
-		OwnerID: userID,
+	mainTrack := domain.Track{
+		ID:          domain.NewTrackID(),
+		Name:        "Нескучный спорт",
+		Slug:        domain.TrackSlug("main"),
+		Description: "Тренируйтесь с нами — где бы вы ни находились!\nИдеальная программа, чтобы поддерживать форму дома, без специального оборудования.",
+		OwnerID:     admin.ID,
 	}
-	fmt.Printf("Creating track: %+v\n", sportsTrack)
-	if _, err = ds.Track.Create(sportsTrack); err != nil {
-		log.Fatalf("Failed to create track: %v", err)
-	}
-
-	// Create exercises
-	exercises := map[string]*store.Exercise{
-		"Раскрытия в планке": {
-			Name:        "Раскрытия в планке",
-			Slug:        store.ExerciseSlug("plank-hip-opening"),
-			Description: "",
-		},
-		"Ягодичные марши": {
-			Name:        "Ягодичные марши",
-			Slug:        store.ExerciseSlug("glute-march"),
-			Description: "",
-		},
-		"Джампинг джек": {
-			Name:        "Джампинг джек",
-			Slug:        store.ExerciseSlug("jumping-jack"),
-			Description: "",
-		},
-		"C пола на грудь + 2 выпада назад": {
-			Name:        "C пола на грудь + 2 выпада назад",
-			Slug:        store.ExerciseSlug("push-up-with-back-drop"),
-			Description: "",
-		},
-		"Становая на одной": {
-			Name:        "Становая на одной",
-			Slug:        store.ExerciseSlug("deadlift-on-one-leg"),
-			Description: "",
-		},
-		"Пресс на прямых руки над головой": {
-			Name:        "Пресс на прямых руки над головой",
-			Slug:        store.ExerciseSlug("situps-with-hands-over-head"),
-			Description: "",
-		},
-		"Стол": {
-			Name:        "Стол",
-			Slug:        store.ExerciseSlug("table"),
-			Description: "",
-		},
-		"Наклоны вперед": {
-			Name:        "Наклоны вперед",
-			Slug:        store.ExerciseSlug("forward-bend"),
-			Description: "",
-		},
-		"Качающиеся планки": {
-			Name:        "Качающиеся планки",
-			Slug:        store.ExerciseSlug("plank-with-jumping-jack"),
-			Description: "",
-		},
-		"Становая тяга": {
-			Name:        "Становая тяга",
-			Slug:        store.ExerciseSlug("deadlift"),
-			Description: "",
-		},
-		"Приседания": {
-			Name:        "Приседания",
-			Slug:        store.ExerciseSlug("squats"),
-			Description: "",
-		},
-		"С груди над головой": {
-			Name:        "С груди над головой",
-			Slug:        store.ExerciseSlug("push-up-with-hands-over-head"),
-			Description: "",
-		},
-	}
-
-	for name, ex := range exercises {
-		fmt.Printf("Creating exercise: %s (%s)\n", name, ex.Slug)
-		if _, err = ds.Exercise.Create(ex); err != nil {
-			log.Fatalf("Failed to create exercise: %v", err)
-		}
+	_, err = dataStorage.CreateTrack(ctx, mainTrack)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed to create track")
 	}
 
 	// Create first workout (Jan 31, 2025)
-	firstWorkoutID := store.CreateWorkoutId()
-	firstWorkout := &store.Workout{
-		ID:      firstWorkoutID,
-		Date:    "2025-01-31",
-		TrackID: trackID,
+	_, err = dataStorage.CreateWorkout(ctx, domain.Workout{
+		ID:      domain.NewWorkoutID(),
+		Date:    time.Date(2025, 1, 31, 0, 0, 0, 0, time.UTC),
+		TrackID: mainTrack.ID,
 		Notes:   "First workout",
-		Sections: []store.WorkoutSection{
+		Sections: []domain.WorkoutSection{
 			{
 				Title: "Разминка",
-				Protocol: store.WorkoutProtocol{
-					Type:        store.WorkoutProtocolTypeDefault,
+				Protocol: domain.Protocol{
+					Type:        domain.ProtocolTypeCustom,
 					Title:       "3 раунда",
 					Description: "",
 				},
-				Exercises: []store.WorkoutExercise{
+				Exercises: []domain.WorkoutExercise{
 					{
-						ExerciseSlug: exercises["Раскрытия в планке"].Slug,
-						Repetitions:  20,
+						ExerciseSlug: domain.ExerciseSlug("plank-hip-opening"),
 						Description:  "20 раскрытий в планке",
-					},
-					{
-						ExerciseSlug: exercises["Ягодичные марши"].Slug,
-						Repetitions:  20,
-						Description:  "20 ягодичных маршей",
-					},
-					{
-						ExerciseSlug: exercises["Джампинг джек"].Slug,
-						Repetitions:  30,
-						Description:  "30 джампинг джеков",
 					},
 				},
 			},
 			{
 				Title: "Комплекс",
-				Protocol: store.WorkoutProtocol{
-					Type:        store.WorkoutProtocolTypeDefault,
+				Protocol: domain.Protocol{
+					Type:        domain.ProtocolTypeCustom,
 					Title:       "5 раундов",
 					Description: "*можно использовать спортивные снаряды",
 				},
-				Exercises: []store.WorkoutExercise{
+				Exercises: []domain.WorkoutExercise{
 					{
-						ExerciseSlug: exercises["C пола на грудь + 2 выпада назад"].Slug,
-						Repetitions:  10,
+						ExerciseSlug: domain.ExerciseSlug("push-up-with-back-drop"),
 						Description:  "10 отжиманий",
 					},
 					{
-						ExerciseSlug:    exercises["Становая на одной"].Slug,
-						Repetitions:     20,
-						RepetitionsText: "10+10",
-						Description:     "20 становых на одной",
+						ExerciseSlug: domain.ExerciseSlug("deadlift-on-one-leg"),
+						Description:  "20 становых на одной",
 					},
 					{
-						ExerciseSlug: exercises["Пресс на прямых руки над головой"].Slug,
-						Repetitions:  10,
+						ExerciseSlug: domain.ExerciseSlug("situps-with-hands-over-head"),
 						Description:  "10 пресса на прямых руках над головой",
 					},
 				},
 			},
 		},
-	}
-
-	fmt.Printf("Creating workout: %+v\n", firstWorkout)
-	if _, err = ds.Workout.Create(firstWorkout); err != nil {
-		log.Fatalf("Failed to create workout: %v", err)
+	})
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed to create workout")
 	}
 
 	// Create second workout (Feb 3, 2025)
-	secondWorkoutID := store.CreateWorkoutId()
-	secondWorkout := &store.Workout{
-		ID:      secondWorkoutID,
-		Date:    "2025-02-03",
-		TrackID: trackID,
+	_, err = dataStorage.CreateWorkout(ctx, domain.Workout{
+		ID:      domain.NewWorkoutID(),
+		Date:    time.Date(2025, 2, 3, 0, 0, 0, 0, time.UTC),
+		TrackID: mainTrack.ID,
 		Notes:   "Second workout",
-		Sections: []store.WorkoutSection{
+		Sections: []domain.WorkoutSection{
 			{
 				Title: "Разминка",
-				Protocol: store.WorkoutProtocol{
-					Type:        store.WorkoutProtocolTypeDefault,
+				Protocol: domain.Protocol{
+					Type:        domain.ProtocolTypeCustom,
 					Title:       "3 раунда",
 					Description: "",
 				},
-				Exercises: []store.WorkoutExercise{
+				Exercises: []domain.WorkoutExercise{
 					{
-						ExerciseSlug: exercises["Стол"].Slug,
-						Repetitions:  10,
+						ExerciseSlug: domain.ExerciseSlug("table"),
 						Description:  "10 столов",
 					},
 					{
-						ExerciseSlug: exercises["Наклоны вперед"].Slug,
-						Repetitions:  10,
+						ExerciseSlug: domain.ExerciseSlug("forward-bend"),
 						Description:  "10 наклонов вперед",
 					},
 					{
-						ExerciseSlug: exercises["Качающиеся планки"].Slug,
-						Repetitions:  20,
+						ExerciseSlug: domain.ExerciseSlug("plank-with-jumping-jack"),
 						Description:  "20 качающихся планок",
 					},
 				},
 			},
 			{
 				Title: "Комплекс",
-				Protocol: store.WorkoutProtocol{
-					Type:        store.WorkoutProtocolTypeDefault,
+				Protocol: domain.Protocol{
+					Type:        domain.ProtocolTypeCustom,
 					Title:       "5 раундов",
 					Description: "",
 				},
-				Exercises: []store.WorkoutExercise{
+				Exercises: []domain.WorkoutExercise{
 					{
-						ExerciseSlug: exercises["Становая на одной"].Slug,
-						Repetitions:  24,
+						ExerciseSlug: domain.ExerciseSlug("deadlift-on-one-leg"),
 						Description:  "24 становых на одной",
 					},
 					{
-						ExerciseSlug: exercises["Приседания"].Slug,
-						Repetitions:  18,
+						ExerciseSlug: domain.ExerciseSlug("squats"),
 						Description:  "18 приседаний",
 					},
 					{
-						ExerciseSlug: exercises["С груди над головой"].Slug,
-						Repetitions:  12,
+						ExerciseSlug: domain.ExerciseSlug("push-up-with-hands-over-head"),
 						Description:  "12 отжиманий",
 					},
 				},
 			},
 		},
+	})
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed to create workout")
 	}
 
-	fmt.Printf("Creating workout: %+v\n", secondWorkout)
-	if _, err = ds.Workout.Create(secondWorkout); err != nil {
-		log.Fatalf("Failed to create workout: %v", err)
-	}
-
-	fmt.Println("Database successfully populated!")
+	logger.Info().Msg("Database successfully populated!")
 }

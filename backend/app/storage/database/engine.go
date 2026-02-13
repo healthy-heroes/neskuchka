@@ -10,6 +10,12 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 )
 
+type Type string
+
+const (
+	Sqlite Type = "sqlite"
+)
+
 // Engine wraps sqlx.DB
 type Engine struct {
 	*sqlx.DB

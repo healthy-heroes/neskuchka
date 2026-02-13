@@ -138,7 +138,7 @@ func TestCreateWorkout(t *testing.T) {
 			},
 		})
 
-		workout, err := service.CreateWorkout(context.Background(), newWorkout)
+		workout, err := service.CreateWorkout(context.Background(), TrackID("1"), newWorkout)
 
 		assert.Nil(t, err)
 		assert.NotEmpty(t, workout.ID)
@@ -169,7 +169,6 @@ func TestUpdateWorkout(t *testing.T) {
 			Notes: "Test notes",
 		}
 		newWorkout := Workout{
-			ID:      WorkoutID(existingWorkout.ID),
 			TrackID: TrackID("wrong-track-id"),
 
 			Date: time.Now().Add(1 * time.Hour),
@@ -193,7 +192,7 @@ func TestUpdateWorkout(t *testing.T) {
 				},
 			},
 		})
-		workout, err := service.UpdateWorkout(context.Background(), newWorkout)
+		workout, err := service.UpdateWorkout(context.Background(), existingWorkout.ID, newWorkout)
 
 		assert.Nil(t, err)
 		// Protected fields
@@ -215,9 +214,7 @@ func TestUpdateWorkout(t *testing.T) {
 				},
 			},
 		})
-		_, err := service.UpdateWorkout(context.Background(), Workout{
-			ID: WorkoutID("1"),
-		})
+		_, err := service.UpdateWorkout(context.Background(), WorkoutID("1"), Workout{})
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, ErrNotFound)

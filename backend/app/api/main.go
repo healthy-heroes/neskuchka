@@ -21,7 +21,6 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/api/tracks"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
-	"github.com/healthy-heroes/neskuchka/backend/app/store/datastore"
 )
 
 // Api is an API server
@@ -30,7 +29,6 @@ type Api struct {
 	Secret  string
 
 	DataStore *domain.Store
-	Store     *datastore.DataStore
 	WebFS     embed.FS
 
 	httpServer *http.Server
@@ -134,7 +132,7 @@ func (api *Api) addAuthRoutes(router chi.Router, session *session.Manager) {
 // addTracksRoutes is adding tracks routes
 // temporary working with concrete main track routes
 func (api *Api) addTracksRoutes(router chi.Router, session *session.Manager) {
-	h := tracks.NewService(api.Store, session, tracks.Opts{
+	h := tracks.NewService(api.DataStore, session, tracks.Opts{
 		Logger: log.Logger,
 	})
 
