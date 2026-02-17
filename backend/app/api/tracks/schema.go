@@ -6,8 +6,10 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 )
 
+// WorkoutInfo is a workout info for reading and creating workouts
 type WorkoutInfo struct {
 	ID       string
+	TrackID  string
 	Date     string
 	Notes    string
 	Sections []domain.WorkoutSection
@@ -16,10 +18,26 @@ type WorkoutInfo struct {
 func MakeWorkoutInfo(workout domain.Workout) WorkoutInfo {
 	return WorkoutInfo{
 		ID:       string(workout.ID),
+		TrackID:  string(workout.TrackID),
 		Date:     workout.Date.Format(time.DateOnly),
 		Notes:    workout.Notes,
 		Sections: workout.Sections,
 	}
+}
+
+func (w *WorkoutInfo) toDomain() (domain.Workout, error) {
+	date, err := time.Parse(time.DateOnly, w.Date)
+	if err != nil {
+		return domain.Workout{}, err
+	}
+
+	return domain.Workout{
+		ID:       domain.WorkoutID(w.ID),
+		TrackID:  domain.TrackID(w.TrackID),
+		Date:     date,
+		Notes:    w.Notes,
+		Sections: w.Sections,
+	}, nil
 }
 
 func MakeWorkoutInfos(workouts []domain.Workout) []WorkoutInfo {
@@ -36,25 +54,6 @@ type WorkoutSchema struct {
 
 type WorkoutsSchema struct {
 	Workouts []WorkoutInfo
-}
-
-type WorkoutCreateSchema struct {
-	Date     string                  `json:"date"`
-	Notes    string                  `json:"notes"`
-	Sections []domain.WorkoutSection `json:"sections"`
-}
-
-func (s *WorkoutCreateSchema) toDomain() (domain.Workout, error) {
-	date, err := time.Parse(time.DateOnly, s.Date)
-	if err != nil {
-		return domain.Workout{}, err
-	}
-
-	return domain.Workout{
-		Date:     date,
-		Notes:    s.Notes,
-		Sections: s.Sections,
-	}, nil
 }
 
 type TrackInfo struct {

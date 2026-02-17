@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/uuid"
@@ -15,6 +14,11 @@ func NewWorkoutID() WorkoutID {
 	return WorkoutID(uuid.New())
 }
 
+type WorkoutRef struct {
+	TrackID   TrackID
+	WorkoutID WorkoutID
+}
+
 // Workout is a workout aggregate
 type Workout struct {
 	ID      WorkoutID
@@ -24,6 +28,20 @@ type Workout struct {
 	Notes string
 
 	Sections []WorkoutSection
+}
+
+func (w *Workout) Ref() WorkoutRef {
+	return WorkoutRef{TrackID: w.TrackID, WorkoutID: w.ID}
+}
+
+// ApplyUpdate applies an update to a workout
+func (w *Workout) ApplyUpdate(wu Workout) {
+	w.Date = wu.Date
+	w.Notes = wu.Notes
+	w.Sections = wu.Sections
+
+	// todo: exists bug with clearing slugs in wu.Sections
+	w.clearSlugs()
 }
 
 // WorkoutSection is a section of a workout
@@ -52,21 +70,28 @@ func (w *Workout) clearSlugs() {
 
 // WorkoutFindCriteria is a criteria for finding workouts
 type WorkoutFindCriteria struct {
-	TrackID TrackID
-	Limit   int
+	Limit int
 }
 
 // GetWorkout gets a workout by id
-func (s *Store) GetWorkout(ctx context.Context, id WorkoutID) (Workout, error) {
-	return s.dataStorage.GetWorkout(ctx, id)
+func (s *Store) GetWorkout(ctx context.Context, wr WorkoutRef) (Workout, error) {
+	return s.dataStorage.GetWorkout(ctx, wr)
 }
 
 // CreateWorkout creates a new workout
 // Generates a new workout id
-// todo: clearing slugs should not affect incoming workout
-func (s *Store) CreateWorkout(ctx context.Context, trackID TrackID, w Workout) (Workout, error) {
+func (s *Store) CreateWorkout(ctx context.Context, uid UserID, w Workout) (Workout, error) {
+	t, err := s.dataStorage.GetTrack(ctx, w.TrackID)
+	if err != nil {
+		return Workout{}, err
+	}
+
+	// Permission check
+	if !t.IsOwner(uid) {
+		return Workout{}, ErrForbidden
+	}
+
 	w.ID = NewWorkoutID()
-	w.TrackID = trackID
 	w.clearSlugs()
 
 	return s.dataStorage.CreateWorkout(ctx, w)
@@ -75,32 +100,32 @@ func (s *Store) CreateWorkout(ctx context.Context, trackID TrackID, w Workout) (
 // UpdateWorkout updates a workout
 // updates only safe fields, other should be ignored
 // don't check if fields are empty; just update them.
-// todo: generate slug
-// todo: immutable date
-// todo: clearing slugs should not affect incoming workout
-func (s *Store) UpdateWorkout(ctx context.Context, id WorkoutID, wp Workout) (Workout, error) {
-	workout, err := s.dataStorage.GetWorkout(ctx, id)
+func (s *Store) UpdateWorkout(ctx context.Context, uid UserID, wu Workout) (Workout, error) {
+	t, err := s.dataStorage.GetTrack(ctx, wu.TrackID)
 	if err != nil {
 		return Workout{}, err
 	}
 
-	workout.Date = wp.Date
-	workout.Sections = wp.Sections
-	workout.Notes = wp.Notes
-	workout.clearSlugs()
+	// Permission check
+	if !t.IsOwner(uid) {
+		return Workout{}, ErrForbidden
+	}
 
-	return s.dataStorage.UpdateWorkout(ctx, workout)
+	w, err := s.dataStorage.GetWorkout(ctx, wu.Ref())
+	if err != nil {
+		return Workout{}, err
+	}
+
+	w.ApplyUpdate(wu)
+
+	return s.dataStorage.UpdateWorkout(ctx, w)
 }
 
 // FindWorkouts finds workouts by criteria
-func (s *Store) FindWorkouts(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
-	if criteria.TrackID == "" {
-		return nil, errors.New("TrackID is required")
-	}
-
+func (s *Store) FindWorkouts(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria) ([]Workout, error) {
 	if criteria.Limit <= 0 || criteria.Limit > 50 {
 		criteria.Limit = 10
 	}
 
-	return s.dataStorage.FindWorkouts(ctx, criteria)
+	return s.dataStorage.FindWorkouts(ctx, tid, criteria)
 }

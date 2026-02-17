@@ -4,6 +4,7 @@ import { Workout } from '@/types/domain';
 export default function createWorkout(): Workout {
 	return {
 		ID: randomId(),
+		TrackID: 'track-1',
 		Date: '2025-01-01',
 		Sections: [
 			{

@@ -2,6 +2,7 @@ package httpx
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,6 +10,8 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 )
 
 func body(output string) string {
@@ -77,5 +80,34 @@ func TestRenderUnauthorized(t *testing.T) {
 		assert.Equal(t, "application/json; charset=utf-8", response.Header().Get("Content-Type"))
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 		assert.Equal(t, body(`{"error":"Unauthorized"}`), response.Body.String())
+	})
+}
+
+func TestRenderDomainError(t *testing.T) {
+	t.Run("render not found error", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		RenderDomainError(response, zerolog.Nop(), fmt.Errorf("error: %w", domain.ErrNotFound), "not found")
+
+		assert.Equal(t, "application/json; charset=utf-8", response.Header().Get("Content-Type"))
+		assert.Equal(t, http.StatusNotFound, response.Code)
+		assert.Equal(t, body(`{"error":"Not found"}`), response.Body.String())
+	})
+
+	t.Run("render forbidden error", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		RenderDomainError(response, zerolog.Nop(), fmt.Errorf("error: %w", domain.ErrForbidden), "forbidden")
+
+		assert.Equal(t, "application/json; charset=utf-8", response.Header().Get("Content-Type"))
+		assert.Equal(t, http.StatusForbidden, response.Code)
+		assert.Equal(t, body(`{"error":"Forbidden"}`), response.Body.String())
+	})
+
+	t.Run("render internal server error", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		RenderDomainError(response, zerolog.Nop(), fmt.Errorf("error: %w", errors.New("internal server error")), "internal server error")
+
+		assert.Equal(t, "application/json; charset=utf-8", response.Header().Get("Content-Type"))
+		assert.Equal(t, http.StatusInternalServerError, response.Code)
+		assert.Equal(t, body(`{"error":"internal server error"}`), response.Body.String())
 	})
 }

@@ -1,51 +1,36 @@
 # Project Rules and Conventions
 
-## Task Management with Mise
-
-### Running tasks from project root
-When running `mise` commands from the project root (`/Users/dzlk/Dev/neskuchka/`), you must use prefixes:
-- `mise run //frontend:checks --fix`
-- `mise run //backend:checks`
-- `mise run //frontend:tests`
-
-### Running tasks from subdirectories
-When running `mise` commands from within a specific directory (e.g., `frontend/` or `backend/`), you can omit the prefix:
-- `cd frontend/` then `mise run checks --fix`
-- `cd backend/` then `mise run tests`
-
-### Best practices
-- Always prefer using `mise` over direct tool calls (`pnpm`, `go`, etc.)
-- Use `mise run //frontend:checks --fix` to automatically fix formatting issues before committing
-- The project has pre-commit hooks that run checks, so ensure formatting is correct before committing
-
 ## Project Structure
-- This is a monorepo with `backend/` (Go) and `frontend/` (TypeScript/React)
-- Each part has its own tasks defined in mise configuration
-- Pre-commit hooks run checks automatically
+- Monorepo: `backend/` (Go) and `frontend/` (TypeScript/React)
+- Use `mise run` for all tasks (not direct `pnpm`, `go`, etc.)
+- From root use prefixes: `mise run //frontend:checks --fix`, `mise run //backend:tests`
+- From subdirectory, omit prefix: `cd frontend && mise run checks --fix`
+- Pre-commit hooks run checks — ensure formatting is correct before committing
 
-## Frontend Stack
-- React + Mantine UI + TanStack Router + TanStack Query
+## Frontend
+- Stack: React + Mantine UI + TanStack Router + TanStack Query
 - Auth state via `useAuth()` hook from `@/auth/hooks`
-
-## Frontend Patterns
-- Auth redirects: do in Page components (not route-level `beforeLoad`) using `<Navigate to="..." />`
-- Loading states: use `<PageSkeleton />` component
-- Route links: use `<RouteLink />` component from `@/components/RouteLink`
+- Auth redirects: in Page components using `<Navigate to="..." />`, not route-level `beforeLoad`
+- Loading states: `<PageSkeleton />`, route links: `<RouteLink />`
+- Route guards: `<RequireAuth>` for auth-only, `<TrackOwnerOnly>` for owner-only — wrap page component
+- See `docs/concepts/routing.md` and `docs/concepts/queries.md` for details
 
 ## TanStack Query (React Query v5)
 - Use `isPending` instead of `isLoading` for checking loading state
 - Prefer `data?.field` over `isSuccess && data.field` for simple cases
 - Use `select` option to unwrap API responses (e.g., `{ data: T }` → `T`)
 - Layout components load shared data; children get it from cache instantly
-- See `docs/concepts/queries.md` for detailed patterns
-
-## Route Guards
-- Use `<RequireAuth>` for auth-only pages (checks authentication)
-- Use `<TrackOwnerOnly>` for owner-only pages (checks track ownership)
-- Guards go in route component, wrap the page component
-- See `docs/concepts/routing.md` for examples
 
 ## Permissions & Authorization
 - Backend returns `IsOwner: bool` in API response, not raw `OwnerID`
 - Frontend checks permissions via response field, not by comparing IDs
-- This keeps authorization logic on backend, frontend just reads the flag
+
+## Backend Architecture (Go)
+- Layers: API handlers → Domain (Store) → Storage (dataStorage interface)
+- Authentication: middleware level (session)
+- Authorization (permission checks): domain level (Store methods), not handlers
+- Domain errors: ErrNotFound, ErrForbidden — handlers map them via `httpx.RenderDomainError`
+- API is RPC-style: client sends full objects (including IDs) in request body
+- Handlers are thin: parse body → toDomain() → call Store → render response
+- Business behavior on aggregates (e.g. Workout.ApplyUpdate, Workout.Ref), not on Store
+- Storage interface defined in domain package (dependency inversion)

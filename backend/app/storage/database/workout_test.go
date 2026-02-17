@@ -59,7 +59,10 @@ func Test_Workout_Create(t *testing.T) {
 	assert.Equal(t, newWorkout.Notes, createdWorkout.Notes)
 	assert.Equal(t, newWorkout.Sections, createdWorkout.Sections)
 
-	workoutByID, err := ds.GetWorkout(context.Background(), newWorkout.ID)
+	workoutByID, err := ds.GetWorkout(context.Background(), domain.WorkoutRef{
+		TrackID:   newWorkout.TrackID,
+		WorkoutID: newWorkout.ID,
+	})
 	require.NoError(t, err)
 	assert.Equal(t, createdWorkout, workoutByID)
 
@@ -73,7 +76,22 @@ func Test_Workout_Get_NotFound(t *testing.T) {
 	ds := setupTestDataStorage(t)
 	defer ds.engine.Close()
 
-	_, err := ds.GetWorkout(context.Background(), domain.WorkoutID("non-existent-id"))
+	trackID := domain.NewTrackID()
+	_, err := ds.CreateWorkout(context.Background(), domain.Workout{
+		ID:      domain.NewWorkoutID(),
+		TrackID: trackID,
+		Date:    workoutDate("2025-02-06"),
+		Notes:   "Test workout notes",
+		Sections: []domain.WorkoutSection{
+			{Title: "Warm up", Protocol: domain.Protocol{Type: domain.ProtocolTypeCustom, Title: "Custom", Description: ""}},
+		},
+	})
+	require.NoError(t, err)
+
+	_, err = ds.GetWorkout(context.Background(), domain.WorkoutRef{
+		TrackID:   trackID,
+		WorkoutID: domain.WorkoutID("non-existent-id"),
+	})
 	assert.ErrorIs(t, err, domain.ErrNotFound)
 }
 
@@ -152,9 +170,8 @@ func Test_Workout_FindWorkouts(t *testing.T) {
 	require.NoError(t, err)
 
 	// full list
-	list, err := ds.FindWorkouts(context.Background(), domain.WorkoutFindCriteria{
-		TrackID: trackID,
-		Limit:   3,
+	list, err := ds.FindWorkouts(context.Background(), trackID, domain.WorkoutFindCriteria{
+		Limit: 3,
 	})
 	require.NoError(t, err)
 	require.Len(t, list, 3)
@@ -164,9 +181,8 @@ func Test_Workout_FindWorkouts(t *testing.T) {
 	assert.Equal(t, workoutDate("2025-02-01"), list[2].Date)
 
 	// limited list
-	limited, err := ds.FindWorkouts(context.Background(), domain.WorkoutFindCriteria{
-		TrackID: trackID,
-		Limit:   2,
+	limited, err := ds.FindWorkouts(context.Background(), trackID, domain.WorkoutFindCriteria{
+		Limit: 2,
 	})
 	require.NoError(t, err)
 	require.Len(t, limited, 2)
@@ -174,9 +190,8 @@ func Test_Workout_FindWorkouts(t *testing.T) {
 	assert.Equal(t, workoutDate("2025-02-04"), limited[1].Date)
 
 	// empty list
-	list, err = ds.FindWorkouts(context.Background(), domain.WorkoutFindCriteria{
-		TrackID: domain.NewTrackID(),
-		Limit:   10,
+	list, err = ds.FindWorkouts(context.Background(), trackID, domain.WorkoutFindCriteria{
+		Limit: 10,
 	})
 	require.NoError(t, err)
 	require.Len(t, list, 0)

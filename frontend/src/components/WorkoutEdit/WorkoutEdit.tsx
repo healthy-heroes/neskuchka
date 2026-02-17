@@ -49,6 +49,7 @@ export function WorkoutEdit({ workoutId }: WorkoutEditProps) {
 			</Title>
 
 			<WorkoutForm
+				trackId={workout.TrackID}
 				data={workout}
 				isSubmitting={workoutUpdating.isPending}
 				onSubmit={workoutUpdating.mutate}
