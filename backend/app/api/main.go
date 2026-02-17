@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"io/fs"
 	"net/http"
@@ -29,7 +28,7 @@ type Api struct {
 	Secret  string
 
 	DataStore *domain.Store
-	WebFS     embed.FS
+	WebFS     fs.FS
 
 	httpServer *http.Server
 	lock       sync.Mutex
@@ -40,7 +39,7 @@ func (api *Api) Run(address string, port int) {
 	api.lock.Lock()
 	api.httpServer = &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", address, port),
-		Handler: api.routes(),
+		Handler: api.Handler(),
 	}
 	api.lock.Unlock()
 
@@ -67,7 +66,7 @@ func (api *Api) Shutdown() {
 }
 
 // routes is setting up routes for the API
-func (api *Api) routes() *chi.Mux {
+func (api *Api) Handler() *chi.Mux {
 	router := chi.NewRouter()
 	session := session.NewManager(session.Opts{
 		Logger: log.Logger,
@@ -151,7 +150,7 @@ func (api *Api) addTracksRoutes(router chi.Router, session *session.Manager) {
 
 // addStaticRoutes is adding static routes
 func (api *Api) addStaticRoutes(router *chi.Mux) {
-	indexHTML, err := api.WebFS.ReadFile("web/index.html")
+	indexHTML, err := fs.ReadFile(api.WebFS, "web/index.html")
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to read index.html")
 	}
