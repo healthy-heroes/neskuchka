@@ -190,7 +190,7 @@ func Test_Workout_FindWorkouts(t *testing.T) {
 	assert.Equal(t, workoutDate("2025-02-04"), limited[1].Date)
 
 	// empty list
-	list, err = ds.FindWorkouts(context.Background(), trackID, domain.WorkoutFindCriteria{
+	list, err = ds.FindWorkouts(context.Background(), domain.NewTrackID(), domain.WorkoutFindCriteria{
 		Limit: 10,
 	})
 	require.NoError(t, err)
