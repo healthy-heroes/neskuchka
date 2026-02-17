@@ -1,6 +1,9 @@
 package domain
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 // DataStorageStub is a stub for dataStorage interface for testing.
 type DataStorageStub struct {
@@ -9,10 +12,11 @@ type DataStorageStub struct {
 	CreateUserFunc     func(context.Context, User) (User, error)
 	UpdateUserFunc     func(context.Context, User) (User, error)
 
+	GetTrackFunc       func(context.Context, TrackID) (Track, error)
 	GetTrackBySlugFunc func(context.Context, TrackSlug) (Track, error)
 
-	GetWorkoutFunc    func(context.Context, WorkoutID) (Workout, error)
-	FindWorkoutsFunc  func(context.Context, WorkoutFindCriteria) ([]Workout, error)
+	GetWorkoutFunc    func(context.Context, WorkoutRef) (Workout, error)
+	FindWorkoutsFunc  func(context.Context, TrackID, WorkoutFindCriteria) ([]Workout, error)
 	CreateWorkoutFunc func(context.Context, Workout) (Workout, error)
 	UpdateWorkoutFunc func(context.Context, Workout) (Workout, error)
 }
@@ -33,22 +37,59 @@ func (s *DataStorageStub) UpdateUser(ctx context.Context, user User) (User, erro
 	return s.UpdateUserFunc(ctx, user)
 }
 
+func (s *DataStorageStub) GetTrack(ctx context.Context, id TrackID) (Track, error) {
+	return s.GetTrackFunc(ctx, id)
+}
+
 func (s *DataStorageStub) GetTrackBySlug(ctx context.Context, slug TrackSlug) (Track, error) {
 	return s.GetTrackBySlugFunc(ctx, slug)
 }
 
-func (s *DataStorageStub) GetWorkout(ctx context.Context, id WorkoutID) (Workout, error) {
-	return s.GetWorkoutFunc(ctx, id)
+func (s *DataStorageStub) GetWorkout(ctx context.Context, wr WorkoutRef) (Workout, error) {
+	return s.GetWorkoutFunc(ctx, wr)
 }
 
-func (s *DataStorageStub) FindWorkouts(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
-	return s.FindWorkoutsFunc(ctx, criteria)
+func (s *DataStorageStub) FindWorkouts(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria) ([]Workout, error) {
+	return s.FindWorkoutsFunc(ctx, tid, criteria)
 }
 
-func (s *DataStorageStub) CreateWorkout(ctx context.Context, workout Workout) (Workout, error) {
-	return s.CreateWorkoutFunc(ctx, workout)
+func (s *DataStorageStub) CreateWorkout(ctx context.Context, w Workout) (Workout, error) {
+	return s.CreateWorkoutFunc(ctx, w)
 }
 
-func (s *DataStorageStub) UpdateWorkout(ctx context.Context, workout Workout) (Workout, error) {
-	return s.UpdateWorkoutFunc(ctx, workout)
+func (s *DataStorageStub) UpdateWorkout(ctx context.Context, w Workout) (Workout, error) {
+	return s.UpdateWorkoutFunc(ctx, w)
+}
+
+func createTrack() Track {
+	return Track{
+		ID:      NewTrackID(),
+		Slug:    TrackSlug("main-test"),
+		OwnerID: NewUserID(),
+	}
+}
+
+func createWorkout(trackID TrackID) Workout {
+	return Workout{
+		ID:      NewWorkoutID(),
+		TrackID: trackID,
+		Date:    time.Now(),
+		Notes:   "Test workout notes",
+		Sections: []WorkoutSection{
+			{
+				Title: "Section 1",
+				Exercises: []WorkoutExercise{
+					{ExerciseSlug: "exercise-1"},
+					{ExerciseSlug: "exercise-2"},
+				},
+			},
+			{
+				Title: "Section 2",
+				Exercises: []WorkoutExercise{
+					{ExerciseSlug: "exercise-3"},
+					{ExerciseSlug: "exercise-4"},
+				},
+			},
+		},
+	}
 }

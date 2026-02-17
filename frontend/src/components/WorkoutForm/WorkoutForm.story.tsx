@@ -7,6 +7,7 @@ export default {
 };
 
 const props = {
+	trackId: 'track-1',
 	onSubmit: () => {},
 	error: null,
 	onCancel: () => {},

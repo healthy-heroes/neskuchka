@@ -8,6 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func wrf(tid TrackID, wid WorkoutID) WorkoutRef {
+	return WorkoutRef{TrackID: tid, WorkoutID: wid}
+}
+
 func TestNewWorkoutID(t *testing.T) {
 	t.Run("should generate a new workout id", func(t *testing.T) {
 		workoutID := NewWorkoutID()
@@ -98,177 +102,184 @@ func TestClearSlugs(t *testing.T) {
 
 func TestGetWorkout(t *testing.T) {
 	t.Run("should return workout", func(t *testing.T) {
-		existingWorkout := Workout{
-			ID: WorkoutID("1"),
-		}
-
+		w := createWorkout(NewTrackID())
 		service := NewStore(Opts{
 			DataStorage: &DataStorageStub{
-				GetWorkoutFunc: func(ctx context.Context, id WorkoutID) (Workout, error) {
-					return existingWorkout, nil
+				GetWorkoutFunc: func(ctx context.Context, wr WorkoutRef) (Workout, error) {
+					return w, nil
 				},
 			},
 		})
-		workout, err := service.GetWorkout(context.Background(), WorkoutID("1"))
+
+		workout, err := service.GetWorkout(context.Background(), wrf(w.TrackID, w.ID))
 		assert.Nil(t, err)
-		assert.Equal(t, existingWorkout, workout)
+		assert.Equal(t, w, workout)
 	})
 }
 
 func TestCreateWorkout(t *testing.T) {
 	t.Run("should create workout", func(t *testing.T) {
-		newWorkout := Workout{
-			Date:    time.Now(),
-			TrackID: TrackID("1"),
-			Sections: []WorkoutSection{
-				{
-					Title: "Section 1",
-					Exercises: []WorkoutExercise{
-						{ExerciseSlug: "squat"},
-					},
-				},
-			},
-		}
+		track := createTrack()
 
 		service := NewStore(Opts{
 			DataStorage: &DataStorageStub{
-				CreateWorkoutFunc: func(ctx context.Context, workout Workout) (Workout, error) {
-					return workout, nil
+				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
+					return track, nil
+				},
+				CreateWorkoutFunc: func(ctx context.Context, w Workout) (Workout, error) {
+					return w, nil
 				},
 			},
 		})
 
-		workout, err := service.CreateWorkout(context.Background(), TrackID("1"), newWorkout)
+		newWorkout := createWorkout(track.ID)
+		newWorkout.ID = ""
+		workout, err := service.CreateWorkout(context.Background(), track.OwnerID, newWorkout)
 
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotEmpty(t, workout.ID)
-		assert.NotEqual(t, newWorkout.ID, workout.ID)
+
 		assert.Equal(t, newWorkout.TrackID, workout.TrackID)
 		assert.Equal(t, newWorkout.Date, workout.Date)
-
-		// todo: it's wrong behavior, because affect newWorkout.Sections
+		assert.Equal(t, newWorkout.Notes, workout.Notes)
 		assert.Equal(t, newWorkout.Sections, workout.Sections)
+
+		// todo: check that slugs are cleared in workout.Sections but not in newWorkout.Sections
+	})
+
+	t.Run("should return error if create not owner of track", func(t *testing.T) {
+		track1 := createTrack()
+		track2 := createTrack()
+
+		service := NewStore(Opts{
+			DataStorage: &DataStorageStub{
+				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
+					if tid == track1.ID {
+						return track1, nil
+					}
+					return track2, nil
+				},
+			},
+		})
+
+		newWorkout := createWorkout(track2.ID)
+		_, err := service.CreateWorkout(context.Background(), track1.OwnerID, newWorkout)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrForbidden)
 	})
 }
 
 func TestUpdateWorkout(t *testing.T) {
 	t.Run("should update workout", func(t *testing.T) {
-		existingWorkout := Workout{
-			ID:      WorkoutID("1"),
-			TrackID: TrackID("1"),
-
-			Date: time.Now(),
-			Sections: []WorkoutSection{
-				{
-					Title: "Section 1",
-					Exercises: []WorkoutExercise{
-						{ExerciseSlug: "squat"},
-					},
-				},
-			},
-			Notes: "Test notes",
-		}
-		newWorkout := Workout{
-			TrackID: TrackID("wrong-track-id"),
-
-			Date: time.Now().Add(1 * time.Hour),
-			Sections: []WorkoutSection{
-				{
-					Title: "Section 2",
-					Exercises: []WorkoutExercise{
-						{ExerciseSlug: "bench-press"},
-					},
-				},
-			},
-			Notes: "Test notes 2",
-		}
+		track := createTrack()
+		workout := createWorkout(track.ID)
 		service := NewStore(Opts{
 			DataStorage: &DataStorageStub{
-				GetWorkoutFunc: func(ctx context.Context, id WorkoutID) (Workout, error) {
-					return existingWorkout, nil
+				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
+					return track, nil
 				},
-				UpdateWorkoutFunc: func(ctx context.Context, workout Workout) (Workout, error) {
+				GetWorkoutFunc: func(ctx context.Context, wr WorkoutRef) (Workout, error) {
 					return workout, nil
+				},
+				UpdateWorkoutFunc: func(ctx context.Context, w Workout) (Workout, error) {
+					return w, nil
 				},
 			},
 		})
-		workout, err := service.UpdateWorkout(context.Background(), existingWorkout.ID, newWorkout)
+
+		newWorkout := Workout{
+			ID:      workout.ID,
+			TrackID: track.ID,
+			Date:    workout.Date.Add(1 * time.Hour),
+			Notes:   workout.Notes + " updated",
+			Sections: []WorkoutSection{
+				{Title: "Section 1 updated", Exercises: []WorkoutExercise{{ExerciseSlug: "exercise-1 updated"}}},
+			},
+		}
+		updated, err := service.UpdateWorkout(context.Background(), track.OwnerID, newWorkout)
 
 		assert.Nil(t, err)
 		// Protected fields
-		assert.Equal(t, existingWorkout.ID, workout.ID)
-		assert.Equal(t, existingWorkout.TrackID, workout.TrackID)
+		assert.Equal(t, workout.ID, updated.ID)
+		assert.Equal(t, workout.TrackID, updated.TrackID)
 
 		// Changable fields
-		assert.Equal(t, newWorkout.Date, workout.Date)
-		assert.Equal(t, newWorkout.Notes, workout.Notes)
-		// todo: it's wrong behavior, because affect newWorkout.Sections
-		assert.Equal(t, newWorkout.Sections, workout.Sections)
+		assert.Equal(t, newWorkout.Date, updated.Date)
+		assert.Equal(t, newWorkout.Notes, updated.Notes)
+		assert.Equal(t, newWorkout.Sections, updated.Sections)
+
+		// todo: check that slugs are cleared in updated.Sections but not in newWorkout.Sections
 	})
 
 	t.Run("should return error if workout not found", func(t *testing.T) {
+		track := createTrack()
 		service := NewStore(Opts{
 			DataStorage: &DataStorageStub{
-				GetWorkoutFunc: func(ctx context.Context, id WorkoutID) (Workout, error) {
+				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
+					return track, nil
+				},
+				GetWorkoutFunc: func(ctx context.Context, wr WorkoutRef) (Workout, error) {
 					return Workout{}, ErrNotFound
 				},
 			},
 		})
-		_, err := service.UpdateWorkout(context.Background(), WorkoutID("1"), Workout{})
+		_, err := service.UpdateWorkout(context.Background(), track.OwnerID, createWorkout(track.ID))
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, ErrNotFound)
 	})
+
+	t.Run("should return error if update not owner of track", func(t *testing.T) {
+		track1 := createTrack()
+		track2 := createTrack()
+		workout := createWorkout(track1.ID)
+
+		service := NewStore(Opts{
+			DataStorage: &DataStorageStub{
+				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
+					if tid == track1.ID {
+						return track1, nil
+					}
+					return track2, nil
+				},
+			},
+		})
+		_, err := service.UpdateWorkout(context.Background(), track2.OwnerID, workout)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrForbidden)
+	})
 }
 
 func TestFindWorkouts(t *testing.T) {
-	t.Run("should find workouts", func(t *testing.T) {
-		usedCriteria := WorkoutFindCriteria{
-			TrackID: TrackID("1"),
-			Limit:   10,
-		}
+	t.Run("should found workouts", func(t *testing.T) {
 
+		var usedCriteria WorkoutFindCriteria
+		track := createTrack()
 		workouts := []Workout{
-			{
-				ID: WorkoutID("1"),
-			},
+			createWorkout(track.ID),
+			createWorkout(track.ID),
 		}
 		service := NewStore(Opts{
 			DataStorage: &DataStorageStub{
-				FindWorkoutsFunc: func(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
+				FindWorkoutsFunc: func(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria) ([]Workout, error) {
 					usedCriteria = criteria
 					return workouts, nil
 				},
 			},
 		})
-		foundWorkouts, err := service.FindWorkouts(context.Background(), WorkoutFindCriteria{
-			TrackID: TrackID("1"),
-		})
-		assert.Nil(t, err)
+		foundWorkouts, err := service.FindWorkouts(context.Background(), track.ID, WorkoutFindCriteria{Limit: 5})
+		assert.NoError(t, err)
 		assert.Equal(t, workouts, foundWorkouts)
-		assert.Equal(t, usedCriteria, WorkoutFindCriteria{
-			TrackID: TrackID("1"),
-			Limit:   10,
-		})
-	})
-
-	t.Run("should return error if track id is empty", func(t *testing.T) {
-		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
-				FindWorkoutsFunc: func(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
-					return []Workout{}, nil
-				},
-			},
-		})
-		_, err := service.FindWorkouts(context.Background(), WorkoutFindCriteria{})
-		assert.Error(t, err)
+		assert.Equal(t, WorkoutFindCriteria{Limit: 5}, usedCriteria)
 	})
 
 	t.Run("should set default limit if limit is less than 0 or greater than 50", func(t *testing.T) {
 		var usedLimit int
 		service := NewStore(Opts{
 			DataStorage: &DataStorageStub{
-				FindWorkoutsFunc: func(ctx context.Context, criteria WorkoutFindCriteria) ([]Workout, error) {
+				FindWorkoutsFunc: func(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria) ([]Workout, error) {
 					usedLimit = criteria.Limit
 					return []Workout{}, nil
 				},
@@ -283,9 +294,8 @@ func TestFindWorkouts(t *testing.T) {
 			51: 10,
 		}
 		for limit, expected := range tcs {
-			_, err := service.FindWorkouts(context.Background(), WorkoutFindCriteria{
-				TrackID: TrackID("1"),
-				Limit:   limit,
+			_, err := service.FindWorkouts(context.Background(), NewTrackID(), WorkoutFindCriteria{
+				Limit: limit,
 			})
 			assert.Nil(t, err)
 			assert.Equal(t, expected, usedLimit, "limit %d", limit)

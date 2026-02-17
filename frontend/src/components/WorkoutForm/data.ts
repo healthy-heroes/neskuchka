@@ -45,9 +45,10 @@ export function convertToDomainData(data: WorkoutFormData): Workout {
 }
 
 // Helpers for creating initial values
-export function makeInitialValues(): WorkoutFormData {
+export function makeInitialValues(trackId: string): WorkoutFormData {
 	return {
 		ID: randomId(idPrefix),
+		TrackID: trackId,
 		Date: dayjs().format('YYYY-MM-DD'),
 		Sections: [makeSection('Разминка'), makeSection('Комплекс')],
 	};

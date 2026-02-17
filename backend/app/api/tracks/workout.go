@@ -1,7 +1,6 @@
 package tracks
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -13,48 +12,42 @@ import (
 func (s *Service) GetWorkout(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger
 
-	id := chi.URLParam(r, "id")
-	workout, err := s.dataStore.GetWorkout(r.Context(), domain.WorkoutID(id))
+	// While we have only one track, we can use the main track
+	// in future we will load track by slug from the path
+	track, err := s.dataStore.GetMainTrack(r.Context())
 	if err != nil {
-		httpx.RenderError(w, logger, http.StatusNotFound, err, "Workout not found")
+		httpx.RenderDomainError(w, logger, err, "failed to get main track")
 		return
 	}
 
-	httpx.Render(w, WorkoutSchema{
-		Workout: MakeWorkoutInfo(workout),
-	})
+	id := chi.URLParam(r, "id")
+	workout, err := s.dataStore.GetWorkout(r.Context(), domain.WorkoutRef{TrackID: track.ID, WorkoutID: domain.WorkoutID(id)})
+	if err != nil {
+		httpx.RenderDomainError(w, logger, err, "failed to get workout")
+		return
+	}
+	httpx.Render(w, WorkoutSchema{Workout: MakeWorkoutInfo(workout)})
 }
 
 // UpdateWorkout updates a workout
 func (s *Service) UpdateWorkout(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger
 
-	track, err := s.dataStore.GetMainTrack(r.Context())
-	if err != nil {
-		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to get main track")
-		return
-	}
-	userID, _, _ := s.session.Get(r)
-	if !track.IsOwner(domain.UserID(userID)) {
-		httpx.RenderError(w, logger, http.StatusForbidden, fmt.Errorf("user is not the owner of the track"), "User is not the owner of the track")
-		return
-	}
-
-	newWorkout, ok := httpx.ParseBody[WorkoutCreateSchema](w, r, logger)
+	payload, ok := httpx.ParseBody[WorkoutInfo](w, r, logger)
 	if !ok {
 		return
 	}
 
-	workout, err := newWorkout.toDomain()
+	workout, err := payload.toDomain()
 	if err != nil {
-		httpx.RenderError(w, logger, http.StatusBadRequest, err, "Failed to parse workout")
+		httpx.RenderError(w, logger, http.StatusBadRequest, err, "failed to parse workout")
 		return
 	}
 
-	workoutID := domain.WorkoutID(chi.URLParam(r, "id"))
-	workout, err = s.dataStore.UpdateWorkout(r.Context(), workoutID, workout)
+	userID, _, _ := s.session.Get(r)
+	workout, err = s.dataStore.UpdateWorkout(r.Context(), domain.UserID(userID), workout)
 	if err != nil {
-		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to update workout")
+		httpx.RenderDomainError(w, logger, err, "failed to update workout")
 		return
 	}
 
@@ -67,30 +60,21 @@ func (s *Service) UpdateWorkout(w http.ResponseWriter, r *http.Request) {
 func (s *Service) CreateWorkout(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger
 
-	track, err := s.dataStore.GetMainTrack(r.Context())
-	if err != nil {
-		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to get main track")
-		return
-	}
-	userID, _, _ := s.session.Get(r)
-	if !track.IsOwner(domain.UserID(userID)) {
-		httpx.RenderError(w, logger, http.StatusForbidden, fmt.Errorf("user is not the owner of the track"), "User is not the owner of the track")
-		return
-	}
-
-	newWorkout, ok := httpx.ParseBody[WorkoutCreateSchema](w, r, logger)
+	payload, ok := httpx.ParseBody[WorkoutInfo](w, r, logger)
 	if !ok {
 		return
 	}
-	workout, err := newWorkout.toDomain()
+
+	workout, err := payload.toDomain()
 	if err != nil {
-		httpx.RenderError(w, logger, http.StatusBadRequest, err, "Failed to parse workout")
+		httpx.RenderError(w, logger, http.StatusBadRequest, err, "failed to parse workout")
 		return
 	}
 
-	workout, err = s.dataStore.CreateWorkout(r.Context(), track.ID, workout)
+	userID, _, _ := s.session.Get(r)
+	workout, err = s.dataStore.CreateWorkout(r.Context(), domain.UserID(userID), workout)
 	if err != nil {
-		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to create workout")
+		httpx.RenderDomainError(w, logger, err, "failed to create workout")
 		return
 	}
 

@@ -31,6 +31,7 @@ import {
 } from './data';
 
 type WorkoutFormProps = {
+	trackId: string;
 	data?: Workout;
 	onSubmit: (values: Workout) => void;
 	onCancel: () => void;
@@ -45,6 +46,7 @@ type FormReturnType = UseFormReturnType<WorkoutFormData>;
  * WorkoutForm - component for creating and editing workout
  */
 export function WorkoutForm({
+	trackId,
 	data,
 	onSubmit,
 	onCancel,
@@ -53,7 +55,7 @@ export function WorkoutForm({
 }: WorkoutFormProps) {
 	const form = useForm<WorkoutFormData>({
 		mode: 'uncontrolled',
-		initialValues: data ? convertToFormData(data) : makeInitialValues(),
+		initialValues: data ? convertToFormData(data) : makeInitialValues(trackId),
 		enhanceGetInputProps: () => {
 			if (isSubmitting) {
 				return { disabled: true };

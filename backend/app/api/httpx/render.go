@@ -8,6 +8,8 @@ import (
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/rs/zerolog"
+
+	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 )
 
 // Response represents a successful response with data
@@ -79,4 +81,15 @@ func renderJSONWithStatus(w http.ResponseWriter, data interface{}, code int) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
 	_, _ = w.Write(buf.Bytes())
+}
+
+func RenderDomainError(w http.ResponseWriter, l zerolog.Logger, err error, msg string) {
+	switch {
+	case errors.Is(err, domain.ErrNotFound):
+		RenderError(w, l, http.StatusNotFound, err, "Not found")
+	case errors.Is(err, domain.ErrForbidden):
+		RenderError(w, l, http.StatusForbidden, err, "Forbidden")
+	default:
+		RenderError(w, l, http.StatusInternalServerError, err, msg)
+	}
 }

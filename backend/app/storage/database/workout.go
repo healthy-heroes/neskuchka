@@ -78,9 +78,9 @@ func rowsToDomain(rows []workoutRow) ([]domain.Workout, error) {
 }
 
 // GetWorkout returns a workout by id
-func (ds *DataStorage) GetWorkout(ctx context.Context, id domain.WorkoutID) (domain.Workout, error) {
+func (ds *DataStorage) GetWorkout(ctx context.Context, wr domain.WorkoutRef) (domain.Workout, error) {
 	workout := workoutRow{}
-	err := ds.engine.Get(&workout, "SELECT * FROM workout WHERE id = ?", id)
+	err := ds.engine.Get(&workout, "SELECT * FROM workout WHERE track_id = ? AND id = ?", wr.TrackID, wr.WorkoutID)
 	if err != nil {
 		return domain.Workout{}, handleSqlError(err)
 	}
@@ -89,11 +89,11 @@ func (ds *DataStorage) GetWorkout(ctx context.Context, id domain.WorkoutID) (dom
 }
 
 // FindWorkouts returns workouts filtered by criteria
-func (ds *DataStorage) FindWorkouts(ctx context.Context, criteria domain.WorkoutFindCriteria) ([]domain.Workout, error) {
+func (ds *DataStorage) FindWorkouts(ctx context.Context, tid domain.TrackID, criteria domain.WorkoutFindCriteria) ([]domain.Workout, error) {
 	workouts := []workoutRow{}
 	err := ds.engine.Select(&workouts,
 		"SELECT * FROM workout WHERE track_id = ? ORDER BY date DESC, created_at DESC LIMIT ?",
-		criteria.TrackID, criteria.Limit,
+		tid, criteria.Limit,
 	)
 	if err != nil {
 		return nil, handleSqlError(err)
@@ -117,7 +117,7 @@ func (ds *DataStorage) CreateWorkout(ctx context.Context, workout domain.Workout
 		return domain.Workout{}, handleSqlError(err)
 	}
 
-	return ds.GetWorkout(ctx, workout.ID)
+	return ds.GetWorkout(ctx, domain.WorkoutRef{TrackID: workout.TrackID, WorkoutID: workout.ID})
 }
 
 // UpdateWorkout updates a workout and returns it
@@ -136,5 +136,5 @@ func (ds *DataStorage) UpdateWorkout(ctx context.Context, workout domain.Workout
 		return domain.Workout{}, handleSqlError(err)
 	}
 
-	return ds.GetWorkout(ctx, workout.ID)
+	return ds.GetWorkout(ctx, domain.WorkoutRef{TrackID: workout.TrackID, WorkoutID: workout.ID})
 }

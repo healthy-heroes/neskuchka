@@ -18,11 +18,9 @@ func (s *Service) GetMainTrack(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID, _, _ := s.session.Get(r)
-	owner := userID != "" && string(track.OwnerID) == userID
-
 	httpx.Render(w, TrackSchema{
 		Track:   TrackInfo{ID: string(track.ID), Name: track.Name},
-		IsOwner: owner,
+		IsOwner: track.IsOwner(domain.UserID(userID)),
 	})
 }
 
@@ -36,11 +34,7 @@ func (s *Service) GetMainTrackLastWorkouts(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	workouts, err := s.dataStore.FindWorkouts(r.Context(), domain.WorkoutFindCriteria{
-		TrackID: domain.TrackID(track.ID),
-		Limit:   10,
-	})
-
+	workouts, err := s.dataStore.FindWorkouts(r.Context(), track.ID, domain.WorkoutFindCriteria{Limit: 10})
 	if err != nil {
 		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to get workouts")
 		return

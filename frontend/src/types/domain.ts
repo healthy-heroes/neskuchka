@@ -30,6 +30,7 @@ export interface WorkoutSection {
 
 export interface Workout {
 	ID: string;
+	TrackID: string;
 	Date: string;
 
 	Sections: Array<WorkoutSection>;
