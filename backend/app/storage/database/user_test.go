@@ -1,7 +1,6 @@
 package database
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +19,6 @@ func userFromDB(t *testing.T, engine *Engine, id string) userRow {
 
 func Test_User_Create(t *testing.T) {
 	ds := setupTestDataStorage(t)
-	defer ds.engine.Close()
 
 	newUser := domain.User{
 		ID:    domain.NewUserID(),
@@ -28,15 +26,15 @@ func Test_User_Create(t *testing.T) {
 		Email: "test@example.com",
 	}
 
-	createdUser, err := ds.CreateUser(context.Background(), newUser)
+	createdUser, err := ds.CreateUser(t.Context(), newUser)
 	require.NoError(t, err)
 	assert.Equal(t, newUser, createdUser)
 
-	userByID, err := ds.GetUser(context.Background(), newUser.ID)
+	userByID, err := ds.GetUser(t.Context(), newUser.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, newUser, userByID)
 
-	userByEmail, err := ds.GetUserByEmail(context.Background(), newUser.Email)
+	userByEmail, err := ds.GetUserByEmail(t.Context(), newUser.Email)
 	assert.NoError(t, err)
 	assert.Equal(t, newUser, userByEmail)
 
@@ -55,7 +53,7 @@ func Test_User_Update(t *testing.T) {
 		Name:  "Test User",
 		Email: "test@example.com",
 	}
-	_, err := ds.CreateUser(context.Background(), existingUser)
+	_, err := ds.CreateUser(t.Context(), existingUser)
 	require.NoError(t, err)
 
 	createdUserRow := userFromDB(t, ds.engine, string(existingUser.ID))
@@ -65,14 +63,14 @@ func Test_User_Update(t *testing.T) {
 		Name:  "Test User Updated",
 		Email: "wrong@example.com",
 	}
-	u, err := ds.UpdateUser(context.Background(), updateUser)
+	u, err := ds.UpdateUser(t.Context(), updateUser)
 	require.NoError(t, err)
 	assert.NotEqual(t, updateUser, u)
 	assert.Equal(t, existingUser.ID, u.ID)
 	assert.Equal(t, existingUser.Email, u.Email)
 
 	// no created wrong user
-	_, err = ds.GetUserByEmail(context.Background(), updateUser.Email)
+	_, err = ds.GetUserByEmail(t.Context(), updateUser.Email)
 	assert.Equal(t, domain.ErrNotFound, err)
 
 	// checks system fields
@@ -83,11 +81,10 @@ func Test_User_Update(t *testing.T) {
 
 func Test_User_NotFound(t *testing.T) {
 	ds := setupTestDataStorage(t)
-	defer ds.engine.Close()
 
-	_, err := ds.GetUser(context.Background(), domain.UserID("non-existent-id"))
+	_, err := ds.GetUser(t.Context(), domain.UserID("non-existent-id"))
 	assert.ErrorIs(t, err, domain.ErrNotFound)
 
-	_, err = ds.GetUserByEmail(context.Background(), domain.Email("non-existent-email"))
+	_, err = ds.GetUserByEmail(t.Context(), domain.Email("non-existent-email"))
 	assert.ErrorIs(t, err, domain.ErrNotFound)
 }

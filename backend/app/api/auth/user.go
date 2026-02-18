@@ -13,7 +13,8 @@ func (s *Service) User(w http.ResponseWriter, r *http.Request) {
 
 	user, err := s.dataStore.GetUser(r.Context(), id)
 	if err != nil {
-		httpx.RenderError(w, s.logger, http.StatusInternalServerError, err, "Failed to get user")
+		s.logger.Error().Err(err).Msg("failed to get user")
+		httpx.RenderUnauthorized(w)
 		return
 	}
 

@@ -1,7 +1,6 @@
 package database
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +19,6 @@ func trackFromDB(t *testing.T, engine *Engine, id string) trackRow {
 
 func Test_Track_Create(t *testing.T) {
 	ds := setupTestDataStorage(t)
-	defer ds.engine.Close()
 
 	newTrack := domain.Track{
 		ID:          domain.NewTrackID(),
@@ -30,15 +28,15 @@ func Test_Track_Create(t *testing.T) {
 		OwnerID:     domain.UserID("user-1"),
 	}
 
-	createdTrack, err := ds.CreateTrack(context.Background(), newTrack)
+	createdTrack, err := ds.CreateTrack(t.Context(), newTrack)
 	require.NoError(t, err)
 	assert.Equal(t, newTrack, createdTrack)
 
-	trackByID, err := ds.GetTrack(context.Background(), newTrack.ID)
+	trackByID, err := ds.GetTrack(t.Context(), newTrack.ID)
 	require.NoError(t, err)
 	assert.Equal(t, newTrack, trackByID)
 
-	trackBySlug, err := ds.GetTrackBySlug(context.Background(), newTrack.Slug)
+	trackBySlug, err := ds.GetTrackBySlug(t.Context(), newTrack.Slug)
 	require.NoError(t, err)
 	assert.Equal(t, newTrack, trackBySlug)
 
@@ -50,11 +48,10 @@ func Test_Track_Create(t *testing.T) {
 
 func Test_Track_NotFound(t *testing.T) {
 	ds := setupTestDataStorage(t)
-	defer ds.engine.Close()
 
-	_, err := ds.GetTrack(context.Background(), domain.TrackID("non-existent-id"))
+	_, err := ds.GetTrack(t.Context(), domain.TrackID("non-existent-id"))
 	assert.ErrorIs(t, err, domain.ErrNotFound)
 
-	_, err = ds.GetTrackBySlug(context.Background(), domain.TrackSlug("non-existent-slug"))
+	_, err = ds.GetTrackBySlug(t.Context(), domain.TrackSlug("non-existent-slug"))
 	assert.ErrorIs(t, err, domain.ErrNotFound)
 }
