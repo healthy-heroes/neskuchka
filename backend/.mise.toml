@@ -33,7 +33,7 @@ golangci-lint run --config .golangci.yml ./... ${usage_fix:+--fix}
 
 [tasks.tests]
 description = "Run tests"
-run = "go test -cover ./..."
+run = "go test -cover ./... -coverpkg=./..."
 
 [tasks.coverage]
 description = "Run coverage"
