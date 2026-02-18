@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -12,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 	"github.com/healthy-heroes/neskuchka/backend/app/storage/database"
 )
 
@@ -23,6 +25,8 @@ type TestApp struct {
 	DB          *database.Engine
 	DataStorage *database.DataStorage
 	Store       *domain.Store
+
+	SessionManager *session.Manager
 }
 
 func NewTestApp(t *testing.T) *TestApp {
@@ -35,6 +39,12 @@ func NewTestApp(t *testing.T) *TestApp {
 
 	engine, err := database.NewSqliteEngine(":memory:", zerolog.Nop())
 	require.NoError(t, err)
+
+	app.SessionManager = session.NewManager(session.Opts{
+		Logger: zerolog.Nop(),
+		Issuer: Issuer,
+		Secret: app.Secret,
+	})
 
 	app.DB = engine
 	app.DataStorage = database.NewDataStorage(engine, zerolog.Nop())
@@ -61,12 +71,37 @@ func NewTestApp(t *testing.T) *TestApp {
 	return app
 }
 
-func (app *TestApp) GET(t *testing.T, path string) *http.Response {
+func (app *TestApp) LoginAs(t *testing.T, uid domain.UserID) *http.Cookie {
 	t.Helper()
 
-	url := app.Server.URL + "/" + path
+	w := httptest.NewRecorder()
+	err := app.SessionManager.Set(w, string(uid))
+	require.NoError(t, err)
+
+	cookies := w.Result().Cookies()
+	require.NotEmpty(t, cookies)
+
+	return cookies[0]
+}
+
+type RequestOption func(*http.Request)
+
+func WithCookie(c *http.Cookie) RequestOption {
+	return func(r *http.Request) {
+		r.AddCookie(c)
+	}
+}
+
+func (app *TestApp) GET(t *testing.T, path string, opts ...RequestOption) *http.Response {
+	t.Helper()
+
+	url := app.Server.URL + path
 	req, err := http.NewRequest("GET", url, nil)
 	require.NoError(t, err)
+
+	for _, patch := range opts {
+		patch(req)
+	}
 
 	resp, err := app.Server.Client().Do(req)
 	require.NoError(t, err)
@@ -88,11 +123,25 @@ func ReadBody(t *testing.T, resp *http.Response) string {
 	return string(body)
 }
 
+type JSONResponse[T any] struct {
+	Data T `json:"data"`
+}
+
+func ReadJSON[T any](t *testing.T, resp *http.Response) T {
+	t.Helper()
+
+	var result JSONResponse[T]
+	err := json.NewDecoder(resp.Body).Decode(&result)
+	require.NoError(t, err)
+
+	return result.Data
+}
+
 func Test_Api(t *testing.T) {
 	app := NewTestApp(t)
 
 	t.Run("/ping", func(t *testing.T) {
-		resp := app.GET(t, "ping")
+		resp := app.GET(t, "/ping")
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		assert.Equal(t, "pong", ReadBody(t, resp))

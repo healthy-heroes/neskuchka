@@ -22,6 +22,8 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 )
 
+const Issuer = "Neskuchka"
+
 // Api is an API server
 type Api struct {
 	Version string
@@ -70,7 +72,7 @@ func (api *Api) Handler() *chi.Mux {
 	router := chi.NewRouter()
 	session := session.NewManager(session.Opts{
 		Logger: log.Logger,
-		Issuer: "Neskuchka",
+		Issuer: Issuer,
 		Secret: api.Secret,
 	})
 

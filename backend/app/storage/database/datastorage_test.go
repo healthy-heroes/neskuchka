@@ -7,5 +7,6 @@ import (
 )
 
 func setupTestDataStorage(t *testing.T) *DataStorage {
+	t.Helper()
 	return NewDataStorage(setupTestSqliteDB(t), zerolog.Nop())
 }
