@@ -32,10 +32,7 @@ type ServerCommand struct {
 
 // StoreOptions defines options for the storage
 type StoreOptions struct {
-	Type   database.Type `long:"type" env:"TYPE" description:"type of storage" default:"sqlite"`
-	Sqlite struct {
-		Source string `long:"source" env:"SOURCE" description:"file name or :memory:"`
-	} `group:"sqlite" namespace:"sqlite" env-namespace:"SQLITE"`
+	DB string `long:"db" env:"DB" description:"database URL (sqlite file)"`
 }
 
 // serverApp holds all active objects
@@ -101,26 +98,17 @@ func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
 
 // makeDataStore creates a new data store
 func (cmd *ServerCommand) makeDataStore() (*domain.Store, error) {
-	log.Info().Msgf("Creating store: %s", cmd.Store.Type)
+	log.Info().Msg("creating store")
+	log.Info().Msgf("database url: %s", cmd.Store.DB)
 
-	switch cmd.Store.Type {
-	case database.Sqlite:
-		if cmd.Store.Sqlite.Source == "" {
-			return nil, fmt.Errorf("sqlite source is not set")
-		}
-
-		engine, err := database.NewSqliteEngine(cmd.Store.Sqlite.Source, log.Logger)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create sqlite engine: %w", err)
-		}
-
-		return domain.NewStore(domain.Opts{
-			DataStorage: database.NewDataStorage(engine, log.Logger),
-		}), nil
-
-	default:
-		return nil, fmt.Errorf("unsupported database type: %s", cmd.Store.Type)
+	engine, err := database.NewEngine(cmd.Store.DB, database.Opts{Logger: log.Logger})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create engine: %w", err)
 	}
+
+	return domain.NewStore(domain.Opts{
+		DataStorage: database.NewDataStorage(engine, log.Logger),
+	}), nil
 }
 
 // fake email sender

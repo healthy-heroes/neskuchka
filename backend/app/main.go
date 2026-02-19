@@ -15,6 +15,7 @@ import (
 // Opts contains base options and commands
 type Opts struct {
 	ServerCmd cmd.ServerCommand `command:"server" description:"Start the server"`
+	SeedCmd   cmd.SeedCommand   `command:"seed" description:"Seed the database with initial data"`
 
 	Debug bool `long:"debug" env:"DEBUG" description:"Enable debug mode"`
 }

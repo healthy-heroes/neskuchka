@@ -5,6 +5,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
+	_ "modernc.org/sqlite"
 )
 
 const (
@@ -51,11 +52,13 @@ func NewSqliteEngine(fileSource string, logger zerolog.Logger) (*Engine, error) 
 		return nil, err
 	}
 
-	// todo useful pragma
-
 	engine := &Engine{DB: db}
 
-	if err := engine.createSqliteSchema(); err != nil {
+	if err := engine.setup(); err != nil {
+		logger.Error().Err(err).Msg("failed to setup sqlite engine")
+	}
+
+	if err := engine.createSchema(); err != nil {
 		logger.Error().Err(err).Msg("failed to create sqlite schema")
 		return nil, err
 	}
@@ -63,7 +66,28 @@ func NewSqliteEngine(fileSource string, logger zerolog.Logger) (*Engine, error) 
 	return engine, nil
 }
 
-func (e *Engine) createSqliteSchema() error {
+func (e *Engine) setup() error {
+	pragmas := []string{
+		"PRAGMA journal_mode=WAL",
+		"PRAGMA busy_timeout=5000",
+		"PRAGMA synchronous=NORMAL",
+		"PRAGMA cache_size=1000",
+		"PRAGMA foreign_keys=ON",
+	}
+	for _, pragma := range pragmas {
+		if _, err := e.Exec(pragma); err != nil {
+			_ = e.Close()
+			return fmt.Errorf("failed to set pragma %q: %w", pragma, err)
+		}
+	}
+
+	// limit connections for SQLite (single writer)
+	e.SetMaxOpenConns(1)
+
+	return nil
+}
+
+func (e *Engine) createSchema() error {
 	schemas := map[string]string{
 		"user":    userSchema,
 		"track":   trackSchema,

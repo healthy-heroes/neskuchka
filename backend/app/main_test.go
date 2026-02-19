@@ -19,7 +19,7 @@ import (
 func Test_Main(t *testing.T) {
 	port := chooseRandomUnusedPort()
 
-	os.Args = []string{"test", "server", "--port=" + strconv.Itoa(port), "--store.sqlite.source=:memory:", "--debug"}
+	os.Args = []string{"test", "server", "--port=" + strconv.Itoa(port), "--store.db=:memory:", "--debug"}
 
 	done := make(chan struct{})
 	go func() {

@@ -6,15 +6,12 @@ air = "latest"
 go = "latest"
 golangci-lint = "latest"
 
-[tasks.fill-db]
-description = "Fill database"
+[tasks.seed]
+description = "Seed database"
 run = """
 rm -f ./bin/app.db
-go run scripts/fill_db/fill_db.go
+go run ./app seed --store.db ./bin/app.db
 """
-
-[tasks.app]
-description = "Run the application"
 
 [tasks.checks]
 description = "Run checks"
