@@ -25,8 +25,7 @@ services:
       - TIME_ZONE=Europe/Moscow
       - TEST_MODE=true
       - ADDRESS=0.0.0.0
-      - STORE_TYPE=sqlite
-      - STORE_SQLITE_SOURCE=/srv/bin/app.db
+      - STORE_DB=/srv/bin/app.db
       - SECRET=__SECRET__
     
     volumes:
