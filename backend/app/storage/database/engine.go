@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/jmoiron/sqlx"
-	_ "modernc.org/sqlite"
+	"github.com/rs/zerolog"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 )
@@ -22,6 +22,11 @@ type Engine struct {
 }
 
 type Opts struct {
+	Logger zerolog.Logger
+}
+
+func NewEngine(dbUrl string, opts Opts) (*Engine, error) {
+	return NewSqliteEngine(dbUrl, opts.Logger)
 }
 
 func handleSqlError(err error) error {

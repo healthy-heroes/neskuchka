@@ -93,7 +93,7 @@ cd backend
 go mod tidy
 
 # Проинициализировать базу, чтобы локально хоть что-то было
-go run scripts/fill_db/fill_db.go
+mise run seed
 
 # Запуск локального сервера
 cd app

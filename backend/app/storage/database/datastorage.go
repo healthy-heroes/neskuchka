@@ -17,3 +17,7 @@ func NewDataStorage(engine *Engine, logger zerolog.Logger) *DataStorage {
 		logger: logger.With().Str("pkg", "database").Logger(),
 	}
 }
+
+func (ds *DataStorage) Close() {
+	ds.engine.Close()
+}
