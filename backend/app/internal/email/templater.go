@@ -2,6 +2,7 @@ package email
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/matcornic/hermes/v2"
 )
@@ -13,7 +14,7 @@ type Templater struct {
 
 func NewTemplate(baseUrl string) *Templater {
 	return &Templater{
-		baseUrl: baseUrl,
+		baseUrl: strings.TrimRight(baseUrl, "/"),
 		hermes: &hermes.Hermes{
 			Product: hermes.Product{
 				Name: "Нескучка",
