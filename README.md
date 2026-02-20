@@ -69,7 +69,7 @@ mise run //frontend:tests
 #### Запуск бэкенда в контейнере
 Для запуска выполнить команду:
 ```
-docker compose -f 'docker-dev-compose.yml' up -d --build 
+docker-compose -f 'docker-dev-compose.yml' up -d --build
 ```
 
 После бэкенд будет доступен на http://localhost:8080/
@@ -80,6 +80,14 @@ docker compose -f 'docker-dev-compose.yml' up -d --build
 Запуск тестов и линта:
 ```
 mise run lint
+```
+
+В контейнере поднимается **своя база**. При простом перезапуске она никуда не девается и не пересоздается.
+Если необходимо с нуля создать базу, нужно погасить сервисы с соответствующим ключом
+
+```
+docker-compose -f 'docker-dev-compose.yml' down -v
+docker-compose -f 'docker-dev-compose.yml' up -d
 ```
 
 #### Запуск бэкенда локально
