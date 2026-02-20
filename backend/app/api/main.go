@@ -19,6 +19,7 @@ import (
 	mw "github.com/healthy-heroes/neskuchka/backend/app/api/middlewares"
 	"github.com/healthy-heroes/neskuchka/backend/app/api/tracks"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/email"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 )
 
@@ -34,6 +35,9 @@ type Api struct {
 
 	httpServer *http.Server
 	lock       sync.Mutex
+
+	EmailTemplater *email.Templater
+	EmailService   *email.Service
 }
 
 // Run the listener and request's router, starts the API server
@@ -119,6 +123,9 @@ func (api *Api) addAuthRoutes(router chi.Router, session *session.Manager) {
 		Issuer: "Neskuchka",
 		Secret: api.Secret,
 		Logger: log.Logger,
+
+		EmailSender:    api.EmailService,
+		EmailTemplater: api.EmailTemplater,
 	})
 
 	router.Route("/auth", func(r chi.Router) {

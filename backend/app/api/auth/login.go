@@ -54,7 +54,22 @@ func (s *Service) Login(w http.ResponseWriter, r *http.Request) {
 		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to generate verification token")
 		return
 	}
-	logger.Debug().Msgf("Token: %s", token)
+
+	text, err := s.emailTemplater.AuthLink(token)
+	if err != nil {
+		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to generate email text")
+		return
+	}
+
+	err = s.emailSender.Send(loginData.Email, "Вход в Нескучку", text)
+	if err != nil {
+		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to send email")
+		return
+	}
+
+	logger.Debug().Msgf("Email sent to %s", loginData.Email)
+
+	httpx.Render(w, nil)
 }
 
 func (s *Service) Confirm(w http.ResponseWriter, r *http.Request) {

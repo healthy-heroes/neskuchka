@@ -4,6 +4,12 @@
 # build: docker compose -f docker-dev-compose.yml build
 # start: docker compose -f docker-dev-compose.yml up
 services:
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"   # Web UI — http://localhost:8025
+      - "1025:1025"   # SMTP (без TLS, без auth)
+
   backend:
     build:
       context: .
@@ -22,11 +28,17 @@ services:
       - "8080:8080" # primary rest server
 
     environment:
+      - BASE_URL=http://localhost:8080
       - TIME_ZONE=Europe/Moscow
       - TEST_MODE=true
       - ADDRESS=0.0.0.0
       - STORE_DB=/srv/bin/app.db
       - SECRET=__SECRET__
+      - SMTP_HOST=mailpit
+      - SMTP_PORT=1025
+
+    depends_on:
+      - mailpit
     
     volumes:
       - db-data:/srv/bin

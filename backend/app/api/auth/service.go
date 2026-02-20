@@ -17,9 +17,20 @@ type VerifyTokenService interface {
 	Parse(string, jwt.Claims) error
 }
 
+// SessionManager defines interface managing sessions
 type SessionManager interface {
 	Set(w http.ResponseWriter, userID string) error
 	Clear(w http.ResponseWriter)
+}
+
+// EmailSender defines interface sending emails
+type EmailSender interface {
+	Send(to, subject, text string) error
+}
+
+// EmailTemplater defines interface templating emails
+type EmailTemplater interface {
+	AuthLink(token string) (string, error)
 }
 
 type Service struct {
@@ -30,12 +41,19 @@ type Service struct {
 	tokenService   VerifyTokenService
 	sessionManager SessionManager
 
+	emailSender    EmailSender
+	emailTemplater EmailTemplater
+
 	jtiCache *otter.Cache[string, string]
 }
 
 type Opts struct {
 	Issuer string
 	Secret string
+
+	EmailSender    EmailSender
+	EmailTemplater EmailTemplater
+
 	Logger zerolog.Logger
 }
 
@@ -51,6 +69,9 @@ func NewService(dataStore *domain.Store, session SessionManager, opts Opts) *Ser
 			Issuer: opts.Issuer,
 			Secret: opts.Secret,
 		}),
+
+		emailSender:    opts.EmailSender,
+		emailTemplater: opts.EmailTemplater,
 
 		jtiCache: otter.Must(&otter.Options[string, string]{
 			MaximumSize:     10_000,

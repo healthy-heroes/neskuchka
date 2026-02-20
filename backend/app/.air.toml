@@ -3,7 +3,15 @@ testdata_dir = "testdata"
 tmp_dir = "tmp"
 
 [build]
-  args_bin = ["server", "--port", "8000", "--secret", "__SECRET__", "--store.db", "../bin/app.db"]
+  args_bin = [
+    "server", 
+    "--port", "8000", 
+    "--secret", "__SECRET__", 
+    "--store.db", "../bin/app.db", 
+    "--smtp.host", "localhost", 
+    "--smtp.port", "1025",
+    "--base-url", "http://localhost:5173",
+  ]
   bin = "./tmp/main"
   cmd = "go build -o ./tmp/main ."
   delay = 1000

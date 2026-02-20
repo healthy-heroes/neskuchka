@@ -12,6 +12,7 @@ import (
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/email"
 	"github.com/healthy-heroes/neskuchka/backend/app/storage/database"
 )
 
@@ -20,10 +21,13 @@ var webFS embed.FS
 
 // ServerCommand is the command for the run server
 type ServerCommand struct {
-	Store StoreOptions `group:"store" namespace:"store" env-namespace:"STORE"`
+	BaseURL string `long:"base-url" env:"BASE_URL" default:"http://localhost:8080" description:"base URL for the application"`
 
 	Address string `long:"address" env:"ADDRESS" default:"127.0.0.1" description:"address"`
 	Port    int    `long:"port" env:"PORT" default:"8080" description:"port"`
+
+	Store StoreOptions `group:"store" namespace:"store" env-namespace:"STORE"`
+	SMTP  SMTPOptions  `group:"smtp" namespace:"smtp" env-namespace:"SMTP"`
 
 	Secret string `long:"secret" env:"SECRET" description:"secret key for JWT"`
 
@@ -33,6 +37,11 @@ type ServerCommand struct {
 // StoreOptions defines options for the storage
 type StoreOptions struct {
 	DB string `long:"db" env:"DB" description:"database URL (sqlite file)"`
+}
+
+type SMTPOptions struct {
+	Host string `long:"host" env:"HOST" description:"SMTP host"`
+	Port int    `long:"port" env:"PORT" description:"SMTP port"`
 }
 
 // serverApp holds all active objects
@@ -85,6 +94,13 @@ func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
 
 		DataStore: dataStore,
 		WebFS:     webFS,
+
+		EmailTemplater: email.NewTemplate(cmd.BaseURL),
+		EmailService: email.NewService(email.Opts{
+			Host:   cmd.SMTP.Host,
+			Port:   cmd.SMTP.Port,
+			Logger: log.Logger,
+		}),
 	}
 
 	app := &serverApp{
@@ -109,14 +125,6 @@ func (cmd *ServerCommand) makeDataStore() (*domain.Store, error) {
 	return domain.NewStore(domain.Opts{
 		DataStorage: database.NewDataStorage(engine, log.Logger),
 	}), nil
-}
-
-// fake email sender
-type AuthEmailSender struct{}
-
-func (s AuthEmailSender) Send(email string, text string) error {
-	log.Info().Msgf("Sending email to %s:\n\n%s\n", email, text)
-	return nil
 }
 
 // run starts all application objects
