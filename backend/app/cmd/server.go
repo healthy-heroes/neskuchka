@@ -13,7 +13,8 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/api"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/email"
-	"github.com/healthy-heroes/neskuchka/backend/app/storage/database"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/datastorage"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
 )
 
 //go:embed web
@@ -117,13 +118,13 @@ func (cmd *ServerCommand) makeDataStore() (*domain.Store, error) {
 	log.Info().Msg("creating store")
 	log.Info().Msgf("database url: %s", cmd.Store.DB)
 
-	engine, err := database.NewEngine(cmd.Store.DB, database.Opts{Logger: log.Logger})
+	engine, err := db.NewEngine(cmd.Store.DB, db.Opts{Logger: log.Logger})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create engine: %w", err)
 	}
 
 	return domain.NewStore(domain.Opts{
-		DataStorage: database.NewDataStorage(engine, log.Logger),
+		DataStorage: datastorage.New(engine, log.Logger),
 	}), nil
 }
 

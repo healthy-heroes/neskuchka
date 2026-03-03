@@ -14,7 +14,8 @@ import (
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
-	"github.com/healthy-heroes/neskuchka/backend/app/storage/database"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/datastorage"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
 )
 
 type TestApp struct {
@@ -22,8 +23,8 @@ type TestApp struct {
 	Version string
 
 	Server      *httptest.Server
-	DB          *database.Engine
-	DataStorage *database.DataStorage
+	DB          *db.Engine
+	DataStorage *datastorage.Storage
 	Store       *domain.Store
 
 	SessionManager *session.Manager
@@ -37,7 +38,7 @@ func NewTestApp(t *testing.T) *TestApp {
 		Version: "test_version",
 	}
 
-	engine, err := database.NewSqliteEngine(":memory:", zerolog.Nop())
+	engine, err := db.NewSqliteEngine(":memory:", zerolog.Nop())
 	require.NoError(t, err)
 
 	app.SessionManager = session.NewManager(session.Opts{
@@ -47,7 +48,7 @@ func NewTestApp(t *testing.T) *TestApp {
 	})
 
 	app.DB = engine
-	app.DataStorage = database.NewDataStorage(engine, zerolog.Nop())
+	app.DataStorage = datastorage.New(engine, zerolog.Nop())
 	app.Store = domain.NewStore(domain.Opts{
 		DataStorage: app.DataStorage,
 	})

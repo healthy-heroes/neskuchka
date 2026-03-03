@@ -1,4 +1,4 @@
-package database
+package datastorage
 
 import (
 	"context"
@@ -23,7 +23,6 @@ type workoutRow struct {
 	UpdatedAt     time.Time `db:"updated_at"`
 }
 
-// makeWorkout converts a domain.Workout to a workoutRow
 func makeWorkout(w domain.Workout) (workoutRow, error) {
 	sectionsJSON, err := json.Marshal(w.Sections)
 	if err != nil {
@@ -41,7 +40,6 @@ func makeWorkout(w domain.Workout) (workoutRow, error) {
 	}, nil
 }
 
-// toDomain converts a workoutRow to a domain.Workout
 func (w *workoutRow) toDomain() (domain.Workout, error) {
 	sections := []domain.WorkoutSection{}
 	err := json.Unmarshal(w.Sections, &sections)
@@ -63,7 +61,6 @@ func (w *workoutRow) toDomain() (domain.Workout, error) {
 	}, nil
 }
 
-// rowsToDomain converts a []workoutRow to []domain.Workout, handling errors (fail fast)
 func rowsToDomain(rows []workoutRow) ([]domain.Workout, error) {
 	workouts := make([]domain.Workout, 0, len(rows))
 	for _, w := range rows {
@@ -77,10 +74,9 @@ func rowsToDomain(rows []workoutRow) ([]domain.Workout, error) {
 	return workouts, nil
 }
 
-// GetWorkout returns a workout by id
-func (ds *DataStorage) GetWorkout(ctx context.Context, wr domain.WorkoutRef) (domain.Workout, error) {
+func (s *Storage) GetWorkout(ctx context.Context, wr domain.WorkoutRef) (domain.Workout, error) {
 	workout := workoutRow{}
-	err := ds.engine.Get(&workout, "SELECT * FROM workout WHERE track_id = ? AND id = ?", wr.TrackID, wr.WorkoutID)
+	err := s.engine.Get(&workout, "SELECT * FROM workout WHERE track_id = ? AND id = ?", wr.TrackID, wr.WorkoutID)
 	if err != nil {
 		return domain.Workout{}, handleSqlError(err)
 	}
@@ -88,10 +84,9 @@ func (ds *DataStorage) GetWorkout(ctx context.Context, wr domain.WorkoutRef) (do
 	return workout.toDomain()
 }
 
-// FindWorkouts returns workouts filtered by criteria
-func (ds *DataStorage) FindWorkouts(ctx context.Context, tid domain.TrackID, criteria domain.WorkoutFindCriteria) ([]domain.Workout, error) {
+func (s *Storage) FindWorkouts(ctx context.Context, tid domain.TrackID, criteria domain.WorkoutFindCriteria) ([]domain.Workout, error) {
 	workouts := []workoutRow{}
-	err := ds.engine.Select(&workouts,
+	err := s.engine.Select(&workouts,
 		"SELECT * FROM workout WHERE track_id = ? ORDER BY date DESC, created_at DESC LIMIT ?",
 		tid, criteria.Limit,
 	)
@@ -102,14 +97,13 @@ func (ds *DataStorage) FindWorkouts(ctx context.Context, tid domain.TrackID, cri
 	return rowsToDomain(workouts)
 }
 
-// CreateWorkout creates a new workout and returns it
-func (ds *DataStorage) CreateWorkout(ctx context.Context, workout domain.Workout) (domain.Workout, error) {
+func (s *Storage) CreateWorkout(ctx context.Context, workout domain.Workout) (domain.Workout, error) {
 	w, err := makeWorkout(workout)
 	if err != nil {
 		return domain.Workout{}, err
 	}
 
-	_, err = ds.engine.Exec(
+	_, err = s.engine.Exec(
 		"INSERT INTO workout(id, track_id, date, sections, notes, schema_version) VALUES(?,?,?,?,?,?)",
 		w.ID, w.TrackID, w.Date, w.Sections, w.Notes, workoutSchemaVersion,
 	)
@@ -117,17 +111,16 @@ func (ds *DataStorage) CreateWorkout(ctx context.Context, workout domain.Workout
 		return domain.Workout{}, handleSqlError(err)
 	}
 
-	return ds.GetWorkout(ctx, domain.WorkoutRef{TrackID: workout.TrackID, WorkoutID: workout.ID})
+	return s.GetWorkout(ctx, domain.WorkoutRef{TrackID: workout.TrackID, WorkoutID: workout.ID})
 }
 
-// UpdateWorkout updates a workout and returns it
-func (ds *DataStorage) UpdateWorkout(ctx context.Context, workout domain.Workout) (domain.Workout, error) {
+func (s *Storage) UpdateWorkout(ctx context.Context, workout domain.Workout) (domain.Workout, error) {
 	w, err := makeWorkout(workout)
 	if err != nil {
 		return domain.Workout{}, err
 	}
 
-	_, err = ds.engine.Exec(
+	_, err = s.engine.Exec(
 		"UPDATE workout SET date = ?, sections = ?, notes = ?, updated_at = ? WHERE track_id = ? AND id = ?",
 		w.Date, w.Sections, w.Notes, w.UpdatedAt,
 		w.TrackID, w.ID,
@@ -136,5 +129,5 @@ func (ds *DataStorage) UpdateWorkout(ctx context.Context, workout domain.Workout
 		return domain.Workout{}, handleSqlError(err)
 	}
 
-	return ds.GetWorkout(ctx, domain.WorkoutRef{TrackID: workout.TrackID, WorkoutID: workout.ID})
+	return s.GetWorkout(ctx, domain.WorkoutRef{TrackID: workout.TrackID, WorkoutID: workout.ID})
 }

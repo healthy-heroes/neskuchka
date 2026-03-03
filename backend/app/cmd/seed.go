@@ -12,7 +12,8 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
-	"github.com/healthy-heroes/neskuchka/backend/app/storage/database"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/datastorage"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
 )
 
 type SeedCommand struct {
@@ -22,7 +23,7 @@ type SeedCommand struct {
 }
 
 type SeedRunner struct {
-	dataStorage *database.DataStorage
+	dataStorage *datastorage.Storage
 }
 
 func (cmd *SeedCommand) Execute(args []string) error {
@@ -54,13 +55,13 @@ func (cmd *SeedCommand) createRunner() (*SeedRunner, error) {
 	log.Info().Msg("creating store")
 	log.Info().Msgf("database url: %s", cmd.Store.DB)
 
-	engine, err := database.NewEngine(cmd.Store.DB, database.Opts{Logger: log.Logger})
+	engine, err := db.NewEngine(cmd.Store.DB, db.Opts{Logger: log.Logger})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create engine: %w", err)
 	}
 
 	return &SeedRunner{
-		dataStorage: database.NewDataStorage(engine, log.Logger),
+		dataStorage: datastorage.New(engine, log.Logger),
 	}, nil
 }
 

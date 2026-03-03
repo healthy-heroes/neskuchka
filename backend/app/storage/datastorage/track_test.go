@@ -1,4 +1,4 @@
-package database
+package datastorage
 
 import (
 	"testing"
@@ -7,9 +7,10 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
 )
 
-func trackFromDB(t *testing.T, engine *Engine, id string) trackRow {
+func trackFromDB(t *testing.T, engine *db.Engine, id string) trackRow {
 	track := trackRow{}
 	err := engine.Get(&track, "SELECT * FROM track WHERE id = ?", id)
 	require.NoError(t, err)
@@ -18,7 +19,7 @@ func trackFromDB(t *testing.T, engine *Engine, id string) trackRow {
 }
 
 func Test_Track_Create(t *testing.T) {
-	ds := setupTestDataStorage(t)
+	ds := setupTestStorage(t)
 
 	newTrack := domain.Track{
 		ID:          domain.NewTrackID(),
@@ -47,7 +48,7 @@ func Test_Track_Create(t *testing.T) {
 }
 
 func Test_Track_NotFound(t *testing.T) {
-	ds := setupTestDataStorage(t)
+	ds := setupTestStorage(t)
 
 	_, err := ds.GetTrack(t.Context(), domain.TrackID("non-existent-id"))
 	assert.ErrorIs(t, err, domain.ErrNotFound)
