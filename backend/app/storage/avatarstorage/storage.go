@@ -1,9 +1,8 @@
-package datastorage
+package avatarstorage
 
 import (
-	"github.com/rs/zerolog"
-
 	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
+	"github.com/rs/zerolog"
 )
 
 type Storage struct {
@@ -14,7 +13,7 @@ type Storage struct {
 func New(engine *db.Engine, logger zerolog.Logger) *Storage {
 	return &Storage{
 		engine: engine,
-		logger: logger.With().Str("pkg", "datastorage").Logger(),
+		logger: logger.With().Str("pkg", "avatarstorage").Logger(),
 	}
 }
 

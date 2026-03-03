@@ -23,6 +23,7 @@ type SeedCommand struct {
 }
 
 type SeedRunner struct {
+	engine      *db.Engine
 	dataStorage *datastorage.Storage
 }
 
@@ -61,6 +62,7 @@ func (cmd *SeedCommand) createRunner() (*SeedRunner, error) {
 	}
 
 	return &SeedRunner{
+		engine:      engine,
 		dataStorage: datastorage.New(engine, log.Logger),
 	}, nil
 }
@@ -72,7 +74,9 @@ func (r *SeedRunner) Run(ctx context.Context) error {
 		// shutdown on context cancellation
 		<-ctx.Done()
 		log.Info().Msg("runner shutdown...")
-		r.dataStorage.Close()
+		if err := r.engine.Close(); err != nil {
+			log.Error().Err(err).Msg("Failed to close database")
+		}
 	}()
 
 	admin := domain.User{

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage"
 )
 
 type userRow struct {
@@ -36,26 +37,26 @@ func (u userRow) toDomain() domain.User {
 
 func (s *Storage) GetUser(ctx context.Context, id domain.UserID) (domain.User, error) {
 	u := userRow{}
-	err := s.engine.Get(&u, "SELECT * FROM user WHERE id = ?", id)
+	err := s.engine.GetContext(ctx, &u, "SELECT * FROM user WHERE id = ?", id)
 
-	return u.toDomain(), handleSqlError(err)
+	return u.toDomain(), storage.HandleSqlError(err)
 }
 
 func (s *Storage) GetUserByEmail(ctx context.Context, email domain.Email) (domain.User, error) {
 	u := userRow{}
-	err := s.engine.Get(&u, "SELECT * FROM user WHERE email = ?", email)
+	err := s.engine.GetContext(ctx, &u, "SELECT * FROM user WHERE email = ?", email)
 
-	return u.toDomain(), handleSqlError(err)
+	return u.toDomain(), storage.HandleSqlError(err)
 }
 
 func (s *Storage) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
 	u := makeUser(user)
 
-	_, err := s.engine.Exec("INSERT INTO user(id, email, name) VALUES(?,?,?)",
+	_, err := s.engine.ExecContext(ctx, "INSERT INTO user(id, email, name) VALUES(?,?,?)",
 		u.ID, u.Email, u.Name)
 
 	if err != nil {
-		return domain.User{}, handleSqlError(err)
+		return domain.User{}, storage.HandleSqlError(err)
 	}
 
 	return s.GetUser(ctx, user.ID)
@@ -64,10 +65,10 @@ func (s *Storage) CreateUser(ctx context.Context, user domain.User) (domain.User
 func (s *Storage) UpdateUser(ctx context.Context, user domain.User) (domain.User, error) {
 	u := makeUser(user)
 
-	_, err := s.engine.Exec("UPDATE user SET name = ?, updated_at = ? WHERE id = ?", u.Name, u.UpdatedAt, u.ID)
+	_, err := s.engine.ExecContext(ctx, "UPDATE user SET name = ?, updated_at = ? WHERE id = ?", u.Name, u.UpdatedAt, u.ID)
 
 	if err != nil {
-		return domain.User{}, handleSqlError(err)
+		return domain.User{}, storage.HandleSqlError(err)
 	}
 
 	return s.GetUser(ctx, user.ID)

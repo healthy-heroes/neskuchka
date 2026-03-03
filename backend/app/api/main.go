@@ -22,6 +22,7 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/email"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/avatarstorage"
 )
 
 const Issuer = "Neskuchka"
@@ -31,8 +32,9 @@ type Api struct {
 	Version string
 	Secret  string
 
-	DataStore *domain.Store
-	WebFS     fs.FS
+	DataStore     *domain.Store
+	AvatarStorage *avatarstorage.Storage
+	WebFS         fs.FS
 
 	httpServer *http.Server
 	lock       sync.Mutex
@@ -140,11 +142,16 @@ func (api *Api) addAuthRoutes(router chi.Router, session *session.Manager) {
 // addUserRoutes is adding user routes
 func (api *Api) addUserRoutes(router chi.Router, session *session.Manager) {
 	h := api_user.NewService(api.DataStore, api_user.Opts{
-		Logger: log.Logger,
+		Logger:        log.Logger,
+		AvatarStorage: api.AvatarStorage,
 	})
 
 	router.Route("/user", func(r chi.Router) {
-		r.With(session.Authenticator(httpx.RenderUnauthorized)).Get("/me", h.User)
+		r.Use(session.Authenticator(httpx.RenderUnauthorized))
+
+		r.Get("/me", h.Me)
+		r.Get("/me/avatar", h.Avatar)
+		r.Post("/me/avatar", h.UploadAvatar)
 	})
 }
 

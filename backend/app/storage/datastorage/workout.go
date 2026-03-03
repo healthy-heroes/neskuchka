@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage"
 )
 
 const workoutSchemaVersion = 1
@@ -76,9 +77,9 @@ func rowsToDomain(rows []workoutRow) ([]domain.Workout, error) {
 
 func (s *Storage) GetWorkout(ctx context.Context, wr domain.WorkoutRef) (domain.Workout, error) {
 	workout := workoutRow{}
-	err := s.engine.Get(&workout, "SELECT * FROM workout WHERE track_id = ? AND id = ?", wr.TrackID, wr.WorkoutID)
+	err := s.engine.GetContext(ctx, &workout, "SELECT * FROM workout WHERE track_id = ? AND id = ?", wr.TrackID, wr.WorkoutID)
 	if err != nil {
-		return domain.Workout{}, handleSqlError(err)
+		return domain.Workout{}, storage.HandleSqlError(err)
 	}
 
 	return workout.toDomain()
@@ -86,12 +87,12 @@ func (s *Storage) GetWorkout(ctx context.Context, wr domain.WorkoutRef) (domain.
 
 func (s *Storage) FindWorkouts(ctx context.Context, tid domain.TrackID, criteria domain.WorkoutFindCriteria) ([]domain.Workout, error) {
 	workouts := []workoutRow{}
-	err := s.engine.Select(&workouts,
+	err := s.engine.SelectContext(ctx, &workouts,
 		"SELECT * FROM workout WHERE track_id = ? ORDER BY date DESC, created_at DESC LIMIT ?",
 		tid, criteria.Limit,
 	)
 	if err != nil {
-		return nil, handleSqlError(err)
+		return nil, storage.HandleSqlError(err)
 	}
 
 	return rowsToDomain(workouts)
@@ -103,12 +104,12 @@ func (s *Storage) CreateWorkout(ctx context.Context, workout domain.Workout) (do
 		return domain.Workout{}, err
 	}
 
-	_, err = s.engine.Exec(
+	_, err = s.engine.ExecContext(ctx,
 		"INSERT INTO workout(id, track_id, date, sections, notes, schema_version) VALUES(?,?,?,?,?,?)",
 		w.ID, w.TrackID, w.Date, w.Sections, w.Notes, workoutSchemaVersion,
 	)
 	if err != nil {
-		return domain.Workout{}, handleSqlError(err)
+		return domain.Workout{}, storage.HandleSqlError(err)
 	}
 
 	return s.GetWorkout(ctx, domain.WorkoutRef{TrackID: workout.TrackID, WorkoutID: workout.ID})
@@ -120,13 +121,13 @@ func (s *Storage) UpdateWorkout(ctx context.Context, workout domain.Workout) (do
 		return domain.Workout{}, err
 	}
 
-	_, err = s.engine.Exec(
+	_, err = s.engine.ExecContext(ctx,
 		"UPDATE workout SET date = ?, sections = ?, notes = ?, updated_at = ? WHERE track_id = ? AND id = ?",
 		w.Date, w.Sections, w.Notes, w.UpdatedAt,
 		w.TrackID, w.ID,
 	)
 	if err != nil {
-		return domain.Workout{}, handleSqlError(err)
+		return domain.Workout{}, storage.HandleSqlError(err)
 	}
 
 	return s.GetWorkout(ctx, domain.WorkoutRef{TrackID: workout.TrackID, WorkoutID: workout.ID})

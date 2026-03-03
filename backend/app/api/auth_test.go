@@ -20,7 +20,7 @@ func Test_ApiAuthService_User(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		resp := app.GET(t, "/api/v1/auth/user", WithCookie(app.LoginAs(t, user.ID)))
+		resp := app.GET(t, "/api/v1/user/me", WithCookie(app.LoginAs(t, user.ID)))
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		type userResp struct {
@@ -34,12 +34,12 @@ func Test_ApiAuthService_User(t *testing.T) {
 	})
 
 	t.Run("should return 401 if user is not logged in", func(t *testing.T) {
-		resp := app.GET(t, "/api/v1/auth/user")
+		resp := app.GET(t, "/api/v1/user/me")
 		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 	})
 
 	t.Run("should return 401 if user is not found", func(t *testing.T) {
-		resp := app.GET(t, "/api/v1/auth/user", WithCookie(app.LoginAs(t, domain.NewUserID())))
+		resp := app.GET(t, "/api/v1/user/me", WithCookie(app.LoginAs(t, domain.NewUserID())))
 		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 	})
 }

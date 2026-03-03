@@ -14,6 +14,7 @@ import (
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/avatarstorage"
 	"github.com/healthy-heroes/neskuchka/backend/app/storage/datastorage"
 	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
 )
@@ -57,6 +58,8 @@ func NewTestApp(t *testing.T) *TestApp {
 		Version:   app.Version,
 		Secret:    app.Secret,
 		DataStore: app.Store,
+
+		AvatarStorage: avatarstorage.New(engine, zerolog.Nop()),
 
 		WebFS: fstest.MapFS{
 			"web/index.html": &fstest.MapFile{Data: []byte("<html>test</html>")},
