@@ -1,9 +1,10 @@
 import { act, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createApiServiceMock } from '@/api/fixtures/api';
-import { createAuthServiceMock, mockUser } from '@/api/fixtures/auth';
+import { createAuthServiceMock } from '@/api/fixtures/auth';
+import { createUserServiceMock, mockUser } from '@/api/fixtures/user';
 import { useApi } from '@/api/hooks';
-import { AuthKeys } from '@/api/services/auth';
+import { UserKeys } from '@/api/services/user';
 import { createTestQueryClient, renderHook } from '../../test-utils';
 import { useAuth, useIsOwner } from './hooks';
 
@@ -18,8 +19,8 @@ describe('useAuth', () => {
 	});
 
 	it('should return loading state initially', async () => {
-		const authMock = createAuthServiceMock({ user: mockUser });
-		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ auth: authMock }));
+		const userMock = createUserServiceMock({ user: mockUser });
+		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ user: userMock }));
 
 		const { result } = renderHook(() => useAuth());
 
@@ -29,8 +30,8 @@ describe('useAuth', () => {
 	});
 
 	it('should return user when authenticated', async () => {
-		const authMock = createAuthServiceMock({ user: mockUser });
-		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ auth: authMock }));
+		const userMock = createUserServiceMock({ user: mockUser });
+		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ user: userMock }));
 
 		const { result } = renderHook(() => useAuth());
 
@@ -43,8 +44,8 @@ describe('useAuth', () => {
 	});
 
 	it('should return null user when not authenticated', async () => {
-		const authMock = createAuthServiceMock({ user: null });
-		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ auth: authMock }));
+		const userMock = createUserServiceMock({ user: null });
+		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ user: userMock }));
 
 		const { result } = renderHook(() => useAuth());
 
@@ -60,10 +61,11 @@ describe('useAuth', () => {
 		const queryClient = createTestQueryClient();
 
 		// Pre-fill cache with user data
-		queryClient.setQueryData(AuthKeys.user, { data: mockUser });
+		queryClient.setQueryData(UserKeys.me, { data: mockUser });
 
-		const authMock = createAuthServiceMock({ user: mockUser });
-		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ auth: authMock }));
+		const userMock = createUserServiceMock({ user: mockUser });
+		const authMock = createAuthServiceMock();
+		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ user: userMock, auth: authMock }));
 
 		const { result } = renderHook(() => useAuth(), { queryClient });
 
@@ -87,11 +89,12 @@ describe('useAuth', () => {
 
 	it('should handle logout error gracefully', async () => {
 		const queryClient = createTestQueryClient();
-		queryClient.setQueryData(AuthKeys.user, { data: mockUser });
+		queryClient.setQueryData(UserKeys.me, { data: mockUser });
 
 		const logoutError = new Error('Network error');
-		const authMock = createAuthServiceMock({ user: mockUser, logoutError });
-		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ auth: authMock }));
+		const userMock = createUserServiceMock({ user: mockUser });
+		const authMock = createAuthServiceMock({ logoutError });
+		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ user: userMock, auth: authMock }));
 
 		const { result } = renderHook(() => useAuth(), { queryClient });
 
@@ -114,8 +117,8 @@ describe('useIsOwner', () => {
 	});
 
 	it('should return true when user is owner', async () => {
-		const authMock = createAuthServiceMock({ user: mockUser });
-		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ auth: authMock }));
+		const userMock = createUserServiceMock({ user: mockUser });
+		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ user: userMock }));
 
 		const { result } = renderHook(() => useIsOwner(mockUser.ID));
 
@@ -125,8 +128,8 @@ describe('useIsOwner', () => {
 	});
 
 	it('should return false when user is not owner', async () => {
-		const authMock = createAuthServiceMock({ user: mockUser });
-		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ auth: authMock }));
+		const userMock = createUserServiceMock({ user: mockUser });
+		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ user: userMock }));
 
 		const { result } = renderHook(() => useIsOwner('different-user-id'));
 
@@ -136,8 +139,8 @@ describe('useIsOwner', () => {
 	});
 
 	it('should return false when user is not authenticated', async () => {
-		const authMock = createAuthServiceMock({ user: null });
-		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ auth: authMock }));
+		const userMock = createUserServiceMock({ user: null });
+		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ user: userMock }));
 
 		const { result } = renderHook(() => useIsOwner('some-owner-id'));
 
@@ -147,8 +150,8 @@ describe('useIsOwner', () => {
 	});
 
 	it('should return false when ownerID is undefined', async () => {
-		const authMock = createAuthServiceMock({ user: mockUser });
-		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ auth: authMock }));
+		const userMock = createUserServiceMock({ user: mockUser });
+		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ user: userMock }));
 
 		const { result } = renderHook(() => useIsOwner(undefined));
 
@@ -156,8 +159,8 @@ describe('useIsOwner', () => {
 	});
 
 	it('should return false when ownerID is empty string', async () => {
-		const authMock = createAuthServiceMock({ user: mockUser });
-		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ auth: authMock }));
+		const userMock = createUserServiceMock({ user: mockUser });
+		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ user: userMock }));
 
 		const { result } = renderHook(() => useIsOwner(''));
 
