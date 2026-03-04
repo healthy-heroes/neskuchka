@@ -12,7 +12,8 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
-	"github.com/healthy-heroes/neskuchka/backend/app/storage/database"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/datastorage"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
 )
 
 type SeedCommand struct {
@@ -22,7 +23,8 @@ type SeedCommand struct {
 }
 
 type SeedRunner struct {
-	dataStorage *database.DataStorage
+	engine      *db.Engine
+	dataStorage *datastorage.Storage
 }
 
 func (cmd *SeedCommand) Execute(args []string) error {
@@ -54,13 +56,14 @@ func (cmd *SeedCommand) createRunner() (*SeedRunner, error) {
 	log.Info().Msg("creating store")
 	log.Info().Msgf("database url: %s", cmd.Store.DB)
 
-	engine, err := database.NewEngine(cmd.Store.DB, database.Opts{Logger: log.Logger})
+	engine, err := db.NewEngine(cmd.Store.DB, db.Opts{Logger: log.Logger})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create engine: %w", err)
 	}
 
 	return &SeedRunner{
-		dataStorage: database.NewDataStorage(engine, log.Logger),
+		engine:      engine,
+		dataStorage: datastorage.New(engine, log.Logger),
 	}, nil
 }
 
@@ -71,7 +74,9 @@ func (r *SeedRunner) Run(ctx context.Context) error {
 		// shutdown on context cancellation
 		<-ctx.Done()
 		log.Info().Msg("runner shutdown...")
-		r.dataStorage.Close()
+		if err := r.engine.Close(); err != nil {
+			log.Error().Err(err).Msg("Failed to close database")
+		}
 	}()
 
 	admin := domain.User{

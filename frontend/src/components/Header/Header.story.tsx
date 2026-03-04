@@ -1,5 +1,5 @@
 import { createApiServiceMock } from '@/api/fixtures/api';
-import { createAuthServiceMock, mockUser } from '@/api/fixtures/auth';
+import { createUserServiceMock, mockUser } from '@/api/fixtures/user';
 import { StoryPreview } from '../StoryBook/StoryPreview';
 import { Header } from './Header';
 
@@ -17,7 +17,7 @@ export function LoggedOut() {
 
 export function LoggedIn() {
 	const apiService = createApiServiceMock({
-		auth: createAuthServiceMock({ user: mockUser }),
+		user: createUserServiceMock({ user: mockUser }),
 	});
 
 	return (

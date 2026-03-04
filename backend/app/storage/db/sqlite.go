@@ -1,4 +1,4 @@
-package database
+package db
 
 import (
 	"fmt"
@@ -38,6 +38,16 @@ const (
 			sections TEXT NOT NULL,
 			notes TEXT,
 			schema_version INTEGER NOT NULL,
+			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+		)
+	`
+
+	avatarSchema = `
+		CREATE TABLE IF NOT EXISTS avatar (
+			user_id TEXT PRIMARY KEY NOT NULL,
+			mime_type TEXT NOT NULL,
+			data BLOB NOT NULL,
 			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 		)
@@ -92,6 +102,7 @@ func (e *Engine) createSchema() error {
 		"user":    userSchema,
 		"track":   trackSchema,
 		"workout": workoutSchema,
+		"avatar":  avatarSchema,
 	}
 
 	for table, schema := range schemas {

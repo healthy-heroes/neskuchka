@@ -3,7 +3,7 @@ import { IconAlertCircle, IconCheck } from '@tabler/icons-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert, Container, Loader, Stack, Text } from '@mantine/core';
 import { useApi } from '@/api/hooks';
-import { AuthKeys } from '@/api/services/auth';
+import { UserKeys } from '@/api/services/user';
 import { RouteLink } from '@/components/RouteLink/RouteLink';
 
 export type LoginConfirmProps = {
@@ -21,7 +21,7 @@ export function LoginConfirm({ token }: LoginConfirmProps) {
 	// Invalidate user query on success
 	useEffect(() => {
 		if (confirmQuery.isSuccess) {
-			queryClient.invalidateQueries({ queryKey: AuthKeys.user });
+			queryClient.invalidateQueries({ queryKey: UserKeys.me });
 		}
 	}, [confirmQuery.isSuccess, queryClient]);
 

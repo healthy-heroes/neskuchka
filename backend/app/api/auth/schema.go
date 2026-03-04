@@ -20,9 +20,3 @@ func (s LoginSchema) Validate() error {
 type ConfirmationSchema struct {
 	Token string `json:"token"`
 }
-
-// UserSchema is the schema for data about logged user
-type UserSchema struct {
-	ID   string
-	Name string
-}

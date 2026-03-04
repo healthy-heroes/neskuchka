@@ -5,7 +5,7 @@ import {
 	useQueryClient,
 } from '@tanstack/react-query';
 import { useApi } from '@/api/hooks';
-import { AuthKeys } from '@/api/services/auth';
+import { UserKeys } from '@/api/services/user';
 import { User } from '@/types/domain';
 
 type AuthState = {
@@ -23,11 +23,11 @@ export function useAuth(): AuthState {
 		...api.auth.logoutMutation(),
 
 		onSuccess: () => {
-			queryClient.setQueryData(AuthKeys.user, null);
+			queryClient.setQueryData(UserKeys.me, null);
 		},
 	});
 
-	const userQuery = useQuery(api.auth.getUserQuery());
+	const userQuery = useQuery(api.user.getUserQuery());
 
 	return {
 		user: userQuery.data?.data ?? null,

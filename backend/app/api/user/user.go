@@ -1,4 +1,4 @@
-package auth
+package api_user
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 )
 
-func (s *Service) User(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Me(w http.ResponseWriter, r *http.Request) {
 	id := domain.UserID(session.MustGetUserID(r))
 
 	user, err := s.dataStore.GetUser(r.Context(), id)

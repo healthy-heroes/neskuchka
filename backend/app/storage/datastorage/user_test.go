@@ -1,4 +1,4 @@
-package database
+package datastorage
 
 import (
 	"testing"
@@ -7,9 +7,10 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
 )
 
-func userFromDB(t *testing.T, engine *Engine, id string) userRow {
+func userFromDB(t *testing.T, engine *db.Engine, id string) userRow {
 	user := userRow{}
 	err := engine.Get(&user, "SELECT * FROM user WHERE id = ?", id)
 	require.NoError(t, err)
@@ -18,7 +19,7 @@ func userFromDB(t *testing.T, engine *Engine, id string) userRow {
 }
 
 func Test_User_Create(t *testing.T) {
-	ds := setupTestDataStorage(t)
+	ds := setupTestStorage(t)
 
 	newUser := domain.User{
 		ID:    domain.NewUserID(),
@@ -45,7 +46,7 @@ func Test_User_Create(t *testing.T) {
 }
 
 func Test_User_Update(t *testing.T) {
-	ds := setupTestDataStorage(t)
+	ds := setupTestStorage(t)
 	defer ds.engine.Close()
 
 	existingUser := domain.User{
@@ -80,7 +81,7 @@ func Test_User_Update(t *testing.T) {
 }
 
 func Test_User_NotFound(t *testing.T) {
-	ds := setupTestDataStorage(t)
+	ds := setupTestStorage(t)
 
 	_, err := ds.GetUser(t.Context(), domain.UserID("non-existent-id"))
 	assert.ErrorIs(t, err, domain.ErrNotFound)

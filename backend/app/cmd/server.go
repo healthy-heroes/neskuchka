@@ -13,7 +13,9 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/api"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/email"
-	"github.com/healthy-heroes/neskuchka/backend/app/storage/database"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/avatarstorage"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/datastorage"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
 )
 
 //go:embed web
@@ -49,8 +51,7 @@ type serverApp struct {
 	*ServerCommand
 
 	apiServer *api.Api
-	dataStore *domain.Store
-
+	engine    *db.Engine
 	CommonOptions
 }
 
@@ -83,17 +84,21 @@ func (cmd *ServerCommand) Execute(args []string) error {
 }
 
 func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
-	dataStore, err := cmd.makeDataStore()
+	engine, err := cmd.makeEngine()
 	if err != nil {
-		return nil, fmt.Errorf("failed to create data store: %w", err)
+		return nil, fmt.Errorf("failed to create engine: %w", err)
 	}
 
 	apiServer := &api.Api{
 		Version: cmd.Revision,
 		Secret:  cmd.Secret,
 
-		DataStore: dataStore,
-		WebFS:     webFS,
+		WebFS: webFS,
+
+		AvatarStorage: avatarstorage.New(engine, log.Logger),
+		DataStore: domain.NewStore(domain.Opts{
+			DataStorage: datastorage.New(engine, log.Logger),
+		}),
 
 		EmailTemplater: email.NewTemplate(cmd.BaseURL),
 		EmailService: email.NewService(email.Opts{
@@ -106,25 +111,22 @@ func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
 	app := &serverApp{
 		ServerCommand: cmd,
 		apiServer:     apiServer,
-		dataStore:     dataStore,
+		engine:        engine,
 	}
 
 	return app, nil
 }
 
-// makeDataStore creates a new data store
-func (cmd *ServerCommand) makeDataStore() (*domain.Store, error) {
+func (cmd *ServerCommand) makeEngine() (*db.Engine, error) {
 	log.Info().Msg("creating store")
 	log.Info().Msgf("database url: %s", cmd.Store.DB)
 
-	engine, err := database.NewEngine(cmd.Store.DB, database.Opts{Logger: log.Logger})
+	engine, err := db.NewEngine(cmd.Store.DB, db.Opts{Logger: log.Logger})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create engine: %w", err)
 	}
 
-	return domain.NewStore(domain.Opts{
-		DataStorage: database.NewDataStorage(engine, log.Logger),
-	}), nil
+	return engine, nil
 }
 
 // run starts all application objects
@@ -136,6 +138,10 @@ func (app *serverApp) run(ctx context.Context) error {
 		log.Info().Msg("Handle shutdown...")
 
 		app.apiServer.Shutdown()
+
+		if err := app.engine.Close(); err != nil {
+			log.Error().Err(err).Msg("failed to close database")
+		}
 	}()
 
 	app.apiServer.Run(app.Address, app.Port)

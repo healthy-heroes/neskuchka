@@ -1,10 +1,14 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"net/textproto"
 	"testing"
 	"testing/fstest"
 
@@ -14,17 +18,20 @@ import (
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
-	"github.com/healthy-heroes/neskuchka/backend/app/storage/database"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/avatarstorage"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/datastorage"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
 )
 
 type TestApp struct {
 	Secret  string
 	Version string
 
-	Server      *httptest.Server
-	DB          *database.Engine
-	DataStorage *database.DataStorage
-	Store       *domain.Store
+	Server        *httptest.Server
+	DB            *db.Engine
+	DataStorage   *datastorage.Storage
+	AvatarStorage *avatarstorage.Storage
+	Store         *domain.Store
 
 	SessionManager *session.Manager
 }
@@ -37,7 +44,7 @@ func NewTestApp(t *testing.T) *TestApp {
 		Version: "test_version",
 	}
 
-	engine, err := database.NewSqliteEngine(":memory:", zerolog.Nop())
+	engine, err := db.NewSqliteEngine(":memory:", zerolog.Nop())
 	require.NoError(t, err)
 
 	app.SessionManager = session.NewManager(session.Opts{
@@ -47,7 +54,8 @@ func NewTestApp(t *testing.T) *TestApp {
 	})
 
 	app.DB = engine
-	app.DataStorage = database.NewDataStorage(engine, zerolog.Nop())
+	app.DataStorage = datastorage.New(engine, zerolog.Nop())
+	app.AvatarStorage = avatarstorage.New(engine, zerolog.Nop())
 	app.Store = domain.NewStore(domain.Opts{
 		DataStorage: app.DataStorage,
 	})
@@ -56,6 +64,8 @@ func NewTestApp(t *testing.T) *TestApp {
 		Version:   app.Version,
 		Secret:    app.Secret,
 		DataStore: app.Store,
+
+		AvatarStorage: avatarstorage.New(engine, zerolog.Nop()),
 
 		WebFS: fstest.MapFS{
 			"web/index.html": &fstest.MapFile{Data: []byte("<html>test</html>")},
@@ -92,12 +102,36 @@ func WithCookie(c *http.Cookie) RequestOption {
 	}
 }
 
-func (app *TestApp) GET(t *testing.T, path string, opts ...RequestOption) *http.Response {
-	t.Helper()
+func WithBody(body io.Reader) RequestOption {
+	return func(r *http.Request) {
+		r.Body = io.NopCloser(body)
+	}
+}
 
-	url := app.Server.URL + path
-	req, err := http.NewRequest("GET", url, nil)
-	require.NoError(t, err)
+func WithMultipartFile(fieldName, fileName, contentType string, data []byte) RequestOption {
+	return func(r *http.Request) {
+		var buf bytes.Buffer
+		writer := multipart.NewWriter(&buf)
+
+		h := make(textproto.MIMEHeader)
+		h.Set("Content-Disposition", fmt.Sprintf(`form-data; name=%q; filename=%q`, fieldName, fileName))
+		h.Set("Content-Type", contentType)
+
+		part, err := writer.CreatePart(h)
+		if err != nil {
+			panic(err)
+		}
+
+		_, _ = part.Write(data)
+		writer.Close()
+
+		r.Body = io.NopCloser(&buf)
+		r.Header.Set("Content-Type", writer.FormDataContentType())
+	}
+}
+
+func (app *TestApp) DoRequest(t *testing.T, req *http.Request, opts ...RequestOption) *http.Response {
+	t.Helper()
 
 	for _, patch := range opts {
 		patch(req)
@@ -111,6 +145,26 @@ func (app *TestApp) GET(t *testing.T, path string, opts ...RequestOption) *http.
 	})
 
 	return resp
+}
+
+func (app *TestApp) GET(t *testing.T, path string, opts ...RequestOption) *http.Response {
+	t.Helper()
+
+	url := app.Server.URL + path
+	req, err := http.NewRequest("GET", url, nil)
+	require.NoError(t, err)
+
+	return app.DoRequest(t, req, opts...)
+}
+
+func (app *TestApp) POST(t *testing.T, path string, opts ...RequestOption) *http.Response {
+	t.Helper()
+
+	url := app.Server.URL + path
+	req, err := http.NewRequest("POST", url, nil)
+	require.NoError(t, err)
+
+	return app.DoRequest(t, req, opts...)
 }
 
 // ReadBody reads the body of a response and returns it as a string

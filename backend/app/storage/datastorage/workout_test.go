@@ -1,4 +1,4 @@
-package database
+package datastorage
 
 import (
 	"testing"
@@ -8,9 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
 )
 
-func workoutFromDB(t *testing.T, engine *Engine, id string) workoutRow {
+func workoutFromDB(t *testing.T, engine *db.Engine, id string) workoutRow {
 	row := workoutRow{}
 	err := engine.Get(&row, "SELECT * FROM workout WHERE id = ?", id)
 	require.NoError(t, err)
@@ -27,7 +28,7 @@ func workoutDate(s string) time.Time {
 }
 
 func Test_Workout_Create(t *testing.T) {
-	ds := setupTestDataStorage(t)
+	ds := setupTestStorage(t)
 
 	newWorkout := domain.Workout{
 		ID:      domain.NewWorkoutID(),
@@ -71,7 +72,7 @@ func Test_Workout_Create(t *testing.T) {
 }
 
 func Test_Workout_Get_NotFound(t *testing.T) {
-	ds := setupTestDataStorage(t)
+	ds := setupTestStorage(t)
 	defer ds.engine.Close()
 
 	trackID := domain.NewTrackID()
@@ -94,7 +95,7 @@ func Test_Workout_Get_NotFound(t *testing.T) {
 }
 
 func Test_Workout_Update(t *testing.T) {
-	ds := setupTestDataStorage(t)
+	ds := setupTestStorage(t)
 
 	existingWorkout := domain.Workout{
 		ID:      domain.NewWorkoutID(),
@@ -143,7 +144,7 @@ func Test_Workout_Update(t *testing.T) {
 }
 
 func Test_Workout_FindWorkouts(t *testing.T) {
-	ds := setupTestDataStorage(t)
+	ds := setupTestStorage(t)
 
 	// create workouts
 	trackID := domain.NewTrackID()
