@@ -31,6 +31,7 @@ type TestApp struct {
 	DB            *db.Engine
 	DataStorage   *datastorage.Storage
 	AvatarStorage *avatarstorage.Storage
+	AvatarURLFunc func(domain.UserID) string
 	Store         *domain.Store
 
 	SessionManager *session.Manager
@@ -65,7 +66,7 @@ func NewTestApp(t *testing.T) *TestApp {
 		Secret:    app.Secret,
 		DataStore: app.Store,
 
-		AvatarStorage: avatarstorage.New(engine, zerolog.Nop()),
+		AvatarStorage: app.AvatarStorage,
 
 		WebFS: fstest.MapFS{
 			"web/index.html": &fstest.MapFile{Data: []byte("<html>test</html>")},

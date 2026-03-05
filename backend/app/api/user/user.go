@@ -18,8 +18,20 @@ func (s *Service) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Render(w, UserSchema{
+	response := UserSchema{
 		ID:   string(user.ID),
 		Name: user.Name,
-	})
+	}
+
+	exists, err := s.avatarStorage.Exists(r.Context(), user.ID)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to check if avatar exists")
+		exists = false
+	}
+
+	if exists {
+		response.Avatar = s.avatarURLFunc(user.ID)
+	}
+
+	httpx.Render(w, response)
 }

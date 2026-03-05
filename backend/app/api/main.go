@@ -26,6 +26,7 @@ import (
 )
 
 const Issuer = "Neskuchka"
+const prefixApi = "/api/v1"
 
 // Api is an API server
 type Api struct {
@@ -107,7 +108,7 @@ func (api *Api) Handler() *chi.Mux {
 	})
 
 	// api routes
-	router.Route("/api/v1", func(r chi.Router) {
+	router.Route(prefixApi, func(r chi.Router) {
 		r.Use(httprate.LimitByIP(60, time.Minute))
 		r.Use(chiMW.Timeout(10 * time.Second))
 
@@ -141,17 +142,28 @@ func (api *Api) addAuthRoutes(router chi.Router, session *session.Manager) {
 
 // addUserRoutes is adding user routes
 func (api *Api) addUserRoutes(router chi.Router, session *session.Manager) {
+	avatarURLFunc := func(userID domain.UserID) string {
+		return fmt.Sprintf("%s/user/%s/avatar", prefixApi, string(userID))
+	}
+
 	h := api_user.NewService(api.DataStore, api_user.Opts{
 		Logger:        log.Logger,
 		AvatarStorage: api.AvatarStorage,
+		AvatarURLFunc: avatarURLFunc,
 	})
 
 	router.Route("/user", func(r chi.Router) {
-		r.Use(session.Authenticator(httpx.RenderUnauthorized))
+		r.Route("/me", func(r chi.Router) {
+			r.Use(session.Authenticator(httpx.RenderUnauthorized))
 
-		r.Get("/me", h.Me)
-		r.Get("/me/avatar", h.Avatar)
-		r.Post("/me/avatar", h.UploadAvatar)
+			r.Get("/", h.Me)
+			r.Get("/avatar", h.MyAvatar)
+			r.Post("/avatar", h.UploadAvatar)
+		})
+
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/avatar", h.UserAvatar)
+		})
 	})
 }
 

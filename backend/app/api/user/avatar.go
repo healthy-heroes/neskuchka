@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strconv"
 
+	"github.com/go-chi/chi/v5"
+
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
@@ -20,9 +22,7 @@ var allowedMimeTypes = []string{
 	"image/webp",
 }
 
-func (s *Service) Avatar(w http.ResponseWriter, r *http.Request) {
-	id := domain.UserID(session.MustGetUserID(r))
-
+func (s *Service) avatar(w http.ResponseWriter, r *http.Request, id domain.UserID) {
 	avatar, err := s.avatarStorage.Get(r.Context(), id)
 	if err != nil {
 		httpx.RenderDomainError(w, s.logger, err, "failed to get avatar")
@@ -33,6 +33,18 @@ func (s *Service) Avatar(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Length", strconv.Itoa(len(avatar.Data)))
 	w.Header().Set("Cache-Control", "private, max-age=86400")
 	w.Write(avatar.Data)
+}
+
+func (s *Service) MyAvatar(w http.ResponseWriter, r *http.Request) {
+	id := domain.UserID(session.MustGetUserID(r))
+
+	s.avatar(w, r, id)
+}
+
+func (s *Service) UserAvatar(w http.ResponseWriter, r *http.Request) {
+	id := domain.UserID(chi.URLParam(r, "id"))
+
+	s.avatar(w, r, id)
 }
 
 func (s *Service) UploadAvatar(w http.ResponseWriter, r *http.Request) {
