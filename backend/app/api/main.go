@@ -157,8 +157,11 @@ func (api *Api) addUserRoutes(router chi.Router, session *session.Manager) {
 			r.Use(session.Authenticator(httpx.RenderUnauthorized))
 
 			r.Get("/", h.Me)
+			r.Get("/settings", h.GetSettings)
+			r.Put("/settings", h.UpdateSettings)
 			r.Get("/avatar", h.MyAvatar)
 			r.Post("/avatar", h.UploadAvatar)
+			r.Delete("/avatar", h.DeleteAvatar)
 		})
 
 		r.Route("/{id}", func(r chi.Router) {

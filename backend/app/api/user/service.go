@@ -11,6 +11,7 @@ import (
 type AvatarStorage interface {
 	Get(context.Context, domain.UserID) (domain.Avatar, error)
 	Save(context.Context, domain.UserID, domain.Avatar) error
+	Delete(context.Context, domain.UserID) error
 	Exists(context.Context, domain.UserID) (bool, error)
 }
 

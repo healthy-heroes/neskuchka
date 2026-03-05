@@ -109,6 +109,17 @@ func WithBody(body io.Reader) RequestOption {
 	}
 }
 
+func WithJSON(data any) RequestOption {
+	return func(r *http.Request) {
+		buf, err := json.Marshal(data)
+		if err != nil {
+			panic(err)
+		}
+		r.Body = io.NopCloser(bytes.NewReader(buf))
+		r.Header.Set("Content-Type", "application/json")
+	}
+}
+
 func WithMultipartFile(fieldName, fileName, contentType string, data []byte) RequestOption {
 	return func(r *http.Request) {
 		var buf bytes.Buffer
@@ -163,6 +174,26 @@ func (app *TestApp) POST(t *testing.T, path string, opts ...RequestOption) *http
 
 	url := app.Server.URL + path
 	req, err := http.NewRequest("POST", url, nil)
+	require.NoError(t, err)
+
+	return app.DoRequest(t, req, opts...)
+}
+
+func (app *TestApp) PUT(t *testing.T, path string, opts ...RequestOption) *http.Response {
+	t.Helper()
+
+	url := app.Server.URL + path
+	req, err := http.NewRequest("PUT", url, nil)
+	require.NoError(t, err)
+
+	return app.DoRequest(t, req, opts...)
+}
+
+func (app *TestApp) DELETE(t *testing.T, path string, opts ...RequestOption) *http.Response {
+	t.Helper()
+
+	url := app.Server.URL + path
+	req, err := http.NewRequest("DELETE", url, nil)
 	require.NoError(t, err)
 
 	return app.DoRequest(t, req, opts...)

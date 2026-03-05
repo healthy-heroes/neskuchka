@@ -1,6 +1,7 @@
 package api_user
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
@@ -34,4 +35,56 @@ func (s *Service) Me(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.Render(w, response)
+}
+
+func (s *Service) GetSettings(w http.ResponseWriter, r *http.Request) {
+	id := domain.UserID(session.MustGetUserID(r))
+
+	user, err := s.dataStore.GetUser(r.Context(), id)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to get user")
+		httpx.RenderUnauthorized(w)
+		return
+	}
+
+	httpx.Render(w, s.toSettingsSchema(r.Context(), user))
+}
+
+func (s *Service) UpdateSettings(w http.ResponseWriter, r *http.Request) {
+	id := domain.UserID(session.MustGetUserID(r))
+
+	body, ok := httpx.ParseAndValidateBody[UpdateSettingsSchema](w, r, s.logger)
+	if !ok {
+		return
+	}
+
+	user, err := s.dataStore.UpdateUser(r.Context(), domain.User{
+		ID:   id,
+		Name: body.Name,
+	})
+	if err != nil {
+		httpx.RenderDomainError(w, s.logger, err, "failed to update user")
+		return
+	}
+
+	httpx.Render(w, s.toSettingsSchema(r.Context(), user))
+}
+
+func (s *Service) toSettingsSchema(ctx context.Context, user domain.User) SettingsSchema {
+	response := SettingsSchema{
+		Name:  user.Name,
+		Email: string(user.Email),
+	}
+
+	exists, err := s.avatarStorage.Exists(ctx, user.ID)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to check if avatar exists")
+		exists = false
+	}
+
+	if exists {
+		response.Avatar = s.avatarURLFunc(user.ID)
+	}
+
+	return response
 }

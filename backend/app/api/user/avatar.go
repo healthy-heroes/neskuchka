@@ -47,6 +47,18 @@ func (s *Service) UserAvatar(w http.ResponseWriter, r *http.Request) {
 	s.avatar(w, r, id)
 }
 
+func (s *Service) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
+	id := domain.UserID(session.MustGetUserID(r))
+
+	err := s.avatarStorage.Delete(r.Context(), id)
+	if err != nil {
+		httpx.RenderDomainError(w, s.logger, err, "failed to delete avatar")
+		return
+	}
+
+	httpx.Render(w, nil)
+}
+
 func (s *Service) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	id := domain.UserID(session.MustGetUserID(r))
 

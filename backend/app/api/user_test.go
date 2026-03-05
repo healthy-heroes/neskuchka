@@ -77,6 +77,134 @@ func Test_ApiUserService_User(t *testing.T) {
 	})
 }
 
+func Test_ApiUserService_GetSettings(t *testing.T) {
+	app := NewTestApp(t)
+
+	t.Run("should return settings with email", func(t *testing.T) {
+		user, err := app.DataStorage.CreateUser(t.Context(), testutil.CreateUser())
+		require.NoError(t, err)
+
+		resp := app.GET(t, "/api/v1/user/me/settings", WithCookie(app.LoginAs(t, user.ID)))
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		type settingsResp struct {
+			Name  string
+			Email string
+		}
+		data := ReadJSON[settingsResp](t, resp)
+
+		assert.Equal(t, settingsResp{user.Name, string(user.Email)}, data)
+	})
+
+	t.Run("should return avatar url if avatar exists", func(t *testing.T) {
+		user, err := app.DataStorage.CreateUser(t.Context(), testutil.CreateUser())
+		require.NoError(t, err)
+
+		err = app.AvatarStorage.Save(t.Context(), user.ID, domain.Avatar{
+			MimeType: "image/png",
+			Data:     []byte("test"),
+		})
+		require.NoError(t, err)
+
+		resp := app.GET(t, "/api/v1/user/me/settings", WithCookie(app.LoginAs(t, user.ID)))
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		type settingsResp struct {
+			Name   string
+			Email  string
+			Avatar string
+		}
+		data := ReadJSON[settingsResp](t, resp)
+
+		assert.Equal(t, settingsResp{
+			user.Name,
+			string(user.Email),
+			fmt.Sprintf("%s/user/%s/avatar", prefixApi, string(user.ID)),
+		}, data)
+	})
+
+	t.Run("should return 401 if user is not logged in", func(t *testing.T) {
+		resp := app.GET(t, "/api/v1/user/me/settings")
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	})
+}
+
+func Test_ApiUserService_UpdateSettings(t *testing.T) {
+	app := NewTestApp(t)
+
+	t.Run("should update user name", func(t *testing.T) {
+		user, err := app.DataStorage.CreateUser(t.Context(), testutil.CreateUser())
+		require.NoError(t, err)
+
+		resp := app.PUT(t, "/api/v1/user/me/settings",
+			WithCookie(app.LoginAs(t, user.ID)),
+			WithJSON(map[string]string{"Name": "New Name"}),
+		)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		type settingsResp struct {
+			Name  string
+			Email string
+		}
+		data := ReadJSON[settingsResp](t, resp)
+
+		assert.Equal(t, "New Name", data.Name)
+		assert.Equal(t, string(user.Email), data.Email)
+	})
+
+	t.Run("should return 422 when name is empty", func(t *testing.T) {
+		user, err := app.DataStorage.CreateUser(t.Context(), testutil.CreateUser())
+		require.NoError(t, err)
+
+		resp := app.PUT(t, "/api/v1/user/me/settings",
+			WithCookie(app.LoginAs(t, user.ID)),
+			WithJSON(map[string]string{"Name": ""}),
+		)
+		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+	})
+
+	t.Run("should return 401 if user is not logged in", func(t *testing.T) {
+		resp := app.PUT(t, "/api/v1/user/me/settings",
+			WithJSON(map[string]string{"Name": "Test"}),
+		)
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	})
+}
+
+func Test_ApiUserService_DeleteAvatar(t *testing.T) {
+	app := NewTestApp(t)
+
+	t.Run("should delete avatar", func(t *testing.T) {
+		user, err := app.DataStorage.CreateUser(t.Context(), testutil.CreateUser())
+		require.NoError(t, err)
+
+		err = app.AvatarStorage.Save(t.Context(), user.ID, domain.Avatar{
+			MimeType: "image/png",
+			Data:     []byte("test"),
+		})
+		require.NoError(t, err)
+
+		resp := app.DELETE(t, "/api/v1/user/me/avatar", WithCookie(app.LoginAs(t, user.ID)))
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		exists, err := app.AvatarStorage.Exists(t.Context(), user.ID)
+		require.NoError(t, err)
+		assert.False(t, exists)
+	})
+
+	t.Run("should succeed even if no avatar exists", func(t *testing.T) {
+		userID := domain.NewUserID()
+
+		resp := app.DELETE(t, "/api/v1/user/me/avatar", WithCookie(app.LoginAs(t, userID)))
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+
+	t.Run("should return 401 if user is not logged in", func(t *testing.T) {
+		resp := app.DELETE(t, "/api/v1/user/me/avatar")
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	})
+}
+
 func Test_ApiUserService_MyAvatar(t *testing.T) {
 	app := NewTestApp(t)
 
