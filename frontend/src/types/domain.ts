@@ -1,6 +1,7 @@
 export interface User {
 	ID: string;
 	Name: string;
+	Avatar?: string;
 }
 
 export interface Track {

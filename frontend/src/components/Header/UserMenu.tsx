@@ -1,5 +1,5 @@
 import { IconLogout, IconUser } from '@tabler/icons-react';
-import { ActionIcon, Button, Menu, Skeleton } from '@mantine/core';
+import { ActionIcon, Avatar, Button, Menu, Skeleton } from '@mantine/core';
 import { useAuth } from '@/auth/hooks';
 import { RouteLink } from '../RouteLink/RouteLink';
 
@@ -14,9 +14,13 @@ export function UserMenu() {
 		return (
 			<Menu shadow="md" width={200}>
 				<Menu.Target>
-					<ActionIcon variant="outline" color="blue" size="lg" radius="xl" bd="2px solid">
-						<IconUser size={20} />
-					</ActionIcon>
+					{user.Avatar ? (
+						<Avatar src={user.Avatar} size="md" radius="xl" style={{ cursor: 'pointer' }} />
+					) : (
+						<ActionIcon variant="outline" color="blue" size="lg" radius="xl" bd="2px solid">
+							<IconUser size={20} />
+						</ActionIcon>
+					)}
 				</Menu.Target>
 
 				<Menu.Dropdown>
