@@ -35,4 +35,16 @@ export default class ApiClient {
 			.post<TResponse>(`${this.apiPath}/${path}`, payload)
 			.then((response) => response.data);
 	}
+
+	async postForm<TResponse>(path: string, formData: FormData): Promise<TResponse> {
+		return axios
+			.post<TResponse>(`${this.apiPath}/${path}`, formData, {
+				headers: { 'Content-Type': 'multipart/form-data' },
+			})
+			.then((response) => response.data);
+	}
+
+	async delete<TResponse>(path: string): Promise<TResponse> {
+		return axios.delete<TResponse>(`${this.apiPath}/${path}`).then((response) => response.data);
+	}
 }

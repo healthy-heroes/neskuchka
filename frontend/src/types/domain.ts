@@ -4,6 +4,12 @@ export interface User {
 	Avatar?: string;
 }
 
+export interface UserSettings {
+	Name: string;
+	Email: string;
+	Avatar?: string;
+}
+
 export interface Track {
 	ID: string;
 	Name: string;

@@ -1,4 +1,4 @@
-import { IconLogout, IconUser } from '@tabler/icons-react';
+import { IconLogout, IconSettings, IconUser } from '@tabler/icons-react';
 import { ActionIcon, Avatar, Button, Menu, Skeleton } from '@mantine/core';
 import { useAuth } from '@/auth/hooks';
 import { RouteLink } from '../RouteLink/RouteLink';
@@ -25,8 +25,12 @@ export function UserMenu() {
 
 				<Menu.Dropdown>
 					<Menu.Label>{user.Name}</Menu.Label>
-					<Menu.Item leftSection={<IconUser size={16} />} disabled>
-						Профиль
+					<Menu.Item
+						component={RouteLink}
+						to="/settings"
+						leftSection={<IconSettings size={16} />}
+					>
+						Настройки
 					</Menu.Item>
 					<Menu.Divider />
 					<Menu.Item color="red" leftSection={<IconLogout size={16} />} onClick={() => logout()}>
