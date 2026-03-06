@@ -1,7 +1,6 @@
 package api_user
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
@@ -47,7 +46,7 @@ func (s *Service) GetSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Render(w, s.toSettingsSchema(r.Context(), user))
+	httpx.Render(w, toSettingsSchema(user))
 }
 
 func (s *Service) UpdateSettings(w http.ResponseWriter, r *http.Request) {
@@ -67,24 +66,12 @@ func (s *Service) UpdateSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Render(w, s.toSettingsSchema(r.Context(), user))
+	httpx.Render(w, toSettingsSchema(user))
 }
 
-func (s *Service) toSettingsSchema(ctx context.Context, user domain.User) SettingsSchema {
-	response := SettingsSchema{
+func toSettingsSchema(user domain.User) SettingsSchema {
+	return SettingsSchema{
 		Name:  user.Name,
 		Email: string(user.Email),
 	}
-
-	exists, err := s.avatarStorage.Exists(ctx, user.ID)
-	if err != nil {
-		s.logger.Error().Err(err).Msg("failed to check if avatar exists")
-		exists = false
-	}
-
-	if exists {
-		response.Avatar = s.avatarURLFunc(user.ID)
-	}
-
-	return response
 }

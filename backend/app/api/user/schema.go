@@ -13,9 +13,8 @@ type UserSchema struct {
 
 // SettingsSchema is the schema for the user settings page
 type SettingsSchema struct {
-	Name   string
-	Email  string
-	Avatar string `json:",omitempty"`
+	Name  string
+	Email string
 }
 
 // UpdateSettingsSchema is the schema for updating user settings

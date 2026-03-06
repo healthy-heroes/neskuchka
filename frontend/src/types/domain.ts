@@ -7,7 +7,6 @@ export interface User {
 export interface UserSettings {
 	Name: string;
 	Email: string;
-	Avatar?: string;
 }
 
 export interface Track {

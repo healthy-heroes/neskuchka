@@ -16,6 +16,7 @@ import {
 import { isNotEmpty, useForm } from '@mantine/form';
 import { useApi } from '@/api/hooks';
 import { UserKeys } from '@/api/services/user';
+import { useAuth } from '@/auth/hooks';
 import { Header } from '@/components/Header/Header';
 import { PageSkeleton } from '@/components/PageSkeleton/PageSkeleton';
 
@@ -25,6 +26,7 @@ interface SettingsFormData {
 
 export function SettingsPage() {
 	const queryClient = useQueryClient();
+	const { user: authUser } = useAuth();
 	const { user } = useApi();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -92,7 +94,7 @@ export function SettingsPage() {
 				<Stack gap="lg">
 					<Paper radius="md" withBorder p="xl">
 						<Stack align="center" gap="md">
-							<Avatar src={settings.Avatar} size={180} radius={180}>
+							<Avatar src={authUser?.Avatar} size={180} radius={180}>
 								{settings.Name.charAt(0).toUpperCase()}
 							</Avatar>
 
@@ -122,7 +124,7 @@ export function SettingsPage() {
 									>
 										Загрузить фото...
 									</Menu.Item>
-									{settings.Avatar && (
+									{authUser?.Avatar && (
 										<Menu.Item
 											color="red"
 											leftSection={<IconTrash size={16} />}

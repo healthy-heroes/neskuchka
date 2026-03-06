@@ -96,33 +96,6 @@ func Test_ApiUserService_GetSettings(t *testing.T) {
 		assert.Equal(t, settingsResp{user.Name, string(user.Email)}, data)
 	})
 
-	t.Run("should return avatar url if avatar exists", func(t *testing.T) {
-		user, err := app.DataStorage.CreateUser(t.Context(), testutil.CreateUser())
-		require.NoError(t, err)
-
-		err = app.AvatarStorage.Save(t.Context(), user.ID, domain.Avatar{
-			MimeType: "image/png",
-			Data:     []byte("test"),
-		})
-		require.NoError(t, err)
-
-		resp := app.GET(t, "/api/v1/user/me/settings", WithCookie(app.LoginAs(t, user.ID)))
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		type settingsResp struct {
-			Name   string
-			Email  string
-			Avatar string
-		}
-		data := ReadJSON[settingsResp](t, resp)
-
-		assert.Equal(t, settingsResp{
-			user.Name,
-			string(user.Email),
-			fmt.Sprintf("%s/user/%s/avatar", prefixApi, string(user.ID)),
-		}, data)
-	})
-
 	t.Run("should return 401 if user is not logged in", func(t *testing.T) {
 		resp := app.GET(t, "/api/v1/user/me/settings")
 		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
