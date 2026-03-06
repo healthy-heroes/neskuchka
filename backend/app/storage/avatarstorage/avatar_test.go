@@ -44,4 +44,10 @@ func Test_AvatarStorage_Exists(t *testing.T) {
 	exists, err = storage.Exists(t.Context(), domain.NewUserID())
 	require.NoError(t, err)
 	assert.False(t, exists)
+
+	err = storage.Delete(t.Context(), userID)
+	require.NoError(t, err)
+	exists, err = storage.Exists(t.Context(), userID)
+	require.NoError(t, err)
+	assert.False(t, exists)
 }

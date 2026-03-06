@@ -63,7 +63,7 @@ export function SettingsPage() {
 		if (settings) {
 			form.initialize({ Name: settings.Name });
 		}
-	}, [settings]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [settings]);
 
 	if (isPending) {
 		return <PageSkeleton />;

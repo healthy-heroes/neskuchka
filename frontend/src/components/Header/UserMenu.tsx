@@ -25,11 +25,7 @@ export function UserMenu() {
 
 				<Menu.Dropdown>
 					<Menu.Label>{user.Name}</Menu.Label>
-					<Menu.Item
-						component={RouteLink}
-						to="/settings"
-						leftSection={<IconSettings size={16} />}
-					>
+					<Menu.Item component={RouteLink} to="/settings" leftSection={<IconSettings size={16} />}>
 						Настройки
 					</Menu.Item>
 					<Menu.Divider />
