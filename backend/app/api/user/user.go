@@ -46,7 +46,7 @@ func (s *Service) GetSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Render(w, toSettingsSchema(user))
+	httpx.Render(w, MakeSettingsSchema(user))
 }
 
 func (s *Service) UpdateSettings(w http.ResponseWriter, r *http.Request) {
@@ -66,12 +66,5 @@ func (s *Service) UpdateSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.Render(w, toSettingsSchema(user))
-}
-
-func toSettingsSchema(user domain.User) SettingsSchema {
-	return SettingsSchema{
-		Name:  user.Name,
-		Email: string(user.Email),
-	}
+	httpx.Render(w, MakeSettingsSchema(user))
 }
