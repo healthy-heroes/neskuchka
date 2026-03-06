@@ -31,7 +31,6 @@ type TestApp struct {
 	DB            *db.Engine
 	DataStorage   *datastorage.Storage
 	AvatarStorage *avatarstorage.Storage
-	AvatarURLFunc func(domain.UserID) string
 	Store         *domain.Store
 
 	SessionManager *session.Manager
@@ -142,8 +141,12 @@ func WithMultipartFile(fieldName, fileName, contentType string, data []byte) Req
 	}
 }
 
-func (app *TestApp) DoRequest(t *testing.T, req *http.Request, opts ...RequestOption) *http.Response {
+func (app *TestApp) DoRequest(t *testing.T, method string, path string, opts ...RequestOption) *http.Response {
 	t.Helper()
+
+	url := app.Server.URL + path
+	req, err := http.NewRequest(method, url, nil)
+	require.NoError(t, err)
 
 	for _, patch := range opts {
 		patch(req)
@@ -162,41 +165,25 @@ func (app *TestApp) DoRequest(t *testing.T, req *http.Request, opts ...RequestOp
 func (app *TestApp) GET(t *testing.T, path string, opts ...RequestOption) *http.Response {
 	t.Helper()
 
-	url := app.Server.URL + path
-	req, err := http.NewRequest("GET", url, nil)
-	require.NoError(t, err)
-
-	return app.DoRequest(t, req, opts...)
+	return app.DoRequest(t, "GET", path, opts...)
 }
 
 func (app *TestApp) POST(t *testing.T, path string, opts ...RequestOption) *http.Response {
 	t.Helper()
 
-	url := app.Server.URL + path
-	req, err := http.NewRequest("POST", url, nil)
-	require.NoError(t, err)
-
-	return app.DoRequest(t, req, opts...)
+	return app.DoRequest(t, "POST", path, opts...)
 }
 
 func (app *TestApp) PUT(t *testing.T, path string, opts ...RequestOption) *http.Response {
 	t.Helper()
 
-	url := app.Server.URL + path
-	req, err := http.NewRequest("PUT", url, nil)
-	require.NoError(t, err)
-
-	return app.DoRequest(t, req, opts...)
+	return app.DoRequest(t, "PUT", path, opts...)
 }
 
 func (app *TestApp) DELETE(t *testing.T, path string, opts ...RequestOption) *http.Response {
 	t.Helper()
 
-	url := app.Server.URL + path
-	req, err := http.NewRequest("DELETE", url, nil)
-	require.NoError(t, err)
-
-	return app.DoRequest(t, req, opts...)
+	return app.DoRequest(t, "DELETE", path, opts...)
 }
 
 // ReadBody reads the body of a response and returns it as a string
