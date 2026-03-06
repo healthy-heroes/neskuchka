@@ -26,3 +26,17 @@ export function LoggedIn() {
 		</StoryPreview>
 	);
 }
+
+export function LoggedInWithAvatar() {
+	const apiService = createApiServiceMock({
+		user: createUserServiceMock({
+			user: { ...mockUser, Avatar: '/img/avatar.jpg' },
+		}),
+	});
+
+	return (
+		<StoryPreview apiService={apiService}>
+			<Header />
+		</StoryPreview>
+	);
+}

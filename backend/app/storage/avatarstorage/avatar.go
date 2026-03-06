@@ -62,3 +62,17 @@ func (s *Storage) Save(ctx context.Context, id domain.UserID, avatar domain.Avat
 
 	return nil
 }
+
+func (s *Storage) Delete(ctx context.Context, id domain.UserID) error {
+	_, err := s.engine.ExecContext(ctx, "DELETE FROM avatar WHERE user_id = ?", id)
+	return storage.HandleSqlError(err)
+}
+
+func (s *Storage) Exists(ctx context.Context, id domain.UserID) (bool, error) {
+	var exists bool
+	err := s.engine.GetContext(ctx, &exists, "SELECT EXISTS(SELECT 1 FROM avatar WHERE user_id = ?)", id)
+	if err != nil {
+		return false, storage.HandleSqlError(err)
+	}
+	return exists, nil
+}

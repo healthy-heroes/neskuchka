@@ -65,7 +65,7 @@ func NewTestApp(t *testing.T) *TestApp {
 		Secret:    app.Secret,
 		DataStore: app.Store,
 
-		AvatarStorage: avatarstorage.New(engine, zerolog.Nop()),
+		AvatarStorage: app.AvatarStorage,
 
 		WebFS: fstest.MapFS{
 			"web/index.html": &fstest.MapFile{Data: []byte("<html>test</html>")},
@@ -108,6 +108,17 @@ func WithBody(body io.Reader) RequestOption {
 	}
 }
 
+func WithJSON(data any) RequestOption {
+	return func(r *http.Request) {
+		buf, err := json.Marshal(data)
+		if err != nil {
+			panic(err)
+		}
+		r.Body = io.NopCloser(bytes.NewReader(buf))
+		r.Header.Set("Content-Type", "application/json")
+	}
+}
+
 func WithMultipartFile(fieldName, fileName, contentType string, data []byte) RequestOption {
 	return func(r *http.Request) {
 		var buf bytes.Buffer
@@ -130,8 +141,12 @@ func WithMultipartFile(fieldName, fileName, contentType string, data []byte) Req
 	}
 }
 
-func (app *TestApp) DoRequest(t *testing.T, req *http.Request, opts ...RequestOption) *http.Response {
+func (app *TestApp) DoRequest(t *testing.T, method string, path string, opts ...RequestOption) *http.Response {
 	t.Helper()
+
+	url := app.Server.URL + path
+	req, err := http.NewRequest(method, url, nil)
+	require.NoError(t, err)
 
 	for _, patch := range opts {
 		patch(req)
@@ -150,21 +165,25 @@ func (app *TestApp) DoRequest(t *testing.T, req *http.Request, opts ...RequestOp
 func (app *TestApp) GET(t *testing.T, path string, opts ...RequestOption) *http.Response {
 	t.Helper()
 
-	url := app.Server.URL + path
-	req, err := http.NewRequest("GET", url, nil)
-	require.NoError(t, err)
-
-	return app.DoRequest(t, req, opts...)
+	return app.DoRequest(t, "GET", path, opts...)
 }
 
 func (app *TestApp) POST(t *testing.T, path string, opts ...RequestOption) *http.Response {
 	t.Helper()
 
-	url := app.Server.URL + path
-	req, err := http.NewRequest("POST", url, nil)
-	require.NoError(t, err)
+	return app.DoRequest(t, "POST", path, opts...)
+}
 
-	return app.DoRequest(t, req, opts...)
+func (app *TestApp) PUT(t *testing.T, path string, opts ...RequestOption) *http.Response {
+	t.Helper()
+
+	return app.DoRequest(t, "PUT", path, opts...)
+}
+
+func (app *TestApp) DELETE(t *testing.T, path string, opts ...RequestOption) *http.Response {
+	t.Helper()
+
+	return app.DoRequest(t, "DELETE", path, opts...)
 }
 
 // ReadBody reads the body of a response and returns it as a string

@@ -1,6 +1,12 @@
 export interface User {
 	ID: string;
 	Name: string;
+	Avatar?: string;
+}
+
+export interface UserSettings {
+	Name: string;
+	Email: string;
 }
 
 export interface Track {
