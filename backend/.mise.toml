@@ -9,8 +9,14 @@ golangci-lint = "latest"
 [tasks.seed]
 description = "Seed database"
 run = """
-rm -f ./bin/app.db
-go run ./app seed --store.db ./bin/app.db
+rm -f ./bin/app.db*
+go run ./app dev seed --store.db ./bin/app.db
+"""
+
+[tasks.token]
+description = "Generate token for user"
+run = """
+go run ./app dev token --store.db ./bin/app.db
 """
 
 [tasks.checks]

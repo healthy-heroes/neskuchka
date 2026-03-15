@@ -43,7 +43,7 @@ services:
     volumes:
       - db-data:/srv/bin
 
-    entrypoint: ["/bin/sh", "-c", "/srv/neskuchka seed && exec /srv/neskuchka server"]
+    entrypoint: ["/bin/sh", "-c", "/srv/neskuchka dev seed && exec /srv/neskuchka server"]
 
 volumes:
   db-data:

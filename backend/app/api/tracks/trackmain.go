@@ -5,11 +5,13 @@ import (
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 )
 
 // GetMainTrack returns the main track and owner flag
 func (s *Service) GetMainTrack(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger
+	userID, _ := session.GetUserID(r)
 
 	track, err := s.dataStore.GetMainTrack(r.Context())
 	if err != nil {
@@ -17,7 +19,6 @@ func (s *Service) GetMainTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, _, _ := s.session.Get(r)
 	httpx.Render(w, TrackSchema{
 		Track:   TrackInfo{ID: string(track.ID), Name: track.Name},
 		IsOwner: track.IsOwner(domain.UserID(userID)),

@@ -1,4 +1,4 @@
-package cmd
+package devcmd
 
 import (
 	"context"
@@ -11,15 +11,16 @@ import (
 
 	"github.com/rs/zerolog/log"
 
+	"github.com/healthy-heroes/neskuchka/backend/app/cmd"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/storage/datastorage"
 	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
 )
 
 type SeedCommand struct {
-	Store StoreOptions `group:"store" namespace:"store" env-namespace:"STORE"`
+	Store cmd.StoreOptions `group:"store" namespace:"store" env-namespace:"STORE"`
 
-	CommonOptions
+	cmd.CommonOptions
 }
 
 type SeedRunner struct {
