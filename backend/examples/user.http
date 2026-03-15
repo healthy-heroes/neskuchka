@@ -1,0 +1,14 @@
+### Health check
+# @name Ping
+GET {{base.url}}/ping
+
+### Show me
+# @name Me
+GET {{base.url}}/api/v1/user/me
+Content-Type: application/json
+Authorization: Bearer {{auth.token}}
+
+### Show my avatar
+# @name My Avatar
+GET {{base.url}}/api/v1/user/me/avatar
+Authorization: Bearer {{auth.token}}

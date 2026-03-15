@@ -1,0 +1,10 @@
+### Upload avatar
+# @name Upload avatar
+curl -X POST {{base.url}}/api/v1/user/me/avatar \
+  -H "Authorization: Bearer {{auth.token}}" \
+  -F "avatar=@./avatar.jpg;type=image/jpeg"
+
+### Delete avatar
+# @name Delete Avatar
+DELETE {{base.url}}/api/v1/user/me/avatar
+Authorization: Bearer {{auth.token}}
