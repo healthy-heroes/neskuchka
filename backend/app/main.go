@@ -10,12 +10,13 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/cmd"
+	devcmd "github.com/healthy-heroes/neskuchka/backend/app/cmd/dev"
 )
 
 // Opts contains base options and commands
 type Opts struct {
 	ServerCmd cmd.ServerCommand `command:"server" description:"Start the server"`
-	SeedCmd   cmd.SeedCommand   `command:"seed" description:"Seed the database with initial data"`
+	DevCmd    devcmd.DevCommand `command:"dev" description:"Run the development commands"`
 
 	Debug bool `long:"debug" env:"DEBUG" description:"Enable debug mode"`
 }

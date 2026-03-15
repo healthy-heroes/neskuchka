@@ -1,6 +1,7 @@
 package api_user
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,7 +15,7 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 )
 
-const maxAvatarSize = 512 * 1024 // 512 KB
+const maxAvatarSize = 1024 * 1024 // 1mb
 
 var allowedMimeTypes = []string{
 	"image/jpeg",
@@ -66,7 +67,13 @@ func (s *Service) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(maxAvatarSize)
 	if err != nil {
-		httpx.RenderError(w, s.logger, http.StatusBadRequest, err, "file is too large")
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			httpx.RenderError(w, s.logger, http.StatusRequestEntityTooLarge, err, "file is too large")
+			return
+		}
+
+		httpx.RenderError(w, s.logger, http.StatusBadRequest, err, "failed parse multipart")
 		return
 	}
 

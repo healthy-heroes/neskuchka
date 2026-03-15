@@ -175,7 +175,7 @@ func (api *Api) addUserRoutes(router chi.Router, session *session.Manager) {
 // addTracksRoutes is adding tracks routes
 // temporary working with concrete main track routes
 func (api *Api) addTracksRoutes(router chi.Router, session *session.Manager) {
-	h := tracks.NewService(api.DataStore, session, tracks.Opts{
+	h := tracks.NewService(api.DataStore, tracks.Opts{
 		Logger: log.Logger,
 	})
 

@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 )
 
 // GetWorkout returns a workout by id
@@ -32,6 +33,7 @@ func (s *Service) GetWorkout(w http.ResponseWriter, r *http.Request) {
 // UpdateWorkout updates a workout
 func (s *Service) UpdateWorkout(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger
+	userID := session.MustGetUserID(r)
 
 	payload, ok := httpx.ParseBody[WorkoutInfo](w, r, logger)
 	if !ok {
@@ -44,7 +46,6 @@ func (s *Service) UpdateWorkout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, _, _ := s.session.Get(r)
 	workout, err = s.dataStore.UpdateWorkout(r.Context(), domain.UserID(userID), workout)
 	if err != nil {
 		httpx.RenderDomainError(w, logger, err, "failed to update workout")
@@ -59,6 +60,7 @@ func (s *Service) UpdateWorkout(w http.ResponseWriter, r *http.Request) {
 // CreateWorkout creates a new workout
 func (s *Service) CreateWorkout(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger
+	userID := session.MustGetUserID(r)
 
 	payload, ok := httpx.ParseBody[WorkoutInfo](w, r, logger)
 	if !ok {
@@ -71,7 +73,6 @@ func (s *Service) CreateWorkout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, _, _ := s.session.Get(r)
 	workout, err = s.dataStore.CreateWorkout(r.Context(), domain.UserID(userID), workout)
 	if err != nil {
 		httpx.RenderDomainError(w, logger, err, "failed to create workout")

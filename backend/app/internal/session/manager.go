@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -72,11 +73,10 @@ func NewManager(opts Opts) *Manager {
 	return m
 }
 
-// Set token to the cookie
-func (m *Manager) Set(w http.ResponseWriter, userID string) error {
+func (m *Manager) Token(userID string) (string, error) {
 	jti, err := token.RandID()
 	if err != nil {
-		return fmt.Errorf("failed to generate JTI: %w", err)
+		return "", fmt.Errorf("failed to generate JTI: %w", err)
 	}
 
 	now := time.Now()
@@ -91,6 +91,16 @@ func (m *Manager) Set(w http.ResponseWriter, userID string) error {
 	}
 
 	tokenString, err := m.tokenService.Token(claims)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate token: %w", err)
+	}
+
+	return tokenString, nil
+}
+
+// Set token to the cookie
+func (m *Manager) Set(w http.ResponseWriter, userID string) error {
+	tokenString, err := m.Token(userID)
 	if err != nil {
 		return fmt.Errorf("failed to generate token: %w", err)
 	}
@@ -117,17 +127,32 @@ func (m *Manager) setCookie(w http.ResponseWriter, value string, maxAge int) {
 	})
 }
 
-func (m *Manager) Get(r *http.Request) (string, *Claims, error) {
-	tokenCookie, err := r.Cookie(m.opts.SessionCookieName)
-	if err != nil {
-		return "", nil, ErrSessionNotFound
+func (m *Manager) fromBearerToken(r *http.Request) (*Claims, error) {
+	authHeader := r.Header.Get("Authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		return nil, ErrSessionNotFound
 	}
 
+	bearerToken := strings.TrimPrefix(authHeader, "Bearer ")
+
+	return m.tokenToClaims(bearerToken)
+}
+
+func (m *Manager) fromCookie(r *http.Request) (*Claims, error) {
+	cookieToken, err := r.Cookie(m.opts.SessionCookieName)
+	if err != nil {
+		return nil, ErrSessionNotFound
+	}
+
+	return m.tokenToClaims(cookieToken.Value)
+}
+
+func (m *Manager) tokenToClaims(token string) (*Claims, error) {
 	claims := Claims{}
-	err = m.tokenService.Parse(tokenCookie.Value, &claims)
+	err := m.tokenService.Parse(token, &claims)
 	if err != nil {
-		return "", nil, fmt.Errorf("failed to parse token: %w", err)
+		return nil, fmt.Errorf("failed to parse token: %w", err)
 	}
 
-	return claims.UserID, &claims, nil
+	return &claims, nil
 }

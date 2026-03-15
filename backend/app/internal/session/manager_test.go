@@ -108,7 +108,7 @@ func TestManager_Clear(t *testing.T) {
 	})
 }
 
-func TestManager_Get(t *testing.T) {
+func TestManager_fromCookie(t *testing.T) {
 	m := newTestManager()
 
 	t.Run("extracts user from valid token", func(t *testing.T) {
@@ -133,17 +133,16 @@ func TestManager_Get(t *testing.T) {
 			Value: tokenString,
 		})
 
-		userID, parsedClaims, err := m.Get(req)
+		parsedClaims, err := m.fromCookie(req)
 
 		require.NoError(t, err)
-		assert.Equal(t, expectedUserID, userID, "user ID should match")
 		assert.Equal(t, expectedUserID, parsedClaims.UserID)
 	})
 
 	t.Run("returns error when cookie is missing", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-		_, _, err := m.Get(req)
+		_, err := m.fromCookie(req)
 
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, ErrSessionNotFound)
@@ -156,7 +155,48 @@ func TestManager_Get(t *testing.T) {
 			Value: "invalid.token.here",
 		})
 
-		_, _, err := m.Get(req)
+		_, err := m.fromCookie(req)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to parse token")
+	})
+}
+
+func TestManager_fromBearerToken(t *testing.T) {
+	m := newTestManager()
+
+	t.Run("extracts user from valid token", func(t *testing.T) {
+		expectedUserID := "user-123"
+
+		claims := Claims{
+			UserID: expectedUserID,
+		}
+
+		tokenString, err := m.tokenService.Token(claims)
+		require.NoError(t, err)
+
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req.Header.Set("Authorization", "Bearer "+tokenString)
+
+		parsedClaims, err := m.fromBearerToken(req)
+		require.NoError(t, err)
+		assert.Equal(t, expectedUserID, parsedClaims.UserID)
+	})
+
+	t.Run("returns error when token is missing", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+
+		_, err := m.fromBearerToken(req)
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrSessionNotFound)
+	})
+
+	t.Run("returns error for invalid token", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req.Header.Set("Authorization", "Bearer invalid.token.here")
+
+		_, err := m.fromBearerToken(req)
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "failed to parse token")

@@ -23,20 +23,28 @@ type UnauthorizedHandler func(w http.ResponseWriter)
 func (m *Manager) Verifier() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
-			userID, _, err := m.Get(r)
-			if err != nil {
-				if !errors.Is(err, ErrSessionNotFound) {
-					m.logger.Error().Err(err).Msg("failed to verify session")
-					m.Clear(w)
-				}
-
+			claims, err := m.fromBearerToken(r)
+			if err != nil && !errors.Is(err, ErrSessionNotFound) {
+				m.logger.Error().Err(err).Msg("failed to verify bearer token")
 				next.ServeHTTP(w, r)
 				return
+			}
 
+			if err != nil {
+				claims, err = m.fromCookie(r)
+				if err != nil {
+					if !errors.Is(err, ErrSessionNotFound) {
+						m.logger.Error().Err(err).Msg("failed to verify cookie token")
+						m.Clear(w)
+					}
+
+					next.ServeHTTP(w, r)
+					return
+				}
 			}
 
 			ctx := r.Context()
-			ctx = context.WithValue(ctx, ctxKey, userID)
+			ctx = context.WithValue(ctx, ctxKey, claims.UserID)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
