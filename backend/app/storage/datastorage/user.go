@@ -49,17 +49,22 @@ func (s *Storage) GetUserByEmail(ctx context.Context, email domain.Email) (domai
 	return u.toDomain(), storage.HandleSqlError(err)
 }
 
+// CreateUser creates a new user
+// no failure if user already exists
+// returns the created user or the existing one
 func (s *Storage) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
 	u := makeUser(user)
 
-	_, err := s.engine.ExecContext(ctx, "INSERT INTO user(id, email, name) VALUES(?,?,?)",
+	_, err := s.engine.ExecContext(ctx,
+		`INSERT INTO user(id, email, name) VALUES(?,?,?)
+		ON CONFLICT(email) DO NOTHING`,
 		u.ID, u.Email, u.Name)
 
 	if err != nil {
 		return domain.User{}, storage.HandleSqlError(err)
 	}
 
-	return s.GetUser(ctx, user.ID)
+	return s.GetUserByEmail(ctx, user.Email)
 }
 
 func (s *Storage) UpdateUser(ctx context.Context, user domain.User) (domain.User, error) {

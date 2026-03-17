@@ -39,6 +39,16 @@ func Test_User_Create(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, newUser, userByEmail)
 
+	// checks idempotency
+	newUser2 := domain.User{
+		ID:    domain.NewUserID(),
+		Name:  "Test User 2",
+		Email: "test@example.com",
+	}
+	createdUser2, err := ds.CreateUser(t.Context(), newUser2)
+	require.NoError(t, err)
+	assert.Equal(t, createdUser, createdUser2)
+
 	// checks system fields
 	createdRow := userFromDB(t, ds.engine, string(createdUser.ID))
 	assert.NotZero(t, createdRow.CreatedAt)
