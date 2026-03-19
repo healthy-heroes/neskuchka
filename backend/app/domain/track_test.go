@@ -17,7 +17,7 @@ func TestNewTrackID(t *testing.T) {
 func TestGetMainTrack(t *testing.T) {
 	t.Run("should return main track", func(t *testing.T) {
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetTrackBySlugFunc: func(ctx context.Context, slug TrackSlug) (Track, error) {
 					return Track{
 						ID:   TrackID("1"),

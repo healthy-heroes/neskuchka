@@ -22,7 +22,7 @@ func TestGetUser(t *testing.T) {
 			Name: "Test User",
 		}
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetUserFunc: func(ctx context.Context, id UserID) (User, error) {
 					return existingUser, nil
 				},
@@ -43,7 +43,7 @@ func TestFindOrCreateUser(t *testing.T) {
 			Name:  "Test User",
 		}
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetUserByEmailFunc: func(ctx context.Context, email Email) (User, error) {
 					return existingUser, nil
 				},
@@ -60,7 +60,7 @@ func TestFindOrCreateUser(t *testing.T) {
 
 	t.Run("should create new user", func(t *testing.T) {
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetUserByEmailFunc: func(ctx context.Context, email Email) (User, error) {
 					return User{}, ErrNotFound
 				},
@@ -86,7 +86,7 @@ func TestFindOrCreateUser(t *testing.T) {
 
 	t.Run("should check required email", func(t *testing.T) {
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{},
+			Storage: &StorageStub{},
 		})
 		_, err := service.FindOrCreateUser(context.Background(), User{
 			Name: "Test User",
@@ -99,7 +99,7 @@ func TestFindOrCreateUser(t *testing.T) {
 	t.Run("should return error", func(t *testing.T) {
 		expectedErr := errors.New("some error")
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetUserByEmailFunc: func(ctx context.Context, email Email) (User, error) {
 					return User{}, expectedErr
 				},
@@ -122,7 +122,7 @@ func TestUpdateUser(t *testing.T) {
 			Name:  "Test User",
 		}
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetUserFunc: func(ctx context.Context, id UserID) (User, error) {
 					return existingUser, nil
 				},
@@ -145,7 +145,7 @@ func TestUpdateUser(t *testing.T) {
 
 	t.Run("should return error if user not found", func(t *testing.T) {
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetUserFunc: func(ctx context.Context, id UserID) (User, error) {
 					return User{}, ErrNotFound
 				},

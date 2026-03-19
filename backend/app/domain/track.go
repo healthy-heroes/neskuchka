@@ -30,10 +30,10 @@ func (t *Track) IsOwner(userID UserID) bool {
 
 // GetTrack gets a track by id
 func (s *Store) GetTrack(ctx context.Context, tid TrackID) (Track, error) {
-	return s.dataStorage.GetTrack(ctx, tid)
+	return s.storage.GetTrack(ctx, tid)
 }
 
 // GetMainTrack gets the main track
 func (s *Store) GetMainTrack(ctx context.Context) (Track, error) {
-	return s.dataStorage.GetTrackBySlug(ctx, TrackSlug("main"))
+	return s.storage.GetTrackBySlug(ctx, TrackSlug("main"))
 }

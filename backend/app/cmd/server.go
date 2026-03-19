@@ -95,9 +95,9 @@ func (cmd *ServerCommand) newServerApp() (*serverApp, error) {
 
 		WebFS: webFS,
 
-		AvatarStorage: avatarstorage.New(engine, log.Logger),
+		AvatarStore: avatarstorage.New(engine, log.Logger),
 		DataStore: domain.NewStore(domain.Opts{
-			DataStorage: datastorage.New(engine, log.Logger),
+			Storage: datastorage.New(engine, log.Logger),
 		}),
 
 		EmailTemplater: email.NewTemplate(cmd.BaseURL),

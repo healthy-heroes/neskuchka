@@ -4,7 +4,7 @@ import "context"
 
 type UrlSuffix string
 
-type dataStorage interface {
+type storage interface {
 	GetUser(context.Context, UserID) (User, error)
 	GetUserByEmail(context.Context, Email) (User, error)
 	CreateUser(context.Context, User) (User, error)
@@ -22,17 +22,17 @@ type dataStorage interface {
 // Store is a domain store
 // it contains all domain services
 type Store struct {
-	dataStorage dataStorage
+	storage storage
 }
 
 // Opts contains options for the store
 type Opts struct {
-	DataStorage dataStorage
+	Storage storage
 }
 
 // NewStore creates a domain store
 func NewStore(opts Opts) *Store {
 	return &Store{
-		dataStorage: opts.DataStorage,
+		storage: opts.Storage,
 	}
 }
