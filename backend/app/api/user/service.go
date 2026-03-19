@@ -8,7 +8,7 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 )
 
-type AvatarStorage interface {
+type AvatarStore interface {
 	Get(context.Context, domain.UserID) (domain.Avatar, error)
 	Save(context.Context, domain.UserID, domain.Avatar) error
 	Delete(context.Context, domain.UserID) error
@@ -21,14 +21,14 @@ type AvatarURLFunc func(domain.UserID) string
 type Service struct {
 	logger        zerolog.Logger
 	dataStore     *domain.Store
-	avatarStorage AvatarStorage
+	avatarStore   AvatarStore
 	avatarURLFunc AvatarURLFunc
 }
 
 type Opts struct {
 	Logger zerolog.Logger
 
-	AvatarStorage AvatarStorage
+	AvatarStore   AvatarStore
 	AvatarURLFunc AvatarURLFunc
 }
 
@@ -36,7 +36,7 @@ func NewService(dataStore *domain.Store, opts Opts) *Service {
 	return &Service{
 		logger:        opts.Logger,
 		dataStore:     dataStore,
-		avatarStorage: opts.AvatarStorage,
+		avatarStore:   opts.AvatarStore,
 		avatarURLFunc: opts.AvatarURLFunc,
 	}
 }

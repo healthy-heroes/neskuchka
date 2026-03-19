@@ -33,9 +33,9 @@ type Api struct {
 	Version string
 	Secret  string
 
-	DataStore     *domain.Store
-	AvatarStorage *avatarstorage.Storage
-	WebFS         fs.FS
+	DataStore   *domain.Store
+	AvatarStore *avatarstorage.Storage
+	WebFS       fs.FS
 
 	httpServer *http.Server
 	lock       sync.Mutex
@@ -148,7 +148,7 @@ func (api *Api) addUserRoutes(router chi.Router, session *session.Manager) {
 
 	h := api_user.NewService(api.DataStore, api_user.Opts{
 		Logger:        log.Logger,
-		AvatarStorage: api.AvatarStorage,
+		AvatarStore:   api.AvatarStore,
 		AvatarURLFunc: avatarURLFunc,
 	})
 

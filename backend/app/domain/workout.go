@@ -75,13 +75,13 @@ type WorkoutFindCriteria struct {
 
 // GetWorkout gets a workout by id
 func (s *Store) GetWorkout(ctx context.Context, wr WorkoutRef) (Workout, error) {
-	return s.dataStorage.GetWorkout(ctx, wr)
+	return s.storage.GetWorkout(ctx, wr)
 }
 
 // CreateWorkout creates a new workout
 // Generates a new workout id
 func (s *Store) CreateWorkout(ctx context.Context, uid UserID, w Workout) (Workout, error) {
-	t, err := s.dataStorage.GetTrack(ctx, w.TrackID)
+	t, err := s.storage.GetTrack(ctx, w.TrackID)
 	if err != nil {
 		return Workout{}, err
 	}
@@ -94,14 +94,14 @@ func (s *Store) CreateWorkout(ctx context.Context, uid UserID, w Workout) (Worko
 	w.ID = NewWorkoutID()
 	w.clearSlugs()
 
-	return s.dataStorage.CreateWorkout(ctx, w)
+	return s.storage.CreateWorkout(ctx, w)
 }
 
 // UpdateWorkout updates a workout
 // updates only safe fields, other should be ignored
 // don't check if fields are empty; just update them.
 func (s *Store) UpdateWorkout(ctx context.Context, uid UserID, wu Workout) (Workout, error) {
-	t, err := s.dataStorage.GetTrack(ctx, wu.TrackID)
+	t, err := s.storage.GetTrack(ctx, wu.TrackID)
 	if err != nil {
 		return Workout{}, err
 	}
@@ -111,14 +111,14 @@ func (s *Store) UpdateWorkout(ctx context.Context, uid UserID, wu Workout) (Work
 		return Workout{}, ErrForbidden
 	}
 
-	w, err := s.dataStorage.GetWorkout(ctx, wu.Ref())
+	w, err := s.storage.GetWorkout(ctx, wu.Ref())
 	if err != nil {
 		return Workout{}, err
 	}
 
 	w.ApplyUpdate(wu)
 
-	return s.dataStorage.UpdateWorkout(ctx, w)
+	return s.storage.UpdateWorkout(ctx, w)
 }
 
 // FindWorkouts finds workouts by criteria
@@ -127,5 +127,5 @@ func (s *Store) FindWorkouts(ctx context.Context, tid TrackID, criteria WorkoutF
 		criteria.Limit = 10
 	}
 
-	return s.dataStorage.FindWorkouts(ctx, tid, criteria)
+	return s.storage.FindWorkouts(ctx, tid, criteria)
 }

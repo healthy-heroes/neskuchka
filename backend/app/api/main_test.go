@@ -57,7 +57,7 @@ func NewTestApp(t *testing.T) *TestApp {
 	app.DataStorage = datastorage.New(engine, zerolog.Nop())
 	app.AvatarStorage = avatarstorage.New(engine, zerolog.Nop())
 	app.Store = domain.NewStore(domain.Opts{
-		DataStorage: app.DataStorage,
+		Storage: app.DataStorage,
 	})
 
 	api := &Api{
@@ -65,7 +65,7 @@ func NewTestApp(t *testing.T) *TestApp {
 		Secret:    app.Secret,
 		DataStore: app.Store,
 
-		AvatarStorage: app.AvatarStorage,
+		AvatarStore: app.AvatarStorage,
 
 		WebFS: fstest.MapFS{
 			"web/index.html": &fstest.MapFile{Data: []byte("<html>test</html>")},

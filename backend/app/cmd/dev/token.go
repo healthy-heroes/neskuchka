@@ -33,7 +33,7 @@ func (cmd *TokenCommand) Execute(args []string) error {
 	}
 	defer engine.Close()
 
-	store := domain.NewStore(domain.Opts{DataStorage: datastorage.New(engine, log.Logger)})
+	store := domain.NewStore(domain.Opts{Storage: datastorage.New(engine, log.Logger)})
 
 	user, err := store.FindOrCreateUser(ctx, domain.User{Email: domain.Email(cmd.Email)})
 	if err != nil {

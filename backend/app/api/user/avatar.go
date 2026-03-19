@@ -24,7 +24,7 @@ var allowedMimeTypes = []string{
 }
 
 func (s *Service) avatar(w http.ResponseWriter, r *http.Request, id domain.UserID) {
-	avatar, err := s.avatarStorage.Get(r.Context(), id)
+	avatar, err := s.avatarStore.Get(r.Context(), id)
 	if err != nil {
 		httpx.RenderDomainError(w, s.logger, err, "failed to get avatar")
 		return
@@ -51,7 +51,7 @@ func (s *Service) UserAvatar(w http.ResponseWriter, r *http.Request) {
 func (s *Service) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
 	id := domain.UserID(session.MustGetUserID(r))
 
-	err := s.avatarStorage.Delete(r.Context(), id)
+	err := s.avatarStore.Delete(r.Context(), id)
 	if err != nil {
 		httpx.RenderDomainError(w, s.logger, err, "failed to delete avatar")
 		return
@@ -113,7 +113,7 @@ func (s *Service) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		Data:     data,
 	}
 
-	err = s.avatarStorage.Save(r.Context(), id, avatar)
+	err = s.avatarStore.Save(r.Context(), id, avatar)
 	if err != nil {
 		httpx.RenderDomainError(w, s.logger, err, "failed to save avatar")
 		return

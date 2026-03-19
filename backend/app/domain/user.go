@@ -24,7 +24,7 @@ type User struct {
 
 // GetUser gets a user by id
 func (s *Store) GetUser(ctx context.Context, id UserID) (User, error) {
-	return s.dataStorage.GetUser(ctx, id)
+	return s.storage.GetUser(ctx, id)
 }
 
 // FindOrCreateUser finds a user by email or creates a new user
@@ -33,7 +33,7 @@ func (s *Store) FindOrCreateUser(ctx context.Context, u User) (User, error) {
 		return User{}, errors.New("email is required")
 	}
 
-	user, err := s.dataStorage.GetUserByEmail(ctx, u.Email)
+	user, err := s.storage.GetUserByEmail(ctx, u.Email)
 	if err != nil {
 		if err != ErrNotFound {
 			return User{}, err
@@ -43,18 +43,18 @@ func (s *Store) FindOrCreateUser(ctx context.Context, u User) (User, error) {
 	}
 
 	u.ID = NewUserID()
-	return s.dataStorage.CreateUser(ctx, u)
+	return s.storage.CreateUser(ctx, u)
 }
 
 // UpdateUser updates a user
 // updates only safe fields, other should be ignored
 func (s *Store) UpdateUser(ctx context.Context, u User) (User, error) {
-	user, err := s.dataStorage.GetUser(ctx, u.ID)
+	user, err := s.storage.GetUser(ctx, u.ID)
 	if err != nil {
 		return User{}, err
 	}
 
 	user.Name = u.Name
 
-	return s.dataStorage.UpdateUser(ctx, user)
+	return s.storage.UpdateUser(ctx, user)
 }

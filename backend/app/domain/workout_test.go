@@ -104,7 +104,7 @@ func TestGetWorkout(t *testing.T) {
 	t.Run("should return workout", func(t *testing.T) {
 		w := createWorkout(NewTrackID())
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetWorkoutFunc: func(ctx context.Context, wr WorkoutRef) (Workout, error) {
 					return w, nil
 				},
@@ -122,7 +122,7 @@ func TestCreateWorkout(t *testing.T) {
 		track := createTrack()
 
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
 					return track, nil
 				},
@@ -152,7 +152,7 @@ func TestCreateWorkout(t *testing.T) {
 		track2 := createTrack()
 
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
 					if tid == track1.ID {
 						return track1, nil
@@ -175,7 +175,7 @@ func TestUpdateWorkout(t *testing.T) {
 		track := createTrack()
 		workout := createWorkout(track.ID)
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
 					return track, nil
 				},
@@ -215,7 +215,7 @@ func TestUpdateWorkout(t *testing.T) {
 	t.Run("should return error if workout not found", func(t *testing.T) {
 		track := createTrack()
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
 					return track, nil
 				},
@@ -236,7 +236,7 @@ func TestUpdateWorkout(t *testing.T) {
 		workout := createWorkout(track1.ID)
 
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
 					if tid == track1.ID {
 						return track1, nil
@@ -262,7 +262,7 @@ func TestFindWorkouts(t *testing.T) {
 			createWorkout(track.ID),
 		}
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				FindWorkoutsFunc: func(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria) ([]Workout, error) {
 					usedCriteria = criteria
 					return workouts, nil
@@ -278,7 +278,7 @@ func TestFindWorkouts(t *testing.T) {
 	t.Run("should set default limit if limit is less than 0 or greater than 50", func(t *testing.T) {
 		var usedLimit int
 		service := NewStore(Opts{
-			DataStorage: &DataStorageStub{
+			Storage: &StorageStub{
 				FindWorkoutsFunc: func(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria) ([]Workout, error) {
 					usedLimit = criteria.Limit
 					return []Workout{}, nil
