@@ -30,8 +30,13 @@ equipment:
   - jump-rope
   - bodyweight
   - unstable
+  - weight-vest
+  - ankle-weights
+  - arm-weights
 
 ---
+
+**Архетип:** [Архетип]  | **Локомоция:** [Локомоция]
 
 Краткое описание упражнения в одном-двух предложениях.
 
