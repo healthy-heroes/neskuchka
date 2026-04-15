@@ -3,6 +3,7 @@ name_ru: Прыжок
 load:
   - reps
   - distance
+  - height
   - time
   - RPE
 equipment:

@@ -3,6 +3,7 @@ name_ru: Название движения
 load:
   - reps
   - distance
+  - height
   - calories
   - time
   - weight

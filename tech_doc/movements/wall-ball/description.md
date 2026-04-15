@@ -3,6 +3,7 @@ name_ru: Бросок медбола в цель
 load:
   - reps
   - weight
+  - height
   - RPE
 equipment:
   - medicine-ball
