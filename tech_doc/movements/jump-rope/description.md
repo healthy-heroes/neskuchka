@@ -1,5 +1,5 @@
 name_en: Jump Rope
-name_ru: Прыжки со скакалкой
+name_ru: Прыжок со скакалкой
 load:
   - reps
   - time
