@@ -43,7 +43,7 @@ Pre-commit хук гоняет `checks`, pre-push — `checks` + `tests`.
 Слои: **API handlers → Domain (`Store`) → Storage (`dataStorage`)**.
 
 - `domain/` — агрегаты (`User`, `Track`, `Workout`, `Exercise`, `Protocol`) и `Store` с методами
-  по ним. Интерфейс `dataStorage` объявлен в `domain/store.go` — инверсия зависимостей,
+  по ним. Интерфейс `storage` объявлен в `domain/store.go` — инверсия зависимостей,
   реализация в `storage/datastorage/`.
 - Поведение живёт на агрегате (`Workout.ApplyUpdate`, `Workout.Ref`), не на `Store`.
 - **Аутентификация — на уровне middleware** (`session.Authenticator`).
@@ -68,6 +68,15 @@ React + Mantine + TanStack Router + TanStack Query. Файловый роути�
 - Права проверяются по полю `IsOwner: bool` из ответа API, а не сравнением ID на клиенте.
 
 Подробнее: `frontend/docs/concepts/routing.md`, `frontend/docs/concepts/queries.md`.
+
+### Придержанные мажоры
+
+Два пакета намеренно не на последней версии — не забывать при следующем обновлении:
+
+- **eslint 9**, не 10. `eslint-plugin-react` зовёт `context.getFilename()`, убранный в 10-ке,
+  и падает на загрузке правила. `eslint-config-mantine` тоже упирается в `^9.9.1`.
+- **typescript 6**, не 7. `typescript-eslint` бросает исключение на TS 7,
+  см. typescript-eslint#10940 — поддержку обещают с TS 7.1.
 
 ### TanStack Query (v5)
 
