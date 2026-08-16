@@ -30,7 +30,7 @@ jobs:
       - name: install go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.25"
+          go-version: "1.26"
           cache-dependency-path: backend
 
       - name: test and build backend
@@ -45,7 +45,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.7.2
+          version: v2.12.2
           args: --config=.golangci.yml
           working-directory: backend
 
