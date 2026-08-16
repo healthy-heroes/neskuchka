@@ -29,9 +29,14 @@ RUN \
 RUN pnpm build
 
 
-FROM umputun/baseimage:buildgo-v1.18.0 AS build-backend
+FROM umputun/baseimage:buildgo-v1.20.1 AS build-backend
 
 ARG SKIP_BACKEND_TEST
+
+# the image ships go1.26.0 and pins GOTOOLCHAIN=local, but go.mod asks for
+# 1.26.6 — the patch that closes the stdlib advisories. Without this the build
+# stops at "go.mod requires go >= 1.26.6 (running go 1.26.0)".
+ENV GOTOOLCHAIN=auto
 
 RUN apk --no-cache add gcc libc-dev
 
@@ -59,7 +64,7 @@ RUN \
     go build -o neskuchka -ldflags "-X main.revision=${version} -s -w" ./app
 
 
-FROM umputun/baseimage:app-v1.18.0
+FROM umputun/baseimage:app-v1.20.1
 
 WORKDIR /srv
 
