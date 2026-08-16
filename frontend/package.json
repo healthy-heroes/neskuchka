@@ -75,5 +75,10 @@
     "vite": "8.2.1",
     "vitest": "4.1.10"
   },
-  "packageManager": "pnpm@10.14.0"
+  "packageManager": "pnpm@10.14.0",
+  "pnpm": {
+    "overrides": {
+      "rollup": ">=4.59.0"
+    }
+  }
 }
