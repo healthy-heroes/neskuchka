@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 
 const backendPort = process.env.VITE_BACKEND_PORT || 8080;
@@ -16,8 +15,12 @@ export default defineConfig({
       target: 'react',
       autoCodeSplitting: false,
     }),
-    react(), 
-    tsconfigPaths()],
+    react(),
+  ],
+  // vite 8 resolves tsconfig paths natively, replacing vite-tsconfig-paths
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     globals: true,
     environment: 'jsdom',

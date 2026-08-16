@@ -9,31 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WorkoutsRouteImport } from './routes/workouts'
-import { Route as WelcomeRouteImport } from './routes/welcome'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as WorkoutsIndexRouteImport } from './routes/workouts.index'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as WorkoutsRouteImport } from './routes/workouts'
 import { Route as LoginIndexRouteImport } from './routes/login.index'
-import { Route as WorkoutsNewRouteImport } from './routes/workouts.new'
-import { Route as WorkoutsWorkoutIdRouteImport } from './routes/workouts.$workoutId'
 import { Route as LoginConfirmRouteImport } from './routes/login.confirm'
+import { Route as WorkoutsIndexRouteImport } from './routes/workouts.index'
+import { Route as WorkoutsWorkoutIdRouteImport } from './routes/workouts.$workoutId'
+import { Route as WorkoutsNewRouteImport } from './routes/workouts.new'
 import { Route as WorkoutsWorkoutIdEditRouteImport } from './routes/workouts.$workoutId_.edit'
 
-const WorkoutsRoute = WorkoutsRouteImport.update({
-  id: '/workouts',
-  path: '/workouts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WelcomeRoute = WelcomeRouteImport.update({
-  id: '/welcome',
-  path: '/welcome',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -41,24 +31,34 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WorkoutsIndexRoute = WorkoutsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => WorkoutsRoute,
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkoutsRoute = WorkoutsRouteImport.update({
+  id: '/workouts',
+  path: '/workouts',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LoginIndexRoute = LoginIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => LoginRoute,
 } as any)
-const WorkoutsNewRoute = WorkoutsNewRouteImport.update({
-  id: '/new',
-  path: '/new',
+const LoginConfirmRoute = LoginConfirmRouteImport.update({
+  id: '/confirm',
+  path: '/confirm',
+  getParentRoute: () => LoginRoute,
+} as any)
+const WorkoutsIndexRoute = WorkoutsIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => WorkoutsRoute,
 } as any)
 const WorkoutsWorkoutIdRoute = WorkoutsWorkoutIdRouteImport.update({
@@ -66,10 +66,10 @@ const WorkoutsWorkoutIdRoute = WorkoutsWorkoutIdRouteImport.update({
   path: '/$workoutId',
   getParentRoute: () => WorkoutsRoute,
 } as any)
-const LoginConfirmRoute = LoginConfirmRouteImport.update({
-  id: '/confirm',
-  path: '/confirm',
-  getParentRoute: () => LoginRoute,
+const WorkoutsNewRoute = WorkoutsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => WorkoutsRoute,
 } as any)
 const WorkoutsWorkoutIdEditRoute = WorkoutsWorkoutIdEditRouteImport.update({
   id: '/$workoutId_/edit',
@@ -165,25 +165,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/workouts': {
-      id: '/workouts'
-      path: '/workouts'
-      fullPath: '/workouts'
-      preLoaderRoute: typeof WorkoutsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/welcome': {
-      id: '/welcome'
-      path: '/welcome'
-      fullPath: '/welcome'
-      preLoaderRoute: typeof WelcomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -193,19 +179,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/workouts/': {
-      id: '/workouts/'
-      path: '/'
-      fullPath: '/workouts/'
-      preLoaderRoute: typeof WorkoutsIndexRouteImport
-      parentRoute: typeof WorkoutsRoute
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workouts': {
+      id: '/workouts'
+      path: '/workouts'
+      fullPath: '/workouts'
+      preLoaderRoute: typeof WorkoutsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/login/': {
       id: '/login/'
@@ -214,11 +207,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof LoginRoute
     }
-    '/workouts/new': {
-      id: '/workouts/new'
-      path: '/new'
-      fullPath: '/workouts/new'
-      preLoaderRoute: typeof WorkoutsNewRouteImport
+    '/login/confirm': {
+      id: '/login/confirm'
+      path: '/confirm'
+      fullPath: '/login/confirm'
+      preLoaderRoute: typeof LoginConfirmRouteImport
+      parentRoute: typeof LoginRoute
+    }
+    '/workouts/': {
+      id: '/workouts/'
+      path: '/'
+      fullPath: '/workouts/'
+      preLoaderRoute: typeof WorkoutsIndexRouteImport
       parentRoute: typeof WorkoutsRoute
     }
     '/workouts/$workoutId': {
@@ -228,12 +228,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkoutsWorkoutIdRouteImport
       parentRoute: typeof WorkoutsRoute
     }
-    '/login/confirm': {
-      id: '/login/confirm'
-      path: '/confirm'
-      fullPath: '/login/confirm'
-      preLoaderRoute: typeof LoginConfirmRouteImport
-      parentRoute: typeof LoginRoute
+    '/workouts/new': {
+      id: '/workouts/new'
+      path: '/new'
+      fullPath: '/workouts/new'
+      preLoaderRoute: typeof WorkoutsNewRouteImport
+      parentRoute: typeof WorkoutsRoute
     }
     '/workouts/$workoutId_/edit': {
       id: '/workouts/$workoutId_/edit'

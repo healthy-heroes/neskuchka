@@ -28,6 +28,19 @@ import (
 const Issuer = "Neskuchka"
 const prefixApi = "/api/v1"
 
+// clientIPKey keys the rate limiters off the client IP resolved by chi's
+// ClientIPFrom* middleware. CanonicalizeIP buckets IPv6 clients by their /64,
+// so one client can't get a fresh budget per address in its prefix.
+//
+// Today the resolver is ClientIPFromRemoteAddr — the TCP peer. That is correct
+// only while the server is reached directly. Behind a reverse proxy every
+// client collapses into the proxy's single bucket; that case needs
+// ClientIPFromXFF with the proxy's CIDR, which in turn needs the deployment
+// topology to be known.
+func clientIPKey(r *http.Request) (string, error) {
+	return httprate.CanonicalizeIP(chiMW.GetClientIP(r.Context())), nil
+}
+
 // Api is an API server
 type Api struct {
 	Version string
@@ -86,6 +99,8 @@ func (api *Api) Handler() *chi.Mux {
 
 	// common middlewares
 	router.Use(chiMW.Logger)
+	// resolves the client IP the rate limiters key off, see clientIPKey
+	router.Use(chiMW.ClientIPFromRemoteAddr)
 	router.Use(session.Verifier())
 
 	// CORS middleware
@@ -101,7 +116,7 @@ func (api *Api) Handler() *chi.Mux {
 
 	// ping route
 	router.With(
-		httprate.LimitByIP(600, time.Minute),
+		httprate.LimitBy(600, time.Minute, clientIPKey),
 	).Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("pong"))
@@ -109,7 +124,7 @@ func (api *Api) Handler() *chi.Mux {
 
 	// api routes
 	router.Route(prefixApi, func(r chi.Router) {
-		r.Use(httprate.LimitByIP(60, time.Minute))
+		r.Use(httprate.LimitBy(60, time.Minute, clientIPKey))
 		r.Use(chiMW.Timeout(10 * time.Second))
 
 		api.addAuthRoutes(r, session)
@@ -202,7 +217,7 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 	staticFS, _ := fs.Sub(api.WebFS, "web")
 
 	router.Route("/", func(r chi.Router) {
-		r.Use(httprate.LimitByIP(60, time.Minute))
+		r.Use(httprate.LimitBy(60, time.Minute, clientIPKey))
 		r.Use(chiMW.Timeout(10 * time.Second))
 		r.Use(mw.CacheControl(10*time.Minute, api.Version))
 
