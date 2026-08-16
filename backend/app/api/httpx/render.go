@@ -14,7 +14,7 @@ import (
 
 // Response represents a successful response with data
 type Response struct {
-	Data interface{} `json:"data"`
+	Data any `json:"data"`
 }
 
 // ErrorResponse represents an error response with details
@@ -29,7 +29,7 @@ type ValidationErrorResponse struct {
 }
 
 // Render sends JSON response with data and status code 200
-func Render(w http.ResponseWriter, data interface{}) {
+func Render(w http.ResponseWriter, data any) {
 	response := Response{
 		Data: data,
 	}
@@ -70,7 +70,7 @@ func RenderUnauthorized(w http.ResponseWriter) {
 	}, http.StatusUnauthorized)
 }
 
-func renderJSONWithStatus(w http.ResponseWriter, data interface{}, code int) {
+func renderJSONWithStatus(w http.ResponseWriter, data any, code int) {
 	buf := &bytes.Buffer{}
 	enc := json.NewEncoder(buf)
 	enc.SetEscapeHTML(true)

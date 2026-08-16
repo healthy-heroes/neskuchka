@@ -10,6 +10,6 @@ func NewSimple(logger zerolog.Logger) *Simple {
 	return &Simple{logger: logger}
 }
 
-func (l Simple) Logf(format string, args ...interface{}) {
+func (l Simple) Logf(format string, args ...any) {
 	l.logger.Info().Msgf(format, args...)
 }
