@@ -38,23 +38,36 @@ flag "--fix" {
     help "Enable automatic fixes"
 }
 '''
+quiet = true
 run = """
-set -x
-pnpm run typecheck
+pnpm -s run typecheck
 if [ "$usage_fix" = "true" ]; then
-    pnpm run prettier:write
-    pnpm run eslint:fix
-    pnpm run stylelint:fix
+    pnpm -s run prettier:write
+    pnpm -s run eslint:fix
+    pnpm -s run stylelint:fix
 else
-    pnpm run prettier
-    pnpm run eslint
-    pnpm run stylelint
+    pnpm -s run prettier
+    pnpm -s run eslint
+    pnpm -s run stylelint
 fi
 """
 
 [tasks.tests]
-description = "Run tests"
-run = [
-    "pnpm run vitest",
-    "pnpm run build",
-]
+description = "Run tests, silent unless something fails"
+quiet = true
+run = '''
+if ! output=$(NODE_NO_WARNINGS=1 pnpm -s run vitest 2>&1); then
+    printf '%s\n' "$output"
+    exit 1
+fi
+'''
+
+[tasks.build]
+description = "Build the application, silent unless the build fails"
+quiet = true
+run = '''
+if ! output=$(pnpm -s run build 2>&1); then
+    printf '%s\n' "$output"
+    exit 1
+fi
+'''

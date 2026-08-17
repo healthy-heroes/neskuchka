@@ -29,14 +29,20 @@ flag "--fix" {
     help "Enable automatic fixes"
 }
 '''
+quiet = true
 run = '''
-set -x
-golangci-lint run --config .golangci.yml ./... ${usage_fix:+--fix}
+golangci-lint run --config .golangci.yml --show-stats=false ./... ${usage_fix:+--fix}
 '''
 
 [tasks.tests]
-description = "Run tests"
-run = "go test -cover ./... -coverpkg=./..."
+description = "Run tests, silent unless something fails"
+quiet = true
+run = '''
+if ! output=$(go test ./... 2>&1); then
+    printf '%s\n' "$output"
+    exit 1
+fi
+'''
 
 [tasks.coverage]
 description = "Run coverage"

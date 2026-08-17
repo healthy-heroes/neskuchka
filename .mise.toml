@@ -24,6 +24,7 @@ flag "--fix" {
     help "Enable automatic fixes"
 }
 '''
+quiet = true
 run = [
     "mise run //backend:checks ${usage_fix:+--fix}",
     "mise run //frontend:checks ${usage_fix:+--fix}",
@@ -36,15 +37,10 @@ run = [
     { task = "//frontend:tests" },
 ]
 
-[tasks.pre-commit]
-description = "Pre-commit hook"
-run = [
-    { task = "checks" },
-]
-
-[tasks.pre-push]
-description = "Pre-push hook"
+[tasks.ci]
+description = "Run everything: linters, tests, frontend build"
 run = [
     { task = "checks" },
     { task = "tests" },
+    { task = "//frontend:build" },
 ]
