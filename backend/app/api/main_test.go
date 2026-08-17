@@ -18,6 +18,7 @@ import (
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/testutil"
 	"github.com/healthy-heroes/neskuchka/backend/app/storage/avatarstorage"
 	"github.com/healthy-heroes/neskuchka/backend/app/storage/datastorage"
 	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
@@ -44,8 +45,7 @@ func NewTestApp(t *testing.T) *TestApp {
 		Version: "test_version",
 	}
 
-	engine, err := db.NewSqliteEngine(":memory:", zerolog.Nop())
-	require.NoError(t, err)
+	engine := testutil.NewEngine(t)
 
 	app.SessionManager = session.NewManager(session.Opts{
 		Logger: zerolog.Nop(),
@@ -74,7 +74,6 @@ func NewTestApp(t *testing.T) *TestApp {
 
 	app.Server = httptest.NewServer(api.Handler())
 	t.Cleanup(func() {
-		app.DB.Close()
 		app.Server.Close()
 	})
 

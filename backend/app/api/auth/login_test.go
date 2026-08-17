@@ -15,9 +15,9 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/testutil"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/token"
 	"github.com/healthy-heroes/neskuchka/backend/app/storage/datastorage"
-	"github.com/healthy-heroes/neskuchka/backend/app/storage/db"
 )
 
 const (
@@ -91,13 +91,7 @@ type authFixture struct {
 func setupAuth(t *testing.T) *authFixture {
 	t.Helper()
 
-	engine, err := db.NewSqliteEngine(":memory:", zerolog.Nop())
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		engine.Close()
-	})
-
-	storage := datastorage.New(engine, zerolog.Nop())
+	storage := datastorage.New(testutil.NewEngine(t), zerolog.Nop())
 
 	f := &authFixture{
 		Storage:   storage,
@@ -276,7 +270,7 @@ func Test_AuthService_Confirm(t *testing.T) {
 
 		existing, err := f.Storage.CreateUser(t.Context(), domain.User{
 			ID:    domain.NewUserID(),
-			Name:  "Существующий",
+			Name:  "Existing user",
 			Email: domain.Email("user@example.com"),
 		})
 		require.NoError(t, err)

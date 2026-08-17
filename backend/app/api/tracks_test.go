@@ -82,8 +82,8 @@ func sections(title string) []domain.WorkoutSection {
 			Title:    title,
 			Protocol: domain.Protocol{Type: domain.ProtocolTypeCustom, Title: "AMRAP 12"},
 			Exercises: []domain.WorkoutExercise{
-				{Description: "10 приседаний"},
-				{Description: "15 отжиманий"},
+				{Description: "10 squats"},
+				{Description: "15 push-ups"},
 			},
 		},
 	}
@@ -100,7 +100,7 @@ func seedWorkout(t *testing.T, app *TestApp, trackID domain.TrackID, date, notes
 		TrackID:  trackID,
 		Date:     parsedDate,
 		Notes:    notes,
-		Sections: sections("Разминка"),
+		Sections: sections("Warm-up"),
 	})
 	require.NoError(t, err)
 
@@ -213,7 +213,7 @@ func Test_ApiTracks_GetMainTrackLastWorkouts(t *testing.T) {
 func Test_ApiTracks_GetWorkout(t *testing.T) {
 	t.Run("should return a workout by id", func(t *testing.T) {
 		f := setupTracks(t)
-		workout := seedWorkout(t, f.TestApp, f.Track.ID, "2026-01-10", "легкий день")
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, "2026-01-10", "easy day")
 
 		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(workout.ID))
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -223,8 +223,8 @@ func Test_ApiTracks_GetWorkout(t *testing.T) {
 			ID:       string(workout.ID),
 			TrackID:  string(f.Track.ID),
 			Date:     "2026-01-10",
-			Notes:    "легкий день",
-			Sections: sections("Разминка"),
+			Notes:    "easy day",
+			Sections: sections("Warm-up"),
 		}, data.Workout)
 	})
 
@@ -258,8 +258,8 @@ func Test_ApiTracks_CreateWorkout(t *testing.T) {
 		return workoutResp{
 			TrackID:  string(trackID),
 			Date:     "2026-01-10",
-			Notes:    "новая тренировка",
-			Sections: sections("Основная часть"),
+			Notes:    "new workout",
+			Sections: sections("Main part"),
 		}
 	}
 
@@ -275,15 +275,15 @@ func Test_ApiTracks_CreateWorkout(t *testing.T) {
 		data := ReadJSON[workoutRespWrapper](t, resp)
 		assert.NotEmpty(t, data.Workout.ID)
 		assert.Equal(t, "2026-01-10", data.Workout.Date)
-		assert.Equal(t, "новая тренировка", data.Workout.Notes)
-		assert.Equal(t, sections("Основная часть"), data.Workout.Sections)
+		assert.Equal(t, "new workout", data.Workout.Notes)
+		assert.Equal(t, sections("Main part"), data.Workout.Sections)
 
 		stored, err := f.DataStorage.GetWorkout(t.Context(), domain.WorkoutRef{
 			TrackID:   f.Track.ID,
 			WorkoutID: domain.WorkoutID(data.Workout.ID),
 		})
 		require.NoError(t, err)
-		assert.Equal(t, "новая тренировка", stored.Notes)
+		assert.Equal(t, "new workout", stored.Notes)
 	})
 
 	t.Run("should ignore the id sent by the client and generate its own", func(t *testing.T) {
@@ -338,7 +338,7 @@ func Test_ApiTracks_CreateWorkout(t *testing.T) {
 func Test_ApiTracks_UpdateWorkout(t *testing.T) {
 	t.Run("should update the workout of the track owner", func(t *testing.T) {
 		f := setupTracks(t)
-		workout := seedWorkout(t, f.TestApp, f.Track.ID, "2026-01-10", "было")
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, "2026-01-10", "before")
 
 		resp := f.PUT(t, "/api/v1/tracks/main/workouts/"+string(workout.ID),
 			WithCookie(f.LoginAs(t, f.Owner.ID)),
@@ -346,45 +346,45 @@ func Test_ApiTracks_UpdateWorkout(t *testing.T) {
 				ID:       string(workout.ID),
 				TrackID:  string(f.Track.ID),
 				Date:     "2026-01-11",
-				Notes:    "стало",
-				Sections: sections("Заминка"),
+				Notes:    "after",
+				Sections: sections("Cool-down"),
 			}),
 		)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		data := ReadJSON[workoutRespWrapper](t, resp)
 		assert.Equal(t, "2026-01-11", data.Workout.Date)
-		assert.Equal(t, "стало", data.Workout.Notes)
+		assert.Equal(t, "after", data.Workout.Notes)
 
 		stored, err := f.DataStorage.GetWorkout(t.Context(), workout.Ref())
 		require.NoError(t, err)
-		assert.Equal(t, "стало", stored.Notes)
-		assert.Equal(t, sections("Заминка"), stored.Sections)
+		assert.Equal(t, "after", stored.Notes)
+		assert.Equal(t, sections("Cool-down"), stored.Sections)
 	})
 
 	t.Run("should return 401 for an anonymous user", func(t *testing.T) {
 		f := setupTracks(t)
-		workout := seedWorkout(t, f.TestApp, f.Track.ID, "2026-01-10", "было")
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, "2026-01-10", "before")
 
 		resp := f.PUT(t, "/api/v1/tracks/main/workouts/"+string(workout.ID),
 			WithJSON(workoutResp{
 				ID:      string(workout.ID),
 				TrackID: string(f.Track.ID),
 				Date:    "2026-01-11",
-				Notes:   "стало",
+				Notes:   "after",
 			}),
 		)
 		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 
 		stored, err := f.DataStorage.GetWorkout(t.Context(), workout.Ref())
 		require.NoError(t, err)
-		assert.Equal(t, "было", stored.Notes)
+		assert.Equal(t, "before", stored.Notes)
 	})
 
 	t.Run("should return 403 for a user who does not own the track", func(t *testing.T) {
 		f := setupTracks(t)
 		stranger := createUser(t, f.TestApp)
-		workout := seedWorkout(t, f.TestApp, f.Track.ID, "2026-01-10", "было")
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, "2026-01-10", "before")
 
 		resp := f.PUT(t, "/api/v1/tracks/main/workouts/"+string(workout.ID),
 			WithCookie(f.LoginAs(t, stranger.ID)),
@@ -392,14 +392,14 @@ func Test_ApiTracks_UpdateWorkout(t *testing.T) {
 				ID:      string(workout.ID),
 				TrackID: string(f.Track.ID),
 				Date:    "2026-01-11",
-				Notes:   "стало",
+				Notes:   "after",
 			}),
 		)
 		assert.Equal(t, http.StatusForbidden, resp.StatusCode)
 
 		stored, err := f.DataStorage.GetWorkout(t.Context(), workout.Ref())
 		require.NoError(t, err)
-		assert.Equal(t, "было", stored.Notes)
+		assert.Equal(t, "before", stored.Notes)
 	})
 
 	t.Run("should return 404 for an unknown workout", func(t *testing.T) {
@@ -412,7 +412,7 @@ func Test_ApiTracks_UpdateWorkout(t *testing.T) {
 				ID:      string(unknownID),
 				TrackID: string(f.Track.ID),
 				Date:    "2026-01-11",
-				Notes:   "стало",
+				Notes:   "after",
 			}),
 		)
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
