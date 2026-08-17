@@ -13,7 +13,7 @@
     "eslint:fix": "eslint . --fix --cache",
     "stylelint": "stylelint '**/*.css' --cache",
     "stylelint:fix": "stylelint '**/*.css' --fix --cache",
-    "prettier": "prettier --check \"**/*.{ts,tsx}\"",
+    "prettier": "prettier --check --log-level warn \"**/*.{ts,tsx}\"",
     "prettier:write": "prettier --write \"**/*.{ts,tsx}\"",
     "vitest": "vitest run",
     "vitest:watch": "vitest",

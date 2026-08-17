@@ -18,9 +18,16 @@ cd frontend && mise run checks # то же самое из подкаталог�
 ```
 
 Прочее: `//backend:seed` (пересоздаёт `bin/app.db`), `//backend:token`, `//backend:coverage`,
-`//frontend:app` (`--back` — прокси на локальный бэкенд), `//frontend:storybook`.
+`//frontend:app` (`--back` — прокси на локальный бэкенд), `//frontend:build`,
+`//frontend:storybook`.
 
-Pre-commit хук гоняет `checks`, pre-push — `checks` + `tests`.
+Git-хуков нет — коммит и пуш ничего не гоняют. Всё вместе (`checks` + `tests` +
+`//frontend:build`) запускает `mise run ci`; это команда для человека перед пушем.
+
+При работе гоняй точечно то, что затронул, а не `ci` целиком: `//backend:tests`,
+`//frontend:tests`, `//frontend:checks`. Задачи молчат, пока всё зелёное — пустой вывод
+и нулевой exit code означают успех, при падении печатается полный лог. Покрытие в обычный
+прогон тестов не входит, для него есть `//backend:coverage`.
 
 ## Workflow
 

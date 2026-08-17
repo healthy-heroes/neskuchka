@@ -23,23 +23,21 @@ mise trust --all
 mise settings experimental=true
 ```
 
-Настраиваем git-хуки:
-```
-## pre commit hook
-mise generate git-pre-commit --write --task=pre-commit
-
-## pre push hook
-mise generate git-pre-commit --write --task=pre-push --hook=pre-push
-```
-
 **Для Windows**
 Для разработки рекомендуется использовать WSL 2, а для запуска docker-compose должна быть включена [интеграция с WSL](https://docs.docker.com/desktop/features/wsl/)
 
 ### Запуск линтеров и тестов
 Для запуска линтеров и тестов используется mise. Запускать можно в проекте или в корневом каталоге.
 
+- `ci` - линтеры + тесты + сборка фронтенда, одной командой перед пушем
 - `checks` - запуск линтеров, поддерживает флаг `--fix` для автоматического исправления ошибок
 - `tests` - запуск тестов
+
+Git-хуков нет: проверки не навешаны на коммит и пуш, гоняем их руками через `mise run ci`.
+
+Задачи `checks`, `tests` и `//frontend:build` молчат, пока всё зелёное — вывод появляется
+только когда что-то упало. Покрытие бэкенда считает отдельная задача `//backend:coverage`,
+в обычный прогон тестов оно не входит.
 
 При запуске из корня испольузется фича `experimental_monorepo_root`, позволяет удобно запускать задачи из любого проекта:
 ```
@@ -57,6 +55,9 @@ mise run //frontend:checks --fix
 
 ## запуск тестов фронтенда
 mise run //frontend:tests
+
+## всё сразу перед пушем
+mise run ci
 ```
 
 ### Запуск локального сервера
