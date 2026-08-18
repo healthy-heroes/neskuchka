@@ -44,7 +44,7 @@ func Test_Workout_Create(t *testing.T) {
 					Description: "",
 				},
 				Exercises: []domain.WorkoutExercise{
-					{ExerciseSlug: "squat", Description: "10 reps"},
+					{ExerciseSlug: "squat", Name: "Squat", Prescription: []string{"10 reps"}},
 				},
 			},
 		},
@@ -107,7 +107,7 @@ func Test_Workout_Update(t *testing.T) {
 				Title:    "Section 1",
 				Protocol: domain.Protocol{Type: domain.ProtocolTypeCustom},
 				Exercises: []domain.WorkoutExercise{
-					{ExerciseSlug: "squat", Description: "5x5"},
+					{ExerciseSlug: "squat", Name: "Squat", Prescription: []string{"5x5"}},
 				},
 			},
 		},
@@ -127,7 +127,7 @@ func Test_Workout_Update(t *testing.T) {
 				Title:    "Section 1",
 				Protocol: domain.Protocol{Type: domain.ProtocolTypeCustom},
 				Exercises: []domain.WorkoutExercise{
-					{ExerciseSlug: "bench-press", Description: "3x10"},
+					{ExerciseSlug: "bench-press", Name: "Bench press", Prescription: []string{"3x10"}},
 				},
 			},
 		},

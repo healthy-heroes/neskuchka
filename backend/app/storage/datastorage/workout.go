@@ -10,7 +10,10 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/storage"
 )
 
-const workoutSchemaVersion = 1
+// workoutSchemaVersion marks the shape of the sections JSON blob.
+// 2 — exercise text split into Prescription and Name, replacing a single Description.
+// Nothing migrates old rows yet, see the migration task in the backlog.
+const workoutSchemaVersion = 2
 
 type workoutRow struct {
 	ID       string
