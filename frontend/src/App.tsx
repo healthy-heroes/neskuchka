@@ -1,3 +1,5 @@
+import '@fontsource-variable/commissioner';
+import '@fontsource-variable/oswald';
 import '@mantine/core/styles.css';
 import '@mantine/tiptap/styles.css';
 import '@mantine/dates/styles.css';
