@@ -1,0 +1,28 @@
+.sections {
+    display: grid;
+    grid-template-columns: max-content 1fr auto;
+    gap: 0 var(--mantine-spacing-lg);
+    align-items: baseline;
+}
+
+.section,
+.exercises {
+    display: contents;
+}
+
+/* Заголовок секции и заметка занимают всю ширину карточки, а не одну колонку */
+.fullRow {
+    grid-column: 1 / -1;
+}
+
+.divider {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--mantine-color-gray-1);
+    margin: var(--mantine-spacing-md) 0 var(--mantine-spacing-lg);
+}
+
+/* Чип протокола: Badge не подходит — он фиксированной высоты, а чип живёт по контенту */
+.chip {
+    padding: 3px 9px;
+    border-radius: 999px;
+}

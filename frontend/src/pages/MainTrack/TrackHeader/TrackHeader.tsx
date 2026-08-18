@@ -1,32 +1,51 @@
-import { Avatar, Box, Group, Text, Title } from '@mantine/core';
+import { Avatar, Group, Text, Title } from '@mantine/core';
 import { TrackData } from '@/api/services/workouts';
+import { TrackProgress } from '@/components/TrackProgress/TrackProgress';
+import { TrackProgressSkeleton } from '@/components/TrackProgress/TrackProgressSkeleton';
+import { Workout } from '@/types/domain';
 import classes from './TrackHeader.module.css';
 
 interface TrackHeaderProps {
 	track: TrackData;
+
+	/** Нужны блоку прогресса: он считает окно последних 30 дней. */
+	workouts: Array<Workout>;
+
+	/** Трек приезжает раньше списка тренировок, полосе пока нечего показывать. */
+	loading?: boolean;
 }
 
-export function TrackHeader({ track }: TrackHeaderProps) {
+export function TrackHeader({ track, workouts, loading = false }: TrackHeaderProps) {
+	const { Name, Description, Author } = track.Track;
+
 	return (
-		<Box p="lg" py="xl" bg="blue.1">
-			<Title order={1} mb="xl">
-				{track.Track.Name}
-			</Title>
-
-			<Text size="xl">Тренируйтесь с нами — где бы вы ни находились!</Text>
-			<Text size="xl">
-				Идеальная программа, чтобы поддерживать форму дома, без специального оборудования.
-			</Text>
-
-			<Title order={6} mt="xl" c="gray.6" className={classes.authorTitle}>
-				Автор
-			</Title>
-			<Group gap="xs">
-				<Avatar size="sm" src="/img/avatar.jpg" />
-				<Text size="md" span>
-					Илья Карягин
+		<header className={classes.header}>
+			<div className={classes.about}>
+				<Text ff="heading" fz="sm" fw={500} lts="0.12em" tt="uppercase" c="copper.6" mb="xs">
+					Трек
 				</Text>
-			</Group>
-		</Box>
+				<Title order={1} size="h2" mb="xs">
+					{Name}
+				</Title>
+				<Text fz="md" lh="md" c="gray.8" textWrap="pretty" className={classes.description}>
+					{Description}
+				</Text>
+
+				{Author?.Name && (
+					<Group gap="xs" mt="md">
+						<Avatar size={26} radius="xl" name={Author.Name} color="copper" />
+						<Text span fz="sm" c="gray.8">
+							{Author.Name}
+						</Text>
+					</Group>
+				)}
+			</div>
+
+			{loading ? (
+				<TrackProgressSkeleton />
+			) : (
+				<TrackProgress workouts={workouts} total={workouts.length} />
+			)}
+		</header>
 	);
 }

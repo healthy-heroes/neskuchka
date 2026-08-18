@@ -55,7 +55,14 @@ type WorkoutSection struct {
 type WorkoutExercise struct {
 	ExerciseSlug ExerciseSlug
 
-	Description string
+	// Prescription is what to do: "10", "3x1 min", "3x(1+2) @ 70%".
+	// Several entries mean several sets shown on separate lines.
+	// Free-form strings for now; later they are built from structured parameters.
+	Prescription []string
+
+	// Name is the exercise name, kept on the workout until the exercise
+	// reference book exists and the name can be resolved through ExerciseSlug.
+	Name string
 }
 
 // clearSlugs clears the exercise slugs

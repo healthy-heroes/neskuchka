@@ -1,3 +1,17 @@
-.authorTitle {
-	text-transform: uppercase;
+.header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: calc(var(--mantine-spacing-xl) * 1.5);
+    padding: var(--mantine-spacing-xl) var(--mantine-spacing-xl) var(--mantine-spacing-lg);
+    border-bottom: 1px solid var(--mantine-color-gray-2);
+}
+
+.about {
+    max-width: 620px;
+}
+
+/* В описании трека переводы строк значимые */
+.description {
+    white-space: pre-line;
 }

@@ -1,0 +1,34 @@
+.head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--mantine-spacing-sm);
+    margin-bottom: var(--mantine-spacing-sm);
+}
+
+.count {
+    white-space: nowrap;
+}
+
+.bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 16px;
+}
+
+.segment {
+    flex: 1;
+    height: 10px;
+    border-radius: 3px;
+    background: var(--mantine-color-copper-6);
+}
+
+.segmentMissed {
+    background: var(--mantine-color-gray-3);
+}
+
+.segmentToday {
+    height: 16px;
+    background: var(--mantine-color-slate-7);
+}

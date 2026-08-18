@@ -1,9 +1,62 @@
-.sectionTitle {
-    color: var(--mantine-color-gray-6);
-    text-transform: uppercase;
+.page {
+    padding-bottom: calc(var(--mantine-spacing-xl) * 2);
 }
 
-.linkIcon {
-    position: relative;
-    top: 3px;
+.pill {
+    padding: 5px 10px;
+    border-radius: 999px;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: var(--mantine-spacing-xl);
+    align-items: start;
+}
+
+/* Рамка и радиус приходят из темы, здесь — только тень из макета */
+.sectionsCard {
+    box-shadow: 0 1px 3px rgb(0 0 0 / 5%), 0 10px 15px -5px rgb(0 0 0 / 5%);
+}
+
+.side {
+    position: sticky;
+    /* высота липкой шапки плюс зазор */
+    top: calc(60px + var(--mantine-spacing-lg));
+    display: flex;
+    flex-direction: column;
+    gap: var(--mantine-spacing-md);
+}
+
+.cheatsheetHead {
+    border-bottom: 1px solid var(--mantine-color-gray-2);
+}
+
+.cheatsheetBody {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mantine-spacing-sm);
+}
+
+/* Своя колонка предписаний на секцию — как в макете, с основными секциями не связана */
+.cheatsheetList {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px var(--mantine-spacing-xs);
+    align-items: baseline;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cheatsheetItem {
+    display: contents;
+}
+
+.cheatsheetPrescription {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+    white-space: nowrap;
 }

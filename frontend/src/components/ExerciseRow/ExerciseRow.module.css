@@ -1,0 +1,31 @@
+/* Строка раскладывается по гриду карточки протокола, своего не заводит */
+.row {
+    display: contents;
+}
+
+/* Сброс кнопки даёт UnstyledButton, здесь — только высота строки */
+.cell {
+    padding: 9px 0;
+}
+
+/* UnstyledButton всегда ставит pointer, а нераскрывающаяся строка не кликается */
+.static {
+    cursor: default;
+}
+
+/* Предписания в столбик, прижаты к правому краю своей колонки */
+.prescription {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+    white-space: nowrap;
+}
+
+.chevronUp {
+    transform: rotate(180deg);
+}
+
+.panel {
+    grid-column: 1 / -1;
+}

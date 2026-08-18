@@ -1,27 +1,53 @@
 import { useQuery } from '@tanstack/react-query';
-import { Box, Title } from '@mantine/core';
+import { Box, Container, Text } from '@mantine/core';
 import { useApi } from '@/api/hooks';
-import { WorkoutCard } from '../WorkoutCard/WorkoutCard';
-import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
+import { TrackHeader } from '@/pages/MainTrack/TrackHeader/TrackHeader';
+import { isPublished, isToday } from '@/utils/dates';
+import { FeaturedWorkout } from '../FeaturedWorkout/FeaturedWorkout';
+import { FeaturedWorkoutSkeleton } from '../FeaturedWorkout/FeaturedWorkoutSkeleton';
+import { WorkoutHistory } from '../WorkoutHistory/WorkoutHistory';
+import classes from './Workouts.module.css';
 
+/**
+ * Workouts — страница трека.
+ *
+ * Собрана вокруг одной задачи: человек заходит, сразу видит сегодняшнюю
+ * тренировку и начинает её. Всё остальное — история, прогресс — ниже и мельче.
+ */
 export function Workouts() {
 	const { workouts } = useApi();
 
 	//todo: handle errors
-	const { data, isSuccess, isLoading } = useQuery(workouts.getMainTrackWorkoutsQuery());
+	const { data, isPending } = useQuery(workouts.getMainTrackWorkoutsQuery());
+	const { data: track } = useQuery(workouts.getMainTrackQuery());
+
+	const published = (data?.Workouts ?? []).filter((workout) => isPublished(workout.Date));
+
+	// В фокусе сегодняшняя, а если её нет — последняя опубликованная:
+	// пустой главный экран хуже, чем вчерашняя тренировка на нём
+	const featured = published.find((workout) => isToday(workout.Date)) ?? published[0];
 
 	return (
-		<Box p="md">
-			<Title order={2} my="md">
-				Тренировки
-			</Title>
+		<Container px={0}>
+			{track && <TrackHeader track={track} workouts={published} loading={isPending} />}
 
-			{(isLoading || !isSuccess) && <WorkoutCardSkeleton cardProps={{ mb: 'xl' }} />}
+			<Box px="xl" py="xl" bg="gray.0">
+				{isPending && <FeaturedWorkoutSkeleton />}
 
-			{isSuccess &&
-				data.Workouts.map((workout) => {
-					return <WorkoutCard key={workout.ID} cardProps={{ mb: 'xl' }} workout={workout} />;
-				})}
-		</Box>
+				{!isPending && !featured && (
+					<Text component="p" my={0} p="xl" fz="md" lh="md" c="gray.8" className={classes.empty}>
+						Тренировок пока нет — они появятся, когда их опубликуют
+					</Text>
+				)}
+
+				{!isPending && featured && (
+					<>
+						<FeaturedWorkout workout={featured} />
+
+						<WorkoutHistory workouts={published} featured={featured} />
+					</>
+				)}
+			</Box>
+		</Container>
 	);
 }

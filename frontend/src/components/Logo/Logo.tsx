@@ -6,7 +6,7 @@ import classes from './Logo.module.css';
 export function Logo() {
 	return (
 		<RouteLink to="/" underline="never" c="black">
-			<Text size="xl" fw={700}>
+			<Text size="xl" fw={700} className={classes.logoText}>
 				<LogoIcon className={classes.logoIcon} size="xl" />
 				&nbsp;Neskuchka
 			</Text>

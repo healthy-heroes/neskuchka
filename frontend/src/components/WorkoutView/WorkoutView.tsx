@@ -1,10 +1,12 @@
-import { IconArrowLeft } from '@tabler/icons-react';
+import { IconCheck, IconChevronLeft, IconPlayerPlayFilled } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { Box, Divider, Grid, Image, List, Text, Title } from '@mantine/core';
+import { Box, Button, Card, Container, Group, Skeleton, Text, Title } from '@mantine/core';
 import { useApi } from '@/api/hooks';
-import { formatIsoDate } from '@/utils/dates';
+import { WorkoutSection } from '@/types/domain';
+import { formatIsoDate, formatWeekday, isToday } from '@/utils/dates';
 import { RouteLink } from '../RouteLink/RouteLink';
-import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
+import { WorkoutSections } from '../WorkoutSections/WorkoutSections';
+import { WorkoutSectionsSkeleton } from '../WorkoutSections/WorkoutSectionsSkeleton';
 import classes from './WorkoutView.module.css';
 
 interface WorkoutViewProps {
@@ -15,66 +17,134 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 	const { workouts } = useApi();
 
 	//todo: handle errors
-	const { data, isSuccess, isLoading } = useQuery(workouts.getWorkoutQuery(workoutId));
+	const { data, isPending } = useQuery(workouts.getWorkoutQuery(workoutId));
 
-	if (isLoading || !isSuccess) {
+	if (isPending || !data) {
 		return (
-			<Box p="md">
-				<Title order={2} my="md">
-					Тренировка
-				</Title>
+			<Container px="xl" pt="lg" className={classes.page}>
+				<Box my="lg">
+					<Skeleton height={52} width={420} />
+				</Box>
 
-				<WorkoutCardSkeleton cardProps={{ mb: 'xl' }} />
-			</Box>
+				<div className={classes.layout}>
+					<Card className={classes.sectionsCard} px="xl" py="lg">
+						<WorkoutSectionsSkeleton rows={4} />
+					</Card>
+				</div>
+			</Container>
 		);
 	}
 
 	const workout = data.Workout;
 
 	return (
-		<Box p="md">
-			<RouteLink to="..">
-				<IconArrowLeft className={classes.linkIcon} size={14} /> к списку тренировок
+		<Container px="xl" pt="lg" className={classes.page}>
+			<RouteLink to="/workouts" fz="sm" fw={600} c="gray.7" underline="never">
+				<Group gap="xs" wrap="nowrap">
+					<IconChevronLeft size={15} />
+					<span>Нескучный спорт</span>
+				</Group>
 			</RouteLink>
 
-			<Title order={2} size="h1" mb="md">
-				Тренировка от {formatIsoDate(workout.Date)}
-			</Title>
+			<Group component="header" justify="space-between" align="flex-end" gap="xl" mt="sm" mb="lg">
+				<div>
+					<Group gap="sm" mb="xs">
+						{isToday(workout.Date) && (
+							<Text
+								span
+								fz="xs"
+								fw={700}
+								lts="0.1em"
+								tt="uppercase"
+								c="white"
+								bg="copper.6"
+								className={classes.pill}
+							>
+								Сегодня
+							</Text>
+						)}
+						<Text span fz="sm" c="gray.7">
+							{formatWeekday(workout.Date)}
+						</Text>
+					</Group>
+					<Title order={1}>Тренировка {formatIsoDate(workout.Date)}</Title>
+				</div>
 
-			<Grid>
-				<Grid.Col span={{ base: 12, xs: 7 }} p="md">
-					{workout.Sections.map((section, index) => {
-						const key = `${workout.ID}-${index}`;
-						return (
-							<div key={key}>
-								<Title order={4} className={classes.sectionTitle}>
-									{section.Title}
-								</Title>
-								<div>
-									<b>{section.Protocol.Title}</b>
-									{section.Protocol.Description && (
-										<Text c="dimmed" size="sm">
-											{section.Protocol.Description}
+				{/* Прохождение и отметка выполнения — второй этап, кнопки пока нерабочие */}
+				<Group gap="xs" wrap="nowrap">
+					<Button size="md" disabled leftSection={<IconPlayerPlayFilled size={17} />}>
+						Начать тренировку
+					</Button>
+					<Button size="md" disabled variant="default" leftSection={<IconCheck size={17} />}>
+						Выполнено
+					</Button>
+				</Group>
+			</Group>
+
+			<div className={classes.layout}>
+				<Card className={classes.sectionsCard} px="xl" py="lg">
+					<WorkoutSections sections={workout.Sections} />
+				</Card>
+
+				<aside className={classes.side}>
+					<Cheatsheet sections={workout.Sections} />
+				</aside>
+			</div>
+		</Container>
+	);
+}
+
+/** Шпаргалка — те же секции, ужатые до предписаний и названий. */
+function Cheatsheet({ sections }: { sections: Array<WorkoutSection> }) {
+	return (
+		<Card padding={0}>
+			<Text
+				px="md"
+				py="sm"
+				ff="heading"
+				fz="sm"
+				fw={600}
+				lts="0.08em"
+				tt="uppercase"
+				c="gray.8"
+				className={classes.cheatsheetHead}
+			>
+				Шпаргалка
+			</Text>
+
+			<Box px="md" py="sm" className={classes.cheatsheetBody}>
+				{sections.map((section, sectionIndex) => (
+					<div key={`${section.Title}-${sectionIndex}`}>
+						<Group justify="space-between" align="baseline" gap="xs" mb="xs">
+							<Text span fz="xs" fw={700} lts="0.05em" tt="uppercase">
+								{section.Title}
+							</Text>
+							<Text span fz="xs" fw={600} c="slate.7" ta="right">
+								{section.Protocol.Title}
+							</Text>
+						</Group>
+
+						{section.Exercises.length > 0 && (
+							<ul className={classes.cheatsheetList}>
+								{section.Exercises.map((exercise, exerciseIndex) => (
+									<li key={`${exercise.Name}-${exerciseIndex}`} className={classes.cheatsheetItem}>
+										<span className={classes.cheatsheetPrescription}>
+											{exercise.Prescription.map((line) => (
+												<Text key={line} span ff="heading" fz="sm" fw={600} c="copper.6">
+													{line}
+												</Text>
+											))}
+										</span>
+										<Text span fz="sm" lh="xs" c="gray.8">
+											{exercise.Name}
 										</Text>
-									)}
-									<List withPadding>
-										{section.Exercises.map((e, index) => {
-											return <List.Item key={`${key}-${index}`}>{e.Description}</List.Item>;
-										})}
-									</List>
-								</div>
-
-								<Divider my="md" />
-							</div>
-						);
-					})}
-
-					{workout.Notes && <Text>{workout.Notes}</Text>}
-				</Grid.Col>
-				<Grid.Col span={{ base: 12, xs: 5 }} p="md">
-					<Image src="https://placehold.co/400x600?text=video" alt="Workout" />
-				</Grid.Col>
-			</Grid>
-		</Box>
+									</li>
+								))}
+							</ul>
+						)}
+					</div>
+				))}
+			</Box>
+		</Card>
 	);
 }

@@ -82,8 +82,8 @@ func sections(title string) []domain.WorkoutSection {
 			Title:    title,
 			Protocol: domain.Protocol{Type: domain.ProtocolTypeCustom, Title: "AMRAP 12"},
 			Exercises: []domain.WorkoutExercise{
-				{Description: "10 squats"},
-				{Description: "15 push-ups"},
+				{Name: "Squat", Prescription: []string{"10"}},
+				{Name: "Push-up", Prescription: []string{"15"}},
 			},
 		},
 	}
