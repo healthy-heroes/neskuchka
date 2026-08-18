@@ -1,0 +1,53 @@
+.protocol {
+    display: grid;
+    grid-template-columns: max-content 1fr auto;
+    gap: 0 24px;
+    align-items: baseline;
+}
+
+.section,
+.exercises {
+    display: contents;
+}
+
+.divider {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--mantine-color-gray-1);
+    margin: 18px 0 20px;
+}
+
+.sectionHead {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.sectionTitle {
+    margin: 0;
+    font-family: var(--mantine-font-family-headings);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.protocolChip {
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--mantine-color-slate-1);
+    color: var(--mantine-color-slate-7);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.sectionNote {
+    grid-column: 1 / -1;
+    margin: 6px 0 0;
+    max-width: 68ch;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--mantine-color-gray-8);
+    text-wrap: pretty;
+}

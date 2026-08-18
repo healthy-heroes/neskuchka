@@ -1,0 +1,76 @@
+.root {
+    min-width: 400px;
+    padding: 16px 18px;
+    border: 1px solid var(--mantine-color-gray-2);
+    border-radius: 12px;
+    background: var(--mantine-color-gray-0);
+}
+
+/* На странице тренировки блок стоит в правой колонке сам по себе,
+   без внешней карточки: две рамки ложились вплотную. */
+.compact {
+    min-width: 0;
+    background: var(--mantine-color-white);
+    border-color: var(--mantine-color-gray-3);
+}
+
+.head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mantine-color-gray-7);
+}
+
+.count {
+    font-size: 14px;
+    color: var(--mantine-color-gray-8);
+    white-space: nowrap;
+}
+
+.countValue {
+    font-family: var(--mantine-font-family-headings);
+    font-size: 20px;
+    color: var(--mantine-color-copper-6);
+}
+
+.compact .countValue {
+    font-size: 18px;
+}
+
+.bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 16px;
+}
+
+.segment {
+    flex: 1;
+    height: 10px;
+    border-radius: 3px;
+    background: var(--mantine-color-copper-6);
+}
+
+.segmentMissed {
+    background: var(--mantine-color-gray-3);
+}
+
+.segmentToday {
+    height: 16px;
+    background: var(--mantine-color-slate-7);
+}
+
+.note {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: var(--mantine-color-gray-7);
+}
