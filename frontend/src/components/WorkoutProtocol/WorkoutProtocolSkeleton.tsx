@@ -1,4 +1,4 @@
-import { Skeleton } from '@mantine/core';
+import { Group, Skeleton } from '@mantine/core';
 import classes from './WorkoutProtocol.module.css';
 
 export interface WorkoutProtocolSkeletonProps {
@@ -13,10 +13,10 @@ export interface WorkoutProtocolSkeletonProps {
 export function WorkoutProtocolSkeleton({ rows = 3 }: WorkoutProtocolSkeletonProps) {
 	return (
 		<div className={classes.protocol}>
-			<div className={classes.sectionHead}>
+			<Group className={classes.fullRow} align="baseline" gap={12}>
 				<Skeleton height={20} width={140} />
 				<Skeleton height={18} width={90} radius="xl" />
-			</div>
+			</Group>
 
 			{Array.from({ length: rows }, (_, index) => (
 				<div key={index} className={classes.section}>

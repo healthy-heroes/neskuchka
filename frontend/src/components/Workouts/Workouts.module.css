@@ -14,12 +14,7 @@
 }
 
 .empty {
-    margin: 0;
-    padding: 28px;
     background: var(--mantine-color-white);
     border: 1px solid var(--mantine-color-gray-3);
     border-radius: 12px;
-    font-size: 16px;
-    line-height: 1.55;
-    color: var(--mantine-color-gray-8);
 }

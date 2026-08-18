@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { IconCheck, IconChevronRight } from '@tabler/icons-react';
+import { Group, Text } from '@mantine/core';
 import { Workout } from '@/types/domain';
 import { isWorkoutDone } from '@/utils/completion';
 import { formatIsoDateShort, formatWeekday, isToday } from '@/utils/dates';
@@ -36,15 +37,21 @@ export function WorkoutHistory({ workouts, featured }: WorkoutHistoryProps) {
 		<div>
 			{weeks.map((week) => (
 				<section key={week.start.format('YYYY-MM-DD')}>
-					<div className={classes.weekHead}>
-						<span className={classes.weekTitle}>{weekTitle(week)}</span>
+					<Group gap={14} my={0} mt={34} mb={12}>
+						<Text span ff="heading" fz={17} fw={600} lts="0.1em" tt="uppercase" c="gray.8">
+							{weekTitle(week)}
+						</Text>
 						<span className={classes.weekLine} />
-						<span className={classes.weekMeta}>{weekMeta(week)}</span>
-					</div>
+						<Text span fz={13} c="gray.7" className={classes.nowrap}>
+							{weekMeta(week)}
+						</Text>
+					</Group>
 
 					<div className={classes.rows}>
 						{week.items.length === 0 ? (
-							<p className={classes.weekEmpty}>{emptyWeekText(week, featured)}</p>
+							<Text component="p" my={0} px={24} py={18} fz={15} c="gray.7">
+								{emptyWeekText(week, featured)}
+							</Text>
 						) : (
 							week.items.map((workout) => <HistoryRow key={workout.ID} workout={workout} />)
 						)}
@@ -66,26 +73,34 @@ function HistoryRow({ workout }: { workout: Workout }) {
 			underline="never"
 		>
 			<div>
-				<div className={classes.rowDate}>{formatIsoDateShort(workout.Date)}</div>
-				<div className={classes.rowWeekday}>{formatWeekday(workout.Date)}</div>
+				<Text ff="heading" fz={20} fw={600} tt="uppercase">
+					{formatIsoDateShort(workout.Date)}
+				</Text>
+				<Text fz={13} c="gray.7">
+					{formatWeekday(workout.Date)}
+				</Text>
 			</div>
 
-			<div className={classes.rowSummary}>
+			<Text fz={15} c="gray.8">
 				{workout.Sections.map((section, index) => (
 					<span key={`${section.Title}-${index}`}>
 						{index > 0 && <span className={classes.summarySep}>·</span>}
 						{[section.Title, section.Protocol.Title].filter(Boolean).join(' · ')}
 					</span>
 				))}
-			</div>
+			</Text>
 
 			{done ? (
-				<div className={classes.rowDone}>
+				<Group gap={8} wrap="nowrap" c="slate.7">
 					<IconCheck size={16} stroke={2.5} />
-					<span>Выполнено</span>
-				</div>
+					<Text span fz={14} fw={600}>
+						Выполнено
+					</Text>
+				</Group>
 			) : (
-				<div className={classes.rowMissed}>Пропущено</div>
+				<Text fz={14} c="gray.6">
+					Пропущено
+				</Text>
 			)}
 
 			<IconChevronRight size={18} className={classes.rowChevron} />

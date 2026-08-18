@@ -1,26 +1,26 @@
-import { Skeleton } from '@mantine/core';
+import { Box, Card, Group, Skeleton } from '@mantine/core';
 import { WorkoutProtocolSkeleton } from '../WorkoutProtocol/WorkoutProtocolSkeleton';
 import classes from './FeaturedWorkout.module.css';
 
 /** Скелетон карточки в фокусе: тёмная шапка на месте, чтобы экран не перекрашивался. */
 export function FeaturedWorkoutSkeleton() {
 	return (
-		<article className={classes.card}>
-			<header className={classes.head}>
-				<div className={classes.headMain}>
+		<Card component="article" padding={0} className={classes.card}>
+			<Group component="header" justify="space-between" px={28} py={18} bg="slate.7">
+				<Group align="baseline" gap={16}>
 					<Skeleton height={14} width={80} />
 					<Skeleton height={30} width={190} />
 					<Skeleton height={14} width={70} />
-				</div>
-			</header>
+				</Group>
+			</Group>
 
-			<div className={classes.body}>
+			<Box px={28} pt={10} pb={22}>
 				<WorkoutProtocolSkeleton />
-			</div>
+			</Box>
 
-			<div className={classes.actions}>
+			<Box px={28} pb={28}>
 				<Skeleton height={44} width={210} radius="md" />
-			</div>
-		</article>
+			</Box>
+		</Card>
 	);
 }

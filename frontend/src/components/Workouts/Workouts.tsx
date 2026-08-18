@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Text } from '@mantine/core';
 import { useApi } from '@/api/hooks';
 import { TrackHeader } from '@/pages/MainTrack/TrackHeader/TrackHeader';
 import { isPublished, isToday } from '@/utils/dates';
@@ -34,7 +35,9 @@ export function Workouts() {
 				{isPending && <FeaturedWorkoutSkeleton />}
 
 				{!isPending && !featured && (
-					<p className={classes.empty}>Тренировок пока нет — они появятся, когда их опубликуют</p>
+					<Text component="p" my={0} p={28} fz={16} lh={1.55} c="gray.8" className={classes.empty}>
+						Тренировок пока нет — они появятся, когда их опубликуют
+					</Text>
 				)}
 
 				{!isPending && featured && (

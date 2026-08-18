@@ -1,4 +1,4 @@
-import { Avatar } from '@mantine/core';
+import { Avatar, Group, Text, Title } from '@mantine/core';
 import { TrackData } from '@/api/services/workouts';
 import { TrackProgress } from '@/components/TrackProgress/TrackProgress';
 import { TrackProgressSkeleton } from '@/components/TrackProgress/TrackProgressSkeleton';
@@ -21,15 +21,23 @@ export function TrackHeader({ track, workouts, loading = false }: TrackHeaderPro
 	return (
 		<header className={classes.header}>
 			<div className={classes.about}>
-				<div className={classes.eyebrow}>Трек</div>
-				<h1 className={classes.title}>{Name}</h1>
-				<p className={classes.description}>{Description}</p>
+				<Text ff="heading" fz={15} fw={500} lts="0.12em" tt="uppercase" c="copper.6" mb={6}>
+					Трек
+				</Text>
+				<Title order={1} fz={44} lh={1.05} lts="0.01em" mb={10}>
+					{Name}
+				</Title>
+				<Text fz={16} lh={1.55} c="gray.8" textWrap="pretty" className={classes.description}>
+					{Description}
+				</Text>
 
 				{Author?.Name && (
-					<div className={classes.author}>
+					<Group gap={8} mt={16}>
 						<Avatar size={26} radius="xl" name={Author.Name} color="copper" />
-						<span>{Author.Name}</span>
-					</div>
+						<Text span fz={14} c="gray.8">
+							{Author.Name}
+						</Text>
+					</Group>
 				)}
 			</div>
 

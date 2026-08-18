@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { IconChevronDown } from '@tabler/icons-react';
 import clsx from 'clsx';
-import { Collapse } from '@mantine/core';
+import { Collapse, Group, Text, UnstyledButton } from '@mantine/core';
 import classes from './ExerciseRow.module.css';
 
 export interface ExerciseRowProps {
@@ -22,7 +22,8 @@ export interface ExerciseRowProps {
  * ExerciseRow — строка упражнения: предписание, название, подсказка.
  *
  * Своего грида не заводит: раскладывается по трём колонкам родительской карточки,
- * чтобы колонка предписаний была общей на всю тренировку, а не на секцию.
+ * чтобы колонка предписаний была общей на всю тренировку, а не на секцию. По той же
+ * причине <li> остаётся сырым: List.Item добавляет две обёртки, и они схлопнут грид.
  */
 export function ExerciseRow({
 	prescription,
@@ -35,51 +36,50 @@ export function ExerciseRow({
 
 	// Три ячейки кликаются одинаково, но фокус и озвучка — только на названии,
 	// иначе на каждую строку приходится три одинаковых элемента управления.
-	const cellClass = clsx(classes.cell, expandable && classes.clickable);
+	const cellClass = clsx(classes.cell, !expandable && classes.static);
 	const onClick = expandable ? onToggle : undefined;
 	const mutedProps = expandable ? ({ tabIndex: -1, 'aria-hidden': true } as const) : {};
 
 	return (
 		<li className={classes.row}>
-			<button
-				type="button"
+			<UnstyledButton
 				className={clsx(cellClass, classes.prescription)}
 				onClick={onClick}
 				{...mutedProps}
 			>
 				{prescription.map((line) => (
-					<span key={line} className={classes.prescriptionLine}>
+					<Text key={line} span ff="heading" fz={17} fw={600} lts="0.02em" c="copper.6">
 						{line}
-					</span>
+					</Text>
 				))}
-			</button>
+			</UnstyledButton>
 
-			<button
-				type="button"
-				className={clsx(cellClass, classes.name)}
+			<UnstyledButton
+				className={cellClass}
+				fz={16}
+				lh={1.45}
 				aria-expanded={expandable ? opened : undefined}
 				onClick={onClick}
 			>
 				{name}
-			</button>
+			</UnstyledButton>
 
-			<button
-				type="button"
-				className={clsx(cellClass, classes.hint)}
-				onClick={onClick}
-				{...mutedProps}
-			>
+			<UnstyledButton className={cellClass} onClick={onClick} {...mutedProps}>
 				{expandable && (
-					<>
-						<span>{opened ? 'свернуть' : 'как делать'}</span>
+					<Group gap={8} wrap="nowrap">
+						<Text span fz={13} fw={600} c="gray.7">
+							{opened ? 'свернуть' : 'как делать'}
+						</Text>
 						<IconChevronDown size={16} className={clsx(opened && classes.chevronUp)} />
-					</>
+					</Group>
 				)}
-			</button>
+			</UnstyledButton>
 
 			{expandable && (
 				<Collapse expanded={opened} className={classes.panel}>
-					<div className={classes.panelInner}>{content}</div>
+					<Group align="flex-start" gap={24} pt={6} pb={22}>
+						{content}
+					</Group>
 				</Collapse>
 			)}
 		</li>

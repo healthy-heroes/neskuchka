@@ -1,25 +1,7 @@
+/* Рамка и радиус приходят из темы, здесь — только тень из макета */
 .card {
-    background: var(--mantine-color-white);
-    border: 1px solid var(--mantine-color-gray-3);
-    border-radius: 12px;
     box-shadow: 0 1px 3px rgb(0 0 0 / 5%), 0 10px 15px -5px rgb(0 0 0 / 5%);
     overflow: hidden;
-}
-
-.head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    padding: 18px 28px;
-    background: var(--mantine-color-slate-7);
-}
-
-/* Надзаголовок, дата и день недели — одной строкой по базовой линии */
-.headMain {
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
 }
 
 /*
@@ -27,56 +9,10 @@
  * Тёмная плашка означает «это на сегодня», и разбрасываться этим значением нельзя.
  */
 .headPast {
-    background: var(--mantine-color-gray-0);
     border-bottom: 1px solid var(--mantine-color-gray-2);
 }
 
-.headPast .eyebrow {
-    color: var(--mantine-color-copper-6);
-}
-
-.headPast .date {
-    color: var(--mantine-color-gray-9);
-}
-
-.headPast .weekday {
-    color: var(--mantine-color-gray-7);
-}
-
 /* Единственный цвет из макета вне шкалы: тёплый акцент на тёмной плашке */
-.eyebrow {
-    font-family: var(--mantine-font-family-headings);
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+.eyebrowToday {
     color: #dcaa89;
-}
-
-.date {
-    font-family: var(--mantine-font-family-headings);
-    font-size: 30px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--mantine-color-white);
-}
-
-.weekday {
-    font-size: 14px;
-    color: var(--mantine-color-slate-2);
-}
-
-.body {
-    padding: 10px 28px 22px;
-}
-
-.actions {
-    padding: 0 28px 28px;
-}
-
-.breakdown {
-    margin-left: auto;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--mantine-color-copper-6);
 }

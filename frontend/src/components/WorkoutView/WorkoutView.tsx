@@ -1,6 +1,6 @@
 import { IconCheck, IconChevronLeft, IconPlayerPlayFilled } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { Box, Button, Group, Skeleton } from '@mantine/core';
+import { Box, Button, Group, Skeleton, Text, Title } from '@mantine/core';
 import { useApi } from '@/api/hooks';
 import { Workout, WorkoutSection } from '@/types/domain';
 import { formatIsoDate, formatWeekday, isToday } from '@/utils/dates';
@@ -25,9 +25,9 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 	if (isPending || !data) {
 		return (
 			<Box className={classes.page}>
-				<header className={classes.title}>
+				<Box my={24}>
 					<Skeleton height={52} width={420} />
-				</header>
+				</Box>
 
 				<div className={classes.layout}>
 					<div className={classes.protocolCard}>
@@ -43,18 +43,37 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 
 	return (
 		<Box className={classes.page}>
-			<RouteLink to="/workouts" className={classes.back} underline="never">
-				<IconChevronLeft size={15} />
-				<span>Нескучный спорт</span>
+			<RouteLink to="/workouts" fz={14} fw={600} c="gray.7" underline="never">
+				<Group gap={8} wrap="nowrap">
+					<IconChevronLeft size={15} />
+					<span>Нескучный спорт</span>
+				</Group>
 			</RouteLink>
 
-			<header className={classes.title}>
+			<Group component="header" justify="space-between" align="flex-end" gap={40} mt={14} mb={24}>
 				<div>
 					<Group gap={12} mb={8}>
-						{isToday(workout.Date) && <span className={classes.todayPill}>Сегодня</span>}
-						<span className={classes.meta}>{formatWeekday(workout.Date)}</span>
+						{isToday(workout.Date) && (
+							<Text
+								span
+								fz={12}
+								fw={700}
+								lts="0.1em"
+								tt="uppercase"
+								c="white"
+								bg="copper.6"
+								className={classes.pill}
+							>
+								Сегодня
+							</Text>
+						)}
+						<Text span fz={14} c="gray.7">
+							{formatWeekday(workout.Date)}
+						</Text>
 					</Group>
-					<h1 className={classes.heading}>Тренировка {formatIsoDate(workout.Date)}</h1>
+					<Title order={1} lts="0.01em">
+						Тренировка {formatIsoDate(workout.Date)}
+					</Title>
 				</div>
 
 				{/* Прохождение и отметка выполнения — второй этап, кнопки пока нерабочие */}
@@ -66,7 +85,7 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 						Выполнено
 					</Button>
 				</Group>
-			</header>
+			</Group>
 
 			<div className={classes.layout}>
 				<div className={classes.protocolCard}>
@@ -95,14 +114,31 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 function Cheatsheet({ sections }: { sections: Array<WorkoutSection> }) {
 	return (
 		<div className={classes.sideCard}>
-			<div className={classes.cheatsheetHead}>Шпаргалка</div>
-			<div className={classes.cheatsheetBody}>
+			<Text
+				px={18}
+				py={13}
+				ff="heading"
+				fz={15}
+				fw={600}
+				lts="0.08em"
+				tt="uppercase"
+				c="gray.8"
+				className={classes.cheatsheetHead}
+			>
+				Шпаргалка
+			</Text>
+
+			<Box px={18} py={14} className={classes.cheatsheetBody}>
 				{sections.map((section, sectionIndex) => (
 					<div key={`${section.Title}-${sectionIndex}`}>
-						<div className={classes.cheatsheetSection}>
-							<span className={classes.cheatsheetTitle}>{section.Title}</span>
-							<span className={classes.cheatsheetProtocol}>{section.Protocol.Title}</span>
-						</div>
+						<Group justify="space-between" align="baseline" gap={10} mb={6}>
+							<Text span fz={13} fw={700} lts="0.05em" tt="uppercase">
+								{section.Title}
+							</Text>
+							<Text span fz={13} fw={600} c="slate.7" ta="right">
+								{section.Protocol.Title}
+							</Text>
+						</Group>
 
 						{section.Exercises.length > 0 && (
 							<ul className={classes.cheatsheetList}>
@@ -110,17 +146,21 @@ function Cheatsheet({ sections }: { sections: Array<WorkoutSection> }) {
 									<li key={`${exercise.Name}-${exerciseIndex}`} className={classes.cheatsheetItem}>
 										<span className={classes.cheatsheetPrescription}>
 											{exercise.Prescription.map((line) => (
-												<span key={line}>{line}</span>
+												<Text key={line} span ff="heading" fz={14} fw={600} c="copper.6">
+													{line}
+												</Text>
 											))}
 										</span>
-										<span className={classes.cheatsheetName}>{exercise.Name}</span>
+										<Text span fz={14} lh={1.4} c="gray.8">
+											{exercise.Name}
+										</Text>
 									</li>
 								))}
 							</ul>
 						)}
 					</div>
 				))}
-			</div>
+			</Box>
 		</div>
 	);
 }
@@ -143,20 +183,26 @@ function Neighbours({ workouts, current }: { workouts: Array<Workout>; current: 
 
 	return (
 		<div className={classes.sideCard}>
-			<div className={classes.cheatsheetBody}>
+			<Box px={18} py={14}>
 				{neighbours.map(({ label, workout }) => (
 					<RouteLink
 						key={workout.ID}
 						to="/workouts/$workoutId"
 						params={{ workoutId: workout.ID }}
-						className={classes.neighbour}
+						c="inherit"
 						underline="never"
 					>
-						<span className={classes.neighbourDate}>{formatIsoDate(workout.Date)}</span>
-						<span className={classes.neighbourLabel}>{label}</span>
+						<Group justify="space-between" align="baseline" gap={10} py={10}>
+							<Text span fz={14} c="gray.8">
+								{formatIsoDate(workout.Date)}
+							</Text>
+							<Text span fz={13} c="gray.7">
+								{label}
+							</Text>
+						</Group>
 					</RouteLink>
 				))}
-			</div>
+			</Box>
 		</div>
 	);
 }

@@ -22,28 +22,8 @@
     margin-bottom: 12px;
 }
 
-.title {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--mantine-color-gray-7);
-}
-
 .count {
-    font-size: 14px;
-    color: var(--mantine-color-gray-8);
     white-space: nowrap;
-}
-
-.countValue {
-    font-family: var(--mantine-font-family-headings);
-    font-size: 20px;
-    color: var(--mantine-color-copper-6);
-}
-
-.compact .countValue {
-    font-size: 18px;
 }
 
 .bar {
@@ -67,10 +47,4 @@
 .segmentToday {
     height: 16px;
     background: var(--mantine-color-slate-7);
-}
-
-.note {
-    margin: 10px 0 0;
-    font-size: 13px;
-    color: var(--mantine-color-gray-7);
 }
