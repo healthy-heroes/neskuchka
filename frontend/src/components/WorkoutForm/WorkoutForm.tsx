@@ -72,7 +72,7 @@ export function WorkoutForm({
 				},
 				Exercises: {
 					[formRootRule]: isNotEmpty('Хотя бы одно упражнение обязательно'),
-					Description: isNotEmpty(),
+					Name: isNotEmpty(),
 				},
 			},
 		},
@@ -224,13 +224,21 @@ function renderExercisesFields(form: FormReturnType, sectionIndex: number): Reac
 			const keyBy = (property: string) => form.key(pathFor(property));
 
 			return (
-				<Group mb="xs" key={exercise._key}>
+				<Group mb="xs" align="flex-start" key={exercise._key}>
+					<Textarea
+						placeholder="10, 3х2 @ 80%"
+						autosize
+						minRows={1}
+						w={140}
+						key={keyBy('Prescription')}
+						{...form.getInputProps(pathFor('Prescription'))}
+					/>
 					<TextInput
-						placeholder="Описание упражнения"
+						placeholder="Название упражнения"
 						withAsterisk
 						style={{ flex: 1 }}
-						key={keyBy('Description')}
-						{...form.getInputProps(pathFor('Description'))}
+						key={keyBy('Name')}
+						{...form.getInputProps(pathFor('Name'))}
 					/>
 					<ActionIcon
 						color="red"

@@ -4,18 +4,21 @@ import { Workout, WorkoutExercise, WorkoutSection } from '@/types/domain';
 
 const idPrefix = 'new';
 
-export type WorkoutFormData = Workout & {
+export type WorkoutFormData = Omit<Workout, 'Sections'> & {
 	Sections: Array<WorkoutSectionFormData>;
 };
 
-export type WorkoutSectionFormData = WorkoutSection & {
+export type WorkoutSectionFormData = Omit<WorkoutSection, 'Exercises'> & {
 	_key: string;
 
 	Exercises: Array<WorkoutExerciseFormData>;
 };
 
-export type WorkoutExerciseFormData = WorkoutExercise & {
+export type WorkoutExerciseFormData = Omit<WorkoutExercise, 'Prescription'> & {
 	_key: string;
+
+	/** В форме предписания редактируются одним полем, по подходу на строку. */
+	Prescription: string;
 };
 
 export function convertToFormData(data: Workout): WorkoutFormData {
@@ -27,6 +30,7 @@ export function convertToFormData(data: Workout): WorkoutFormData {
 			Exercises: section.Exercises.map((exercise) => ({
 				...exercise,
 				_key: randomId(idPrefix),
+				Prescription: exercise.Prescription.join('\n'),
 			})),
 		})),
 	};
@@ -39,9 +43,18 @@ export function convertToDomainData(data: WorkoutFormData): Workout {
 			...section,
 			Exercises: section.Exercises.map((exercise) => ({
 				...exercise,
+				Prescription: splitPrescription(exercise.Prescription),
 			})),
 		})),
 	};
+}
+
+/** Пустые строки отбрасываем: упражнение без предписания — нормальный случай. */
+function splitPrescription(value: string): string[] {
+	return value
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((line) => line !== '');
 }
 
 // Helpers for creating initial values
@@ -70,6 +83,7 @@ export function makeExercise(): WorkoutExerciseFormData {
 	return {
 		_key: randomId('new'),
 		ExerciseSlug: '',
-		Description: '',
+		Prescription: '',
+		Name: '',
 	};
 }

@@ -14,9 +14,9 @@ export default function createWorkout(): Workout {
 					Description: '',
 				},
 				Exercises: [
-					{ ExerciseSlug: 'snow-angels', Description: '5 снежных ангелов' },
-					{ ExerciseSlug: 'push-ups', Description: '10 отжиманий' },
-					{ ExerciseSlug: 'squats', Description: '10 приседаний' },
+					{ ExerciseSlug: 'snow-angels', Prescription: ['5'], Name: 'Снежный ангел' },
+					{ ExerciseSlug: 'push-ups', Prescription: ['10'], Name: 'Отжимание' },
+					{ ExerciseSlug: 'squats', Prescription: ['10'], Name: 'Приседание' },
 				],
 			},
 			{
@@ -26,8 +26,8 @@ export default function createWorkout(): Workout {
 					Description: '20 сек макс повт берпи / 40 сек отжимания с колен',
 				},
 				Exercises: [
-					{ ExerciseSlug: 'push-ups', Description: '10 отжиманий' },
-					{ ExerciseSlug: 'squats', Description: '10 приседаний' },
+					{ ExerciseSlug: 'push-ups', Prescription: ['10'], Name: 'Отжимание' },
+					{ ExerciseSlug: 'squats', Prescription: ['10'], Name: 'Приседание' },
 				],
 			},
 		],

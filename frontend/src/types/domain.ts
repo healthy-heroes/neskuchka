@@ -12,6 +12,14 @@ export interface UserSettings {
 export interface Track {
 	ID: string;
 	Name: string;
+	Description: string;
+
+	Author: TrackAuthor;
+}
+
+export interface TrackAuthor {
+	ID: string;
+	Name: string;
 }
 
 export interface Exercise {
@@ -22,7 +30,11 @@ export interface Exercise {
 
 export interface WorkoutExercise {
 	ExerciseSlug: string;
-	Description: string;
+
+	/** Что делать: «10», «3х2 @ 80%». Несколько строк — несколько подходов. */
+	Prescription: string[];
+	/** Название упражнения. Временно лежит на тренировке, пока нет справочника упражнений. */
+	Name: string;
 }
 
 export interface WorkoutSection {
