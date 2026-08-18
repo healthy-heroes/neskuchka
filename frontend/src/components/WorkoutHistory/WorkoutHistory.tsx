@@ -1,11 +1,14 @@
 import dayjs from 'dayjs';
 import { IconCheck, IconChevronRight } from '@tabler/icons-react';
-import { Group, Text } from '@mantine/core';
+import { Box, Group, Text } from '@mantine/core';
 import { Workout } from '@/types/domain';
 import { isWorkoutDone } from '@/utils/completion';
 import { formatIsoDateShort, formatWeekday, isToday } from '@/utils/dates';
 import { RouteLink } from '../RouteLink/RouteLink';
 import classes from './WorkoutHistory.module.css';
+
+/** Галочка статуса и её пустой дублёр должны совпадать по размеру. */
+const STATUS_ICON = 16;
 
 export interface WorkoutHistoryProps {
 	/** Опубликованные тренировки трека, свежие первыми. */
@@ -90,18 +93,17 @@ function HistoryRow({ workout }: { workout: Workout }) {
 				))}
 			</Text>
 
-			{done ? (
-				<Group gap="xs" wrap="nowrap" c="slate.7">
-					<IconCheck size={16} stroke={2.5} />
-					<Text span fz="sm" fw={600}>
-						Выполнено
-					</Text>
-				</Group>
-			) : (
-				<Text fz="sm" c="gray.6">
-					Пропущено
+			<Group gap="xs" wrap="nowrap" c={done ? 'slate.7' : 'gray.6'}>
+				{/* У пропущенных иконки нет, но место она занимает — иначе слова разъезжаются */}
+				{done ? (
+					<IconCheck size={STATUS_ICON} stroke={2.5} />
+				) : (
+					<Box w={STATUS_ICON} h={STATUS_ICON} />
+				)}
+				<Text span fz="sm" fw={done ? 600 : undefined}>
+					{done ? 'Выполнено' : 'Пропущено'}
 				</Text>
-			)}
+			</Group>
 
 			<IconChevronRight size={18} className={classes.rowChevron} />
 		</RouteLink>

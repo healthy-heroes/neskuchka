@@ -13,7 +13,7 @@ export interface WorkoutSectionsSkeletonProps {
 export function WorkoutSectionsSkeleton({ rows = 3 }: WorkoutSectionsSkeletonProps) {
 	return (
 		<div className={classes.sections}>
-			<Group className={classes.fullRow} align="baseline" gap="sm">
+			<Group className={classes.fullRow} align="center" gap="sm">
 				<Skeleton height={20} width={140} />
 				<Skeleton height={18} width={90} radius="xl" />
 			</Group>

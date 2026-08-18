@@ -3,14 +3,10 @@ import classes from './TrackProgress.module.css';
 
 const SEGMENTS = 12;
 
-export interface TrackProgressSkeletonProps {
-	compact?: boolean;
-}
-
 /** Скелетон полосы прогресса: столько же сегментов, сколько влезает в окно 30 дней. */
-export function TrackProgressSkeleton({ compact = false }: TrackProgressSkeletonProps) {
+export function TrackProgressSkeleton() {
 	return (
-		<Paper withBorder radius="lg" p="md" bg={compact ? undefined : 'gray.0'}>
+		<Paper withBorder radius="lg" p="md" bg="gray.0">
 			<div className={classes.head}>
 				<Skeleton height={13} width={130} />
 				<Skeleton height={14} width={70} />

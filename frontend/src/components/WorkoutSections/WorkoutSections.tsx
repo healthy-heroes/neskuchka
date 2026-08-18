@@ -34,7 +34,7 @@ export function WorkoutSections({ sections }: WorkoutSectionsProps) {
 				<div key={`${section.Title}-${sectionIndex}`} className={classes.section}>
 					{sectionIndex > 0 && <div className={classes.divider} />}
 
-					<Group className={classes.fullRow} align="baseline" gap="sm">
+					<Group className={classes.fullRow} align="center" gap="sm">
 						<Title order={2} fz="xl" lts="0.06em">
 							{section.Title}
 						</Title>

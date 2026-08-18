@@ -12,9 +12,6 @@ export interface TrackProgressProps {
 	workouts: Array<Workout>;
 	/** Всего тренировок в треке за всё время. */
 	total?: number;
-
-	/** Ужатый вариант для боковой колонки. */
-	compact?: boolean;
 }
 
 /**
@@ -25,7 +22,7 @@ export interface TrackProgressProps {
  *
  * Статус выполнения пока изображается заглушкой, см. utils/completion.
  */
-export function TrackProgress({ workouts, total, compact = false }: TrackProgressProps) {
+export function TrackProgress({ workouts, total }: TrackProgressProps) {
 	const segments = workoutsInWindow(workouts).map((workout) => ({
 		date: workout.Date,
 		today: isToday(workout.Date),
@@ -41,17 +38,16 @@ export function TrackProgress({ workouts, total, compact = false }: TrackProgres
 	}
 
 	return (
-		<Paper withBorder radius="lg" p="md" bg={compact ? undefined : 'gray.0'}>
+		<Paper withBorder radius="lg" p="md" bg="gray.0">
 			<div className={classes.head}>
 				<Text span fz="xs" fw={600} lts="0.06em" tt="uppercase" c="gray.7">
 					Последние 30 дней
 				</Text>
 				<Text span fz="sm" c="gray.8" className={classes.count}>
-					<Text span ff="heading" fz={compact ? 'lg' : 'xl'} c="copper.6">
+					<Text span ff="heading" fz="xl" c="copper.6">
 						{doneCount}
 					</Text>{' '}
-					из {segments.length}
-					{!compact && ' тренировок'}
+					из {segments.length} тренировок
 				</Text>
 			</div>
 

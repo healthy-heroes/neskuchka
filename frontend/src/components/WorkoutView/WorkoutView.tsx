@@ -5,8 +5,6 @@ import { useApi } from '@/api/hooks';
 import { WorkoutSection } from '@/types/domain';
 import { formatIsoDate, formatWeekday, isToday } from '@/utils/dates';
 import { RouteLink } from '../RouteLink/RouteLink';
-import { TrackProgress } from '../TrackProgress/TrackProgress';
-import { TrackProgressSkeleton } from '../TrackProgress/TrackProgressSkeleton';
 import { WorkoutSections } from '../WorkoutSections/WorkoutSections';
 import { WorkoutSectionsSkeleton } from '../WorkoutSections/WorkoutSectionsSkeleton';
 import classes from './WorkoutView.module.css';
@@ -20,7 +18,6 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 
 	//todo: handle errors
 	const { data, isPending } = useQuery(workouts.getWorkoutQuery(workoutId));
-	const { data: trackWorkouts } = useQuery(workouts.getMainTrackWorkoutsQuery());
 
 	if (isPending || !data) {
 		return (
@@ -33,7 +30,6 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 					<Card className={classes.sectionsCard} px="xl" py="lg">
 						<WorkoutSectionsSkeleton rows={4} />
 					</Card>
-					<TrackProgressSkeleton compact />
 				</div>
 			</Container>
 		);
@@ -92,14 +88,6 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 
 				<aside className={classes.side}>
 					<Cheatsheet sections={workout.Sections} />
-
-					{trackWorkouts && (
-						<TrackProgress
-							compact
-							workouts={trackWorkouts.Workouts}
-							total={trackWorkouts.Workouts.length}
-						/>
-					)}
 				</aside>
 			</div>
 		</Container>
