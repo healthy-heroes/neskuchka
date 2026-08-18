@@ -3,11 +3,17 @@ import { Navigate, Outlet } from '@tanstack/react-router';
 import { useApi } from '@/api/hooks';
 import { Header } from '@/components/Header/Header';
 import { PageSkeleton } from '@/components/PageSkeleton/PageSkeleton';
-import { TrackHeader } from './TrackHeader/TrackHeader';
+import classes from './MainTrack.page.module.css';
 
+/**
+ * MainTrackPage — общий слой для всего /workouts.
+ *
+ * Грузит трек, дальше дети берут его из кэша мгновенно. Шапка трека живёт
+ * не здесь, а на самой странице трека: на странице тренировки её быть не должно.
+ */
 export function MainTrackPage() {
 	const api = useApi();
-	const { data, isPending, isSuccess } = useQuery(api.workouts.getMainTrackQuery());
+	const { isPending, isSuccess } = useQuery(api.workouts.getMainTrackQuery());
 
 	if (isPending) {
 		return <PageSkeleton />;
@@ -18,10 +24,9 @@ export function MainTrackPage() {
 	}
 
 	return (
-		<>
+		<div className={classes.track}>
 			<Header />
-			<TrackHeader track={data} />
 			<Outlet />
-		</>
+		</div>
 	);
 }

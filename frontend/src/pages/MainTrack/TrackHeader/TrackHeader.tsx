@@ -1,32 +1,35 @@
-import { Avatar, Box, Group, Text, Title } from '@mantine/core';
+import { Avatar } from '@mantine/core';
 import { TrackData } from '@/api/services/workouts';
+import { TrackProgress } from '@/components/TrackProgress/TrackProgress';
+import { Workout } from '@/types/domain';
 import classes from './TrackHeader.module.css';
 
 interface TrackHeaderProps {
 	track: TrackData;
+
+	/** Нужны блоку прогресса: он считает окно последних 30 дней. */
+	workouts: Array<Workout>;
 }
 
-export function TrackHeader({ track }: TrackHeaderProps) {
+export function TrackHeader({ track, workouts }: TrackHeaderProps) {
+	const { Name, Description, Author } = track.Track;
+
 	return (
-		<Box p="lg" py="xl" bg="blue.1">
-			<Title order={1} mb="xl">
-				{track.Track.Name}
-			</Title>
+		<header className={classes.header}>
+			<div className={classes.about}>
+				<div className={classes.eyebrow}>Трек</div>
+				<h1 className={classes.title}>{Name}</h1>
+				<p className={classes.description}>{Description}</p>
 
-			<Text size="xl">Тренируйтесь с нами — где бы вы ни находились!</Text>
-			<Text size="xl">
-				Идеальная программа, чтобы поддерживать форму дома, без специального оборудования.
-			</Text>
+				{Author?.Name && (
+					<div className={classes.author}>
+						<Avatar size={26} radius="xl" name={Author.Name} color="copper" />
+						<span>{Author.Name}</span>
+					</div>
+				)}
+			</div>
 
-			<Title order={6} mt="xl" c="gray.6" className={classes.authorTitle}>
-				Автор
-			</Title>
-			<Group gap="xs">
-				<Avatar size="sm" src="/img/avatar.jpg" />
-				<Text size="md" span>
-					Илья Карягин
-				</Text>
-			</Group>
-		</Box>
+			<TrackProgress workouts={workouts} total={workouts.length} />
+		</header>
 	);
 }

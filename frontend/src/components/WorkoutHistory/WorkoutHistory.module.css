@@ -1,0 +1,101 @@
+.weekHead {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 34px 0 12px;
+}
+
+.weekTitle {
+    font-family: var(--mantine-font-family-headings);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mantine-color-gray-8);
+}
+
+.weekLine {
+    flex: 1;
+    height: 1px;
+    background: var(--mantine-color-gray-3);
+}
+
+.weekMeta {
+    font-size: 13px;
+    color: var(--mantine-color-gray-7);
+    white-space: nowrap;
+}
+
+.rows {
+    background: var(--mantine-color-white);
+    border: 1px solid var(--mantine-color-gray-3);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.weekEmpty {
+    margin: 0;
+    padding: 18px 24px;
+    font-size: 15px;
+    color: var(--mantine-color-gray-7);
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 150px 1fr 170px 24px;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--mantine-color-gray-1);
+    color: inherit;
+}
+
+.row:last-child {
+    border-bottom: none;
+}
+
+.row:hover {
+    background: var(--mantine-color-gray-0);
+}
+
+.rowDate {
+    font-family: var(--mantine-font-family-headings);
+    font-size: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.rowWeekday {
+    font-size: 13px;
+    color: var(--mantine-color-gray-7);
+}
+
+.rowSummary {
+    font-size: 15px;
+    color: var(--mantine-color-gray-8);
+}
+
+/* Граница между секциями шире, чем разделитель «секция · протокол»,
+   иначе сводка читается плоским списком */
+.summarySep {
+    margin: 0 10px;
+    color: var(--mantine-color-gray-6);
+}
+
+.rowDone {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--mantine-color-slate-7);
+}
+
+.rowMissed {
+    font-size: 14px;
+    color: var(--mantine-color-gray-6);
+}
+
+.rowChevron {
+    color: var(--mantine-color-gray-6);
+}

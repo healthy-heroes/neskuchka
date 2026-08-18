@@ -1,27 +1,50 @@
 import { useQuery } from '@tanstack/react-query';
-import { Box, Title } from '@mantine/core';
 import { useApi } from '@/api/hooks';
-import { WorkoutCard } from '../WorkoutCard/WorkoutCard';
+import { TrackHeader } from '@/pages/MainTrack/TrackHeader/TrackHeader';
+import { isToday } from '@/utils/dates';
+import { NoWorkoutToday, TodayWorkout } from '../TodayWorkout/TodayWorkout';
 import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
+import { WorkoutHistory } from '../WorkoutHistory/WorkoutHistory';
+import classes from './Workouts.module.css';
 
+/**
+ * Workouts — страница трека.
+ *
+ * Собрана вокруг одной задачи: человек заходит, сразу видит сегодняшнюю
+ * тренировку и начинает её. Всё остальное — история, прогресс — ниже и мельче.
+ */
 export function Workouts() {
 	const { workouts } = useApi();
 
 	//todo: handle errors
-	const { data, isSuccess, isLoading } = useQuery(workouts.getMainTrackWorkoutsQuery());
+	const { data, isPending } = useQuery(workouts.getMainTrackWorkoutsQuery());
+	const { data: track } = useQuery(workouts.getMainTrackQuery());
+
+	const list = data?.Workouts ?? [];
+	const todayWorkout = list.find((workout) => isToday(workout.Date));
+
+	// Последняя опубликованная — на случай, когда на сегодня тренировки нет
+	const lastPublished = list.find((workout) => new Date(workout.Date) <= new Date());
 
 	return (
-		<Box p="md">
-			<Title order={2} my="md">
-				Тренировки
-			</Title>
+		<div className={classes.page}>
+			{track && <TrackHeader track={track} workouts={list} />}
 
-			{(isLoading || !isSuccess) && <WorkoutCardSkeleton cardProps={{ mb: 'xl' }} />}
+			<div className={classes.body}>
+				{isPending ? (
+					<WorkoutCardSkeleton />
+				) : (
+					<>
+						{todayWorkout ? (
+							<TodayWorkout workout={todayWorkout} />
+						) : (
+							<NoWorkoutToday last={lastPublished} />
+						)}
 
-			{isSuccess &&
-				data.Workouts.map((workout) => {
-					return <WorkoutCard key={workout.ID} cardProps={{ mb: 'xl' }} workout={workout} />;
-				})}
-		</Box>
+						<WorkoutHistory workouts={list} />
+					</>
+				)}
+			</div>
+		</div>
 	);
 }
