@@ -34,6 +34,11 @@ export function TrackProgress({ workouts, total, compact = false }: TrackProgres
 	const doneCount = segments.filter((segment) => segment.done).length;
 	const lastDone = segments.find((segment) => segment.done);
 
+	// В окне пусто — показывать «0 из 0» и голый жёлоб незачем
+	if (segments.length === 0) {
+		return null;
+	}
+
 	return (
 		<div className={clsx(classes.root, compact && classes.compact)}>
 			<div className={classes.head}>

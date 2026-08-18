@@ -31,11 +31,15 @@ export function Workouts() {
 			{track && <TrackHeader track={track} workouts={published} loading={isPending} />}
 
 			<div className={classes.body}>
-				{isPending ? (
-					<FeaturedWorkoutSkeleton />
-				) : (
+				{isPending && <FeaturedWorkoutSkeleton />}
+
+				{!isPending && !featured && (
+					<p className={classes.empty}>Тренировок пока нет — они появятся, когда их опубликуют</p>
+				)}
+
+				{!isPending && featured && (
 					<>
-						{featured && <FeaturedWorkout workout={featured} />}
+						<FeaturedWorkout workout={featured} />
 
 						<WorkoutHistory workouts={published} featured={featured} />
 					</>
