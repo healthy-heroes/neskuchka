@@ -19,8 +19,16 @@ func (s *Service) GetMainTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// The author is shown on the track page. A missing owner should not take the
+	// whole page down, so fall back to an empty author instead of failing.
+	author, err := s.dataStore.GetUser(r.Context(), track.OwnerID)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to get track owner")
+		author = domain.User{}
+	}
+
 	httpx.Render(w, TrackSchema{
-		Track:   TrackInfo{ID: string(track.ID), Name: track.Name},
+		Track:   MakeTrackInfo(track, author),
 		IsOwner: track.IsOwner(domain.UserID(userID)),
 	})
 }
