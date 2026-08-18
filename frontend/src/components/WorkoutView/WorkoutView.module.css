@@ -1,9 +1,169 @@
-.sectionTitle {
-    color: var(--mantine-color-gray-6);
+.page {
+    width: 1240px;
+    margin: 0 auto;
+    padding: 22px 32px 64px;
+    box-sizing: border-box;
+}
+
+.back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--mantine-color-gray-7);
+}
+
+.title {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 40px;
+    margin: 14px 0 24px;
+}
+
+.todayPill {
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--mantine-color-copper-6);
+    color: var(--mantine-color-white);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
-.linkIcon {
-    position: relative;
-    top: 3px;
+.meta {
+    font-size: 14px;
+    color: var(--mantine-color-gray-7);
+}
+
+.heading {
+    margin: 0;
+    font-family: var(--mantine-font-family-headings);
+    font-size: 52px;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 32px;
+    align-items: start;
+}
+
+.protocolCard {
+    padding: 22px 28px 24px;
+    border: 1px solid var(--mantine-color-gray-3);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 5%), 0 10px 15px -5px rgb(0 0 0 / 5%);
+}
+
+.side {
+    position: sticky;
+    /* 60px липкой шапки + 24px зазора */
+    top: 84px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.sideCard {
+    border: 1px solid var(--mantine-color-gray-3);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.cheatsheetHead {
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--mantine-color-gray-2);
+    font-family: var(--mantine-font-family-headings);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mantine-color-gray-8);
+}
+
+.cheatsheetBody {
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.cheatsheetSection {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.cheatsheetTitle {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.cheatsheetProtocol {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--mantine-color-slate-7);
+    text-align: right;
+}
+
+.cheatsheetList {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 10px;
+    align-items: baseline;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cheatsheetItem {
+    display: contents;
+}
+
+.cheatsheetPrescription {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+    font-family: var(--mantine-font-family-headings);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--mantine-color-copper-6);
+    white-space: nowrap;
+}
+
+.cheatsheetName {
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--mantine-color-gray-8);
+}
+
+.neighbour {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 0;
+    color: inherit;
+}
+
+.neighbourDate {
+    font-size: 14px;
+    color: var(--mantine-color-gray-8);
+}
+
+.neighbourLabel {
+    font-size: 13px;
+    color: var(--mantine-color-gray-7);
 }
