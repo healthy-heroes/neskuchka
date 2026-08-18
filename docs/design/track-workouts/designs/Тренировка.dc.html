@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  body { margin: 0; background: #f4f2f1; }
+  a { color: #c35727; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  ul { margin: 0; padding: 0; list-style: none; }
+</style>
+</helmet>
+
+<div data-screen-label="Тренировка" style="font-family: 'Commissioner', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2b2725; background: #fff; min-height: 100%; min-width: 1240px">
+
+  <header style="height: 60px; padding: 0 24px; border-bottom: 1px solid #e0dddb; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #fff; z-index: 5">
+    <div style="display: flex; align-items: center; gap: 32px">
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 700; letter-spacing: -.01em">
+        <img src="img/logo.svg" alt="" style="height: 20px; display: block">
+        <span>Neskuchka</span>
+      </div>
+      <span style="font-size: 15px; font-weight: 600; color: #c35727; border-bottom: 2px solid #c35727; padding-bottom: 2px">Тренировки</span>
+    </div>
+    <img src="img/avatar.jpg" alt="" style="width: 34px; height: 34px; border-radius: 999px; object-fit: cover; display: block">
+  </header>
+
+  <div style="width: 1240px; margin: 0 auto; padding: 22px 32px 64px; box-sizing: border-box">
+
+    <a href="#" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #6b6561">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6l6 6"></path></svg>
+      <span>Нескучный спорт</span>
+    </a>
+
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; margin: 14px 0 24px">
+      <div>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #fff; background: #c35727; padding: 5px 10px; border-radius: 999px">Сегодня</span>
+          <span style="font-size: 14px; color: #6b6561">четверг · ≈ 50 минут · штанга</span>
+        </div>
+        <h1 style="margin: 0; font-family: 'Oswald', sans-serif; font-size: 52px; line-height: 1; font-weight: 600; text-transform: uppercase; letter-spacing: .01em">Тренировка 20 августа</h1>
+      </div>
+      <div style="display: flex; gap: 10px; flex-shrink: 0">
+        <a href="#" style="display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 22px; border-radius: 8px; background: #c35727; color: #fff; font-size: 16px; font-weight: 600; text-decoration: none">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16l13 -8z"></path></svg>
+          <span>Начать тренировку</span>
+        </a>
+        <a href="#" style="display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; border-radius: 8px; border: 1px solid #cfcbc8; color: #2b2725; font-size: 16px; font-weight: 600; text-decoration: none">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10 -10"></path></svg>
+          <span>Выполнено</span>
+        </a>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 340px; gap: 32px; align-items: start">
+
+      <div style="border: 1px solid #e0dddb; border-radius: 12px; padding: 22px 28px 24px; box-shadow: 0 1px 3px rgba(0,0,0,.05), rgba(0,0,0,.05) 0 10px 15px -5px; display: grid; grid-template-columns: max-content 1fr auto; gap: 0 24px; align-items: baseline">
+        <sc-for list="{{ sections }}" as="s" hint-placeholder-count="3">
+          <div style="display: contents">
+            <sc-if value="{{ s.notFirst }}" hint-placeholder-val="{{ false }}">
+              <div style="grid-column: 1 / -1; border-top: 1px solid #f4f2f1; margin: 18px 0 20px"></div>
+            </sc-if>
+            <div style="grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap">
+              <h2 style="margin: 0; font-family: 'Oswald', sans-serif; font-size: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em">{{ s.title }}</h2>
+              <span style="font-size: 13px; font-weight: 600; color: #30525c; background: #dbe7ea; padding: 3px 9px; border-radius: 999px">{{ s.protocol }}</span>
+            </div>
+            <sc-if value="{{ s.hasNote }}" hint-placeholder-val="{{ true }}">
+              <p style="grid-column: 1 / -1; margin: 6px 0 0; max-width: 68ch; font-size: 14px; line-height: 1.55; color: #4a4542; text-wrap: pretty">{{ s.note }}</p>
+            </sc-if>
+
+            <ul style="display: contents">
+              <sc-for list="{{ s.ex }}" as="e" hint-placeholder-count="3">
+                <li style="display: contents">
+                  <span onClick="{{ e.toggle }}" style="display: flex; flex-direction: column; align-items: flex-end; gap: 1px; padding: 9px 0; cursor: pointer">
+                    <sc-for list="{{ e.presc }}" as="p" hint-placeholder-count="1">
+                      <span style="font-family: 'Oswald', sans-serif; font-size: 17px; font-weight: 600; color: #c35727; letter-spacing: .02em; white-space: nowrap">{{ p }}</span>
+                    </sc-for>
+                  </span>
+                  <span onClick="{{ e.toggle }}" style="font-size: 16px; line-height: 1.45; padding: 9px 0; cursor: pointer">{{ e.label }}</span>
+                  <span onClick="{{ e.toggle }}" style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #6b6561; padding: 9px 0; cursor: pointer">
+                    <span>{{ e.hint }}</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6l6 -6"></path></svg>
+                  </span>
+
+                  <sc-if value="{{ e.open }}" hint-placeholder-val="{{ true }}">
+                    <div style="grid-column: 1 / -1">
+                      <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; padding: 6px 0 22px">
+                        <div style="flex: 1 1 340px; min-width: 0">
+                          <p style="margin: 0 0 14px; max-width: 68ch; font-size: 15px; line-height: 1.6; color: #3b3633; text-wrap: pretty">{{ e.description }}</p>
+                          <div style="font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6b6561; margin-bottom: 8px">На что смотреть</div>
+                          <ul style="display: flex; flex-direction: column; gap: 7px">
+                            <sc-for list="{{ e.cues }}" as="c" hint-placeholder-count="3">
+                              <li style="display: flex; gap: 10px; font-size: 15px; line-height: 1.5; color: #4a4542">
+                                <span style="width: 5px; height: 5px; border-radius: 999px; background: #c35727; margin-top: 9px; flex-shrink: 0"></span>
+                                <span>{{ c }}</span>
+                              </li>
+                            </sc-for>
+                          </ul>
+                          <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px">
+                            <span style="font-size: 13px; font-weight: 600; color: #4a4542; border: 1px solid #e0dddb; border-radius: 999px; padding: 5px 12px">Легче: {{ e.easier }}</span>
+                            <span style="font-size: 13px; font-weight: 600; color: #4a4542; border: 1px solid #e0dddb; border-radius: 999px; padding: 5px 12px">Сложнее: {{ e.harder }}</span>
+                          </div>
+                        </div>
+                        <div style="flex: 0 1 260px; aspect-ratio: 4 / 3; border-radius: 10px; border: 1px solid #e0dddb; background-image: repeating-linear-gradient(135deg, #f4f2f1 0 10px, #eceae8 10px 20px); display: flex; align-items: center; justify-content: center">
+                          <span style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; letter-spacing: .04em; color: #6b6561; background: #fff; padding: 5px 9px; border-radius: 5px">видео · {{ e.slug }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-if>
+                </li>
+              </sc-for>
+            </ul>
+          </div>
+        </sc-for>
+      </div>
+
+      <aside style="position: sticky; top: 84px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <image-slot id="workout-20-08" style="width: 340px; height: 255px" shape="rounded" radius="10" placeholder="Картинка к тренировке — схема, кадр из видео"></image-slot>
+          <span style="font-size: 12px; color: #948d89">Та же картинка, что в ленте трека</span>
+        </div>
+
+        <div style="border: 1px solid #e0dddb; border-radius: 12px; overflow: hidden">
+          <div style="padding: 13px 18px; border-bottom: 1px solid #eceae8; font-family: 'Oswald', sans-serif; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #4a4542">Шпаргалка</div>
+          <div style="padding: 14px 18px; display: flex; flex-direction: column; gap: 14px">
+            <sc-for list="{{ sections }}" as="s" hint-placeholder-count="3">
+              <div>
+                <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px">
+                  <span style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em">{{ s.title }}</span>
+                  <span style="font-size: 13px; color: #30525c; font-weight: 600">{{ s.protocol }}</span>
+                </div>
+                <ul style="display: grid; grid-template-columns: max-content 1fr; gap: 4px 10px; align-items: baseline">
+                  <sc-for list="{{ s.ex }}" as="e" hint-placeholder-count="3">
+                    <li style="display: contents">
+                      <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 1px">
+                        <sc-for list="{{ e.presc }}" as="p" hint-placeholder-count="1">
+                          <span style="font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 600; color: #c35727; white-space: nowrap">{{ p }}</span>
+                        </sc-for>
+                      </span>
+                      <span style="font-size: 14px; color: #4a4542; line-height: 1.4">{{ e.label }}</span>
+                    </li>
+                  </sc-for>
+                </ul>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #e0dddb; border-radius: 12px; padding: 16px 18px">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px">
+            <span style="font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #6b6561">Последние 30 дней</span>
+            <span style="font-size: 14px; color: #4a4542"><b style="font-family: 'Oswald', sans-serif; font-size: 18px; color: #c35727">8</b> из 12</span>
+          </div>
+          <div style="display: flex; gap: 4px; align-items: flex-end; height: 16px; margin-bottom: 12px">
+            <sc-for list="{{ trackCells }}" as="c" hint-placeholder-count="12">
+              <span style="{{ c.style }}"></span>
+            </sc-for>
+          </div>
+          <div style="font-size: 13px; color: #6b6561">последняя — 17 августа · всего в треке 87</div>
+        </div>
+
+        <div style="border: 1px solid #e0dddb; border-radius: 12px; padding: 6px 18px">
+          <a href="#" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f4f2f1; font-size: 14px; color: #4a4542">
+            <span>19 августа, среда</span>
+            <span style="font-size: 13px; color: #6b6561">пропущена</span>
+          </a>
+          <a href="#" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; font-size: 14px; color: #4a4542">
+            <span>17 августа, понедельник</span>
+            <span style="font-size: 13px; color: #30525c; font-weight: 600">выполнена</span>
+          </a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const EX = {
+  table: {
+    slug: 'table', presc: ['10'], label: 'столов',
+    description: 'Упор сзади: сядьте на пол, ладони под плечами пальцами к пяткам, стопы на ширине таза. Поднимите таз до прямой линии от коленей до плеч и опуститесь обратно.',
+    cues: ['Таз выше, плечи раскрыты — не заваливайте голову вперёд', 'Голени вертикально, колени над пятками', 'Ягодицы включены в верхней точке'],
+    easier: 'меньше амплитуда', harder: 'пауза 2 сек сверху',
+  },
+  bend: {
+    slug: 'forward-bend', presc: ['10'], label: 'наклонов вперёд',
+    description: 'Стоя, ноги на ширине таза. Наклон с прямой спиной до параллели, затем округляя позвоночник вниз и плавно поднимаясь обратно.',
+    cues: ['Колени мягкие, не блокируйте', 'Тянемся макушкой вперёд, а не вниз', 'Спина скругляется по позвонку, без рывков'],
+    easier: 'ноги шире', harder: 'задержка внизу 3 сек',
+  },
+  plankJack: {
+    slug: 'plank-with-jumping-jack', presc: ['20'], label: 'качающихся планок',
+    description: 'Планка на предплечьях. Покачивайтесь корпусом вперёд-назад, перенося вес на носки и обратно, сохраняя корпус жёстким.',
+    cues: ['Таз не проваливается и не задирается', 'Плечи над локтями в средней точке', 'Дыхание ровное, без задержек'],
+    easier: 'с колен', harder: 'амплитуда шире',
+  },
+  jerk: {
+    slug: 'push-jerk-split-jerk', presc: ['3х(1+2) @ 70%'], label: 'Швунг жимовой + швунг толчковый (ножницы)',
+    description: 'Комплекс без опускания штанги: один жимовой швунг, затем два толчковых в ножницы. Штанга на груди, хват чуть шире плеч, локти под грифом.',
+    cues: ['Подсед короткий, пятки на полу', 'Гриф уходит строго вверх, корпус вертикально', 'В ножницах передняя голень вертикально, задняя пятка оторвана'],
+    easier: '60% и по одному повторению', harder: '75% с паузой в подседе',
+  },
+  clean: {
+    slug: 'clean-and-jerk', presc: ['2 @ 70%', '3х2 @ 80%'], label: 'Толчок (классика)',
+    description: 'Классический толчок: взятие на грудь в полный подсед, фиксация, затем толчок над головой. Между подходами отдых до полного восстановления дыхания.',
+    cues: ['Штанга идёт вплотную к телу', 'Приём на грудь с активной постановкой локтей', 'Фиксация над головой до команды «стоп» самому себе'],
+    easier: 'силовое взятие без подседа', harder: 'добавить 5% на последнем подходе',
+  },
+  frontSquat: {
+    slug: 'front-squat', presc: ['2 @ 70%', '4х4 @ 80%'], label: 'Присед на груди',
+    description: 'Штанга на груди, локти высоко. Приседание до нижней точки с прямой спиной, подъём без наклона корпуса вперёд.',
+    cues: ['Локти держим высоко всё повторение', 'Колени идут в стороны за стопами', 'Спина остаётся вертикальной, гриф над серединой стопы'],
+    easier: '70% на все подходы', harder: 'пауза 2 сек в нижней точке',
+  },
+  rope: {
+    slug: 'jump-rope', presc: ['3х1 мин'], label: 'Скакалка',
+    description: 'Три подхода по минуте, между подходами 30 секунд отдыха. Прыжки невысокие, работа за счёт стоп.',
+    cues: ['Локти близко к корпусу, вращение кистями', 'Приземление на носки, колени мягкие', 'Темп ровный, без ускорений в конце'],
+    easier: 'прыжки без скакалки', harder: 'двойные прокруты',
+  },
+  plank: {
+    slug: 'plank', presc: ['2х1 мин'], label: 'Планка',
+    description: 'Планка на предплечьях, две минуты суммарно. Корпус в одной линии, дыхание ровное.',
+    cues: ['Поясница не прогибается', 'Лопатки разведены, плечи над локтями', 'Ягодицы и живот в тонусе всю минуту'],
+    easier: 'два подхода по 30 сек', harder: 'подъём руки поочерёдно',
+  },
+};
+
+class Component extends DCLogic {
+  state = { open: { jerk: true } };
+
+  toggle(key) {
+    this.setState((s) => ({ open: { ...s.open, [key]: !s.open[key] } }));
+  }
+
+  ex(key) {
+    const e = EX[key];
+    const open = !!this.state.open[key];
+    return { ...e, open, hint: open ? 'свернуть' : 'как делать', toggle: () => this.toggle(key) };
+  }
+
+  renderVals() {
+    const cell = (bg, h) => ({ style: { flex: 1, height: h, borderRadius: '3px', background: bg } });
+    // те же 30 дней, что в ленте трека: 11 опубликованных + сегодня
+    const history = ['d', 'm', 'd', 'd', 'd', 'd', 'm', 'd', 'd', 'd', 'm'];
+
+    return {
+      sections: [
+        { title: 'Разминка', protocol: '3 раунда', hasNote: false, note: '', notFirst: false,
+          ex: [this.ex('table'), this.ex('bend'), this.ex('plankJack')] },
+        { title: 'Комплекс', protocol: 'по схеме', hasNote: true, notFirst: true,
+          note: 'Проценты от разового максимума. Вес подбирайте так, чтобы последние повторения в подходе давались с усилием, но без потери техники. Между подходами отдых 90–120 секунд; если техника рассыпается — оставьте вес прошлого подхода, а не сокращайте повторения.',
+          ex: [this.ex('jerk'), this.ex('clean'), this.ex('frontSquat')] },
+        { title: 'Финиш', protocol: '8 минут', hasNote: false, note: '', notFirst: true,
+          ex: [this.ex('rope'), this.ex('plank')] },
+      ],
+      trackCells: history.map((s) => cell(s === 'd' ? '#c35727' : '#e0dddb', '10px')).concat([cell('#30525c', '16px')]),
+    };
+  }
+}
+</script>
+</body>
+</html>
