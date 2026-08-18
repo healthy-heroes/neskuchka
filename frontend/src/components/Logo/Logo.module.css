@@ -2,3 +2,7 @@
     position: relative;
     top: 3px;
 }
+
+.logoText {
+    letter-spacing: -0.01em;
+}

@@ -1,6 +1,24 @@
 .header {
+	position: sticky;
+	top: 0;
+	z-index: 5;
+	background: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
 	height: 60px;
 	padding-left: var(--mantine-spacing-md);
 	padding-right: var(--mantine-spacing-md);
 	border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.nav {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--mantine-color-gray-9);
+}
+
+.navActive {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--mantine-color-copper-6);
+	border-bottom: 2px solid var(--mantine-color-copper-6);
+	padding-bottom: 2px;
 }
