@@ -7,8 +7,11 @@ import { RouteLink } from '../RouteLink/RouteLink';
 import classes from './WorkoutHistory.module.css';
 
 export interface WorkoutHistoryProps {
-	/** Тренировки трека, свежие первыми. */
+	/** Опубликованные тренировки трека, свежие первыми. */
 	workouts: Array<Workout>;
+
+	/** Тренировка из карточки выше — в истории она не повторяется. */
+	featured?: Workout;
 }
 
 interface Week {
@@ -20,15 +23,10 @@ interface Week {
  * WorkoutHistory — прошедшие тренировки, сгруппированные по неделям.
  *
  * Порядок везде одинаковый: недели от новых к старым, внутри недели тоже.
- * Сегодняшняя тренировка сюда не попадает — она в карточке выше. Будущие
- * не показываем вовсе: публикуется только прошлое и сегодня.
+ * Тренировка из карточки выше сюда не попадает, чтобы не двоиться.
  */
-export function WorkoutHistory({ workouts }: WorkoutHistoryProps) {
-	const weeks = groupByWeek(workouts);
-
-	// Сегодняшняя тренировка живёт в карточке выше, поэтому в пустой неделе
-	// текст зависит от того, есть ли она вообще
-	const hasToday = workouts.some((workout) => isToday(workout.Date));
+export function WorkoutHistory({ workouts, featured }: WorkoutHistoryProps) {
+	const weeks = groupByWeek(workouts, featured);
 
 	if (weeks.length === 0) {
 		return null;
@@ -46,11 +44,7 @@ export function WorkoutHistory({ workouts }: WorkoutHistoryProps) {
 
 					<div className={classes.rows}>
 						{week.items.length === 0 ? (
-							<p className={classes.weekEmpty}>
-								{hasToday
-									? 'Кроме сегодняшней на этой неделе тренировок пока не было'
-									: 'На этой неделе тренировок пока не было'}
-							</p>
+							<p className={classes.weekEmpty}>{emptyWeekText(week, featured)}</p>
 						) : (
 							week.items.map((workout) => <HistoryRow key={workout.ID} workout={workout} />)
 						)}
@@ -99,13 +93,11 @@ function HistoryRow({ workout }: { workout: Workout }) {
 	);
 }
 
-function groupByWeek(workouts: Array<Workout>): Array<Week> {
-	const today = dayjs().startOf('day');
-
-	const past = workouts.filter((workout) => dayjs(workout.Date).isBefore(today, 'day'));
+function groupByWeek(workouts: Array<Workout>, featured?: Workout): Array<Week> {
+	const rest = workouts.filter((workout) => workout.ID !== featured?.ID);
 
 	const weeks: Array<Week> = [];
-	for (const workout of past) {
+	for (const workout of rest) {
 		const start = dayjs(workout.Date).startOf('week');
 		const week = weeks.find((item) => item.start.isSame(start, 'day'));
 
@@ -117,13 +109,29 @@ function groupByWeek(workouts: Array<Workout>): Array<Week> {
 	}
 
 	// Текущая неделя показывается всегда: без неё непонятно, что на этой неделе
-	// кроме сегодняшней ничего не было.
-	const currentStart = today.startOf('week');
+	// кроме показанной выше тренировки ничего не было.
+	const currentStart = dayjs().startOf('week');
 	if (!weeks.some((week) => week.start.isSame(currentStart, 'day'))) {
 		weeks.unshift({ start: currentStart, items: [] });
 	}
 
 	return weeks;
+}
+
+/**
+ * Пустая неделя объясняется по-разному: одно дело «кроме сегодняшней»,
+ * другое — когда наверху висит позавчерашняя, третье — когда её там нет вовсе.
+ */
+function emptyWeekText(week: Week, featured?: Workout): string {
+	const featuredHere = featured && dayjs(featured.Date).startOf('week').isSame(week.start, 'day');
+
+	if (!featuredHere) {
+		return 'На этой неделе тренировок пока не было';
+	}
+
+	return isToday(featured.Date)
+		? 'Кроме сегодняшней на этой неделе тренировок пока не было'
+		: 'Кроме показанной выше на этой неделе тренировок пока не было';
 }
 
 function weekTitle(week: Week): string {

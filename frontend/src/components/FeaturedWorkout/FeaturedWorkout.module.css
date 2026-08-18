@@ -22,6 +22,27 @@
     gap: 16px;
 }
 
+/*
+ * Светлая шапка — когда показываем не сегодняшнюю тренировку.
+ * Тёмная плашка означает «это на сегодня», и разбрасываться этим значением нельзя.
+ */
+.headPast {
+    background: var(--mantine-color-gray-0);
+    border-bottom: 1px solid var(--mantine-color-gray-2);
+}
+
+.headPast .eyebrow {
+    color: var(--mantine-color-copper-6);
+}
+
+.headPast .date {
+    color: var(--mantine-color-gray-9);
+}
+
+.headPast .weekday {
+    color: var(--mantine-color-gray-7);
+}
+
 /* Единственный цвет из макета вне шкалы: тёплый акцент на тёмной плашке */
 .eyebrow {
     font-family: var(--mantine-font-family-headings);
@@ -55,27 +76,6 @@
 
 .breakdown {
     margin-left: auto;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--mantine-color-copper-6);
-}
-
-.empty {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    padding: 28px;
-}
-
-.emptyText {
-    margin: 0;
-    font-size: 16px;
-    line-height: 1.55;
-    color: var(--mantine-color-gray-8);
-}
-
-.emptyLink {
     font-size: 15px;
     font-weight: 600;
     color: var(--mantine-color-copper-6);

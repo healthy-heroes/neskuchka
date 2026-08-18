@@ -1,27 +1,32 @@
 import { IconCheck, IconPlayerPlayFilled } from '@tabler/icons-react';
+import clsx from 'clsx';
 import { Button, Group } from '@mantine/core';
 import { Workout } from '@/types/domain';
-import { formatIsoDate, formatWeekday } from '@/utils/dates';
+import { formatIsoDate, formatWeekday, isToday } from '@/utils/dates';
 import { RouteLink } from '../RouteLink/RouteLink';
 import { WorkoutProtocol } from '../WorkoutProtocol/WorkoutProtocol';
-import classes from './TodayWorkout.module.css';
+import classes from './FeaturedWorkout.module.css';
 
-export interface TodayWorkoutProps {
+export interface FeaturedWorkoutProps {
 	workout: Workout;
 }
 
 /**
- * TodayWorkout — карточка сегодняшней тренировки, главный блок трека.
+ * FeaturedWorkout — тренировка в фокусе трека, всегда развёрнутая.
  *
- * Всегда развёрнута: человек заходит, видит, что делать сегодня, и начинает.
- * Аккордеона здесь нет, остальные тренировки живут строками в истории.
+ * Обычно это сегодняшняя: человек заходит, видит, что делать сегодня, и начинает.
+ * Если на сегодня тренировки нет, разворачиваем последнюю опубликованную —
+ * иначе главный экран пустеет на ровном месте. Тёмная шапка при этом остаётся
+ * привилегией сегодняшней: она и означает «это на сегодня».
  */
-export function TodayWorkout({ workout }: TodayWorkoutProps) {
+export function FeaturedWorkout({ workout }: FeaturedWorkoutProps) {
+	const today = isToday(workout.Date);
+
 	return (
 		<article className={classes.card}>
-			<header className={classes.head}>
+			<header className={clsx(classes.head, !today && classes.headPast)}>
 				<div className={classes.headMain}>
-					<span className={classes.eyebrow}>Сегодня</span>
+					<span className={classes.eyebrow}>{today ? 'Сегодня' : 'Последняя тренировка'}</span>
 					<span className={classes.date}>{formatIsoDate(workout.Date)}</span>
 					<span className={classes.weekday}>{formatWeekday(workout.Date)}</span>
 				</div>
@@ -50,30 +55,6 @@ export function TodayWorkout({ workout }: TodayWorkoutProps) {
 						Разбор упражнений →
 					</RouteLink>
 				</Group>
-			</div>
-		</article>
-	);
-}
-
-/** Состояние «на сегодня тренировки нет»: показываем последнюю опубликованную. */
-export function NoWorkoutToday({ last }: { last?: Workout }) {
-	return (
-		<article className={classes.card}>
-			<div className={classes.empty}>
-				<p className={classes.emptyText}>
-					На сегодня тренировки нет — новая появится, когда её опубликуют
-				</p>
-
-				{last && (
-					<RouteLink
-						to="/workouts/$workoutId"
-						params={{ workoutId: last.ID }}
-						className={classes.emptyLink}
-						underline="never"
-					>
-						Открыть {formatIsoDate(last.Date)} →
-					</RouteLink>
-				)}
 			</div>
 		</article>
 	);

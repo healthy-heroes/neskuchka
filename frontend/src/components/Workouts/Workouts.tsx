@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@/api/hooks';
 import { TrackHeader } from '@/pages/MainTrack/TrackHeader/TrackHeader';
-import { isToday } from '@/utils/dates';
-import { NoWorkoutToday, TodayWorkout } from '../TodayWorkout/TodayWorkout';
+import { isPublished, isToday } from '@/utils/dates';
+import { FeaturedWorkout } from '../FeaturedWorkout/FeaturedWorkout';
 import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
 import { WorkoutHistory } from '../WorkoutHistory/WorkoutHistory';
 import classes from './Workouts.module.css';
@@ -20,28 +20,24 @@ export function Workouts() {
 	const { data, isPending } = useQuery(workouts.getMainTrackWorkoutsQuery());
 	const { data: track } = useQuery(workouts.getMainTrackQuery());
 
-	const list = data?.Workouts ?? [];
-	const todayWorkout = list.find((workout) => isToday(workout.Date));
+	const published = (data?.Workouts ?? []).filter((workout) => isPublished(workout.Date));
 
-	// Последняя опубликованная — на случай, когда на сегодня тренировки нет
-	const lastPublished = list.find((workout) => new Date(workout.Date) <= new Date());
+	// В фокусе сегодняшняя, а если её нет — последняя опубликованная:
+	// пустой главный экран хуже, чем вчерашняя тренировка на нём
+	const featured = published.find((workout) => isToday(workout.Date)) ?? published[0];
 
 	return (
 		<div className={classes.page}>
-			{track && <TrackHeader track={track} workouts={list} />}
+			{track && <TrackHeader track={track} workouts={published} />}
 
 			<div className={classes.body}>
 				{isPending ? (
 					<WorkoutCardSkeleton />
 				) : (
 					<>
-						{todayWorkout ? (
-							<TodayWorkout workout={todayWorkout} />
-						) : (
-							<NoWorkoutToday last={lastPublished} />
-						)}
+						{featured && <FeaturedWorkout workout={featured} />}
 
-						<WorkoutHistory workouts={list} />
+						<WorkoutHistory workouts={published} featured={featured} />
 					</>
 				)}
 			</div>
