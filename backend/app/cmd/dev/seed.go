@@ -136,11 +136,11 @@ func ex(name string, prescription ...string) domain.WorkoutExercise {
 }
 
 // section builds a workout section. Note goes under the section heading and may be empty.
-// A section may legitimately carry no exercises — a skill section is often just a heading —
-// but the slice still has to be non-nil, or it marshals to null instead of an empty array.
+// Exercises are required: a section without them is not a state the product allows,
+// and the editor refuses to save one.
 func section(title, protocol, note string, exercises ...domain.WorkoutExercise) domain.WorkoutSection {
-	if exercises == nil {
-		exercises = []domain.WorkoutExercise{}
+	if len(exercises) == 0 {
+		panic("seed: section " + title + " has no exercises")
 	}
 
 	return domain.WorkoutSection{
@@ -164,8 +164,8 @@ func section(title, protocol, note string, exercises ...domain.WorkoutExercise) 
 func seedWorkouts(trackID domain.TrackID, today time.Time) []domain.Workout {
 	sections := [][]domain.WorkoutSection{
 		{
-			section("Разминка", "ПВХ", ""),
-			section("Навык", "Тяжёлая атлетика, толчок (C&J)", ""),
+			section("Разминка", "", "", ex("ПВХ")),
+			section("Навык", "", "", ex("Тяжёлая атлетика, толчок (C&J)")),
 			section("Комплекс", "", "",
 				ex("Швунг жимовой + швунг толчковый (ножницы)", "3х(1+2) @ 70%"),
 				ex("Толчок (классика)", "2 @ 70%", "3х2 @ 80%"),
@@ -178,7 +178,7 @@ func seedWorkouts(trackID domain.TrackID, today time.Time) []domain.Workout {
 				ex("Присед узко"),
 				ex("Наклон в сторону ноги крестом"),
 			),
-			section("Навык", "Метаболическое кондиционирование (MetCon)", ""),
+			section("Навык", "", "", ex("Метаболическое кондиционирование (MetCon)")),
 			section("Комплекс", "21-15-9 на время", "",
 				ex("Становая тяга"),
 				ex("Фронтальное берпи"),
@@ -209,7 +209,7 @@ func seedWorkouts(trackID domain.TrackID, today time.Time) []domain.Workout {
 				ex("Обратный скорпион"),
 				ex("Стол"),
 			),
-			section("Навык", "Стойка на руках (Hand Stand)", ""),
+			section("Навык", "", "", ex("Стойка на руках (Hand Stand)")),
 			section("Комплекс", "По минутке, 16 минут", "",
 				ex("Вис", "30/30 сек"),
 				ex("Отжимание в стойке на руках / стойка на руках (20/40)", "5-4-3-2"),
@@ -225,7 +225,7 @@ func seedWorkouts(trackID domain.TrackID, today time.Time) []domain.Workout {
 				ex("Гребля", "15/13 кал"),
 				ex("Координационная лестница (прыжки)"),
 			),
-			section("Навык", "Восстановление (Recovery)", ""),
+			section("Навык", "", "", ex("Восстановление (Recovery)")),
 			section("Комплекс", "3-5 раундов не на время", "",
 				ex("Поднос ног", "10-15"),
 				ex("Пресс", "10-20"),

@@ -27,9 +27,10 @@ func MakeWorkoutInfo(workout domain.Workout) WorkoutInfo {
 
 // makeSections holds the API contract that every list is an array, never null.
 //
-// Both cases happen for real: a skill section is often just a heading with no
-// exercises, and an exercise in a warm-up often has no prescription. A nil slice
-// marshals to null, and clients iterate these lists without checking.
+// An exercise without a prescription is ordinary — that is most of a warm-up.
+// A section without exercises is not a state the product allows, and the editor
+// refuses to save one; the guard stays for rows written before that was settled.
+// A nil slice marshals to null, and clients iterate these lists without checking.
 func makeSections(sections []domain.WorkoutSection) []domain.WorkoutSection {
 	result := make([]domain.WorkoutSection, 0, len(sections))
 
