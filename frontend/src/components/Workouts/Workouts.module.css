@@ -1,20 +1,5 @@
-/*
- * Та же фиксированная рабочая ширина, что и на странице тренировки.
- * Без неё экраны расходятся: контент трека начинался от края окна,
- * контент тренировки — от центрирующего поля, и при переходе всё прыгало.
- */
-.page {
-    width: 1240px;
-    margin: 0 auto;
-}
-
-.body {
-    padding: 28px 32px 44px;
-    background: var(--mantine-color-gray-0);
-}
-
 .empty {
     background: var(--mantine-color-white);
     border: 1px solid var(--mantine-color-gray-3);
-    border-radius: 12px;
+    border-radius: var(--mantine-radius-lg);
 }

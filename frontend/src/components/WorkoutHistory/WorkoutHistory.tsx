@@ -37,19 +37,19 @@ export function WorkoutHistory({ workouts, featured }: WorkoutHistoryProps) {
 		<div>
 			{weeks.map((week) => (
 				<section key={week.start.format('YYYY-MM-DD')}>
-					<Group gap={14} my={0} mt={34} mb={12}>
-						<Text span ff="heading" fz={17} fw={600} lts="0.1em" tt="uppercase" c="gray.8">
+					<Group gap="sm" my={0} mt="xl" mb="sm">
+						<Text span ff="heading" fz="md" fw={600} lts="0.1em" tt="uppercase" c="gray.8">
 							{weekTitle(week)}
 						</Text>
 						<span className={classes.weekLine} />
-						<Text span fz={13} c="gray.7" className={classes.nowrap}>
+						<Text span fz="xs" c="gray.7" className={classes.nowrap}>
 							{weekMeta(week)}
 						</Text>
 					</Group>
 
 					<div className={classes.rows}>
 						{week.items.length === 0 ? (
-							<Text component="p" my={0} px={24} py={18} fz={15} c="gray.7">
+							<Text component="p" my={0} px="lg" py="md" fz="sm" c="gray.7">
 								{emptyWeekText(week, featured)}
 							</Text>
 						) : (
@@ -73,15 +73,15 @@ function HistoryRow({ workout }: { workout: Workout }) {
 			underline="never"
 		>
 			<div>
-				<Text ff="heading" fz={20} fw={600} tt="uppercase">
+				<Text ff="heading" fz="xl" fw={600} tt="uppercase">
 					{formatIsoDateShort(workout.Date)}
 				</Text>
-				<Text fz={13} c="gray.7">
+				<Text fz="xs" c="gray.7">
 					{formatWeekday(workout.Date)}
 				</Text>
 			</div>
 
-			<Text fz={15} c="gray.8">
+			<Text fz="sm" c="gray.8">
 				{workout.Sections.map((section, index) => (
 					<span key={`${section.Title}-${index}`}>
 						{index > 0 && <span className={classes.summarySep}>·</span>}
@@ -91,14 +91,14 @@ function HistoryRow({ workout }: { workout: Workout }) {
 			</Text>
 
 			{done ? (
-				<Group gap={8} wrap="nowrap" c="slate.7">
+				<Group gap="xs" wrap="nowrap" c="slate.7">
 					<IconCheck size={16} stroke={2.5} />
-					<Text span fz={14} fw={600}>
+					<Text span fz="sm" fw={600}>
 						Выполнено
 					</Text>
 				</Group>
 			) : (
-				<Text fz={14} c="gray.6">
+				<Text fz="sm" c="gray.6">
 					Пропущено
 				</Text>
 			)}

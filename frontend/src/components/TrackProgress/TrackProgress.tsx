@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Text } from '@mantine/core';
+import { Paper, Text } from '@mantine/core';
 import { Workout } from '@/types/domain';
 import { isWorkoutDone } from '@/utils/completion';
 import { formatIsoDate, isToday } from '@/utils/dates';
@@ -41,13 +41,13 @@ export function TrackProgress({ workouts, total, compact = false }: TrackProgres
 	}
 
 	return (
-		<div className={clsx(classes.root, compact && classes.compact)}>
+		<Paper withBorder radius="lg" p="md" bg={compact ? undefined : 'gray.0'}>
 			<div className={classes.head}>
-				<Text span fz={13} fw={600} lts="0.06em" tt="uppercase" c="gray.7">
+				<Text span fz="xs" fw={600} lts="0.06em" tt="uppercase" c="gray.7">
 					Последние 30 дней
 				</Text>
-				<Text span fz={14} c="gray.8" className={classes.count}>
-					<Text span ff="heading" fz={compact ? 18 : 20} c="copper.6">
+				<Text span fz="sm" c="gray.8" className={classes.count}>
+					<Text span ff="heading" fz={compact ? 'lg' : 'xl'} c="copper.6">
 						{doneCount}
 					</Text>{' '}
 					из {segments.length}
@@ -72,13 +72,13 @@ export function TrackProgress({ workouts, total, compact = false }: TrackProgres
 			</div>
 
 			{(lastDone || total) && (
-				<Text component="p" mt={10} fz={13} c="gray.7">
+				<Text component="p" mt="xs" fz="xs" c="gray.7">
 					{lastDone && <>последняя — {formatIsoDate(lastDone.date)}</>}
 					{lastDone && total ? ' · ' : ''}
 					{total ? <>всего в треке {total}</> : null}
 				</Text>
 			)}
-		</div>
+		</Paper>
 	);
 }
 

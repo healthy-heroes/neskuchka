@@ -2,6 +2,7 @@ import {
 	Badge,
 	Button,
 	Card,
+	Container,
 	createTheme,
 	rem,
 	Title,
@@ -90,8 +91,11 @@ export const theme = createTheme({
 			styles: { root: { fontWeight: 600 } },
 		}),
 		Card: Card.extend({
-			// 12px — радиус карточек на обоих экранах; в шкале такого шага нет намеренно
-			defaultProps: { radius: 12, withBorder: true },
+			defaultProps: { radius: 'lg', withBorder: true },
+		}),
+		// Рабочая ширина экранов задаётся здесь и больше нигде
+		Container: Container.extend({
+			defaultProps: { size: 1240 },
 		}),
 		Badge: Badge.extend({
 			defaultProps: { radius: 'xl' },

@@ -1,25 +1,9 @@
-.root {
-    min-width: 400px;
-    padding: 16px 18px;
-    border: 1px solid var(--mantine-color-gray-2);
-    border-radius: 12px;
-    background: var(--mantine-color-gray-0);
-}
-
-/* На странице тренировки блок стоит в правой колонке сам по себе,
-   без внешней карточки: две рамки ложились вплотную. */
-.compact {
-    min-width: 0;
-    background: var(--mantine-color-white);
-    border-color: var(--mantine-color-gray-3);
-}
-
 .head {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: var(--mantine-spacing-sm);
+    margin-bottom: var(--mantine-spacing-sm);
 }
 
 .count {

@@ -48,7 +48,7 @@ export function ExerciseRow({
 				{...mutedProps}
 			>
 				{prescription.map((line) => (
-					<Text key={line} span ff="heading" fz={17} fw={600} lts="0.02em" c="copper.6">
+					<Text key={line} span ff="heading" fz="md" fw={600} lts="0.02em" c="copper.6">
 						{line}
 					</Text>
 				))}
@@ -56,8 +56,8 @@ export function ExerciseRow({
 
 			<UnstyledButton
 				className={cellClass}
-				fz={16}
-				lh={1.45}
+				fz="md"
+				lh="sm"
 				aria-expanded={expandable ? opened : undefined}
 				onClick={onClick}
 			>
@@ -66,8 +66,8 @@ export function ExerciseRow({
 
 			<UnstyledButton className={cellClass} onClick={onClick} {...mutedProps}>
 				{expandable && (
-					<Group gap={8} wrap="nowrap">
-						<Text span fz={13} fw={600} c="gray.7">
+					<Group gap="xs" wrap="nowrap">
+						<Text span fz="xs" fw={600} c="gray.7">
 							{opened ? 'свернуть' : 'как делать'}
 						</Text>
 						<IconChevronDown size={16} className={clsx(opened && classes.chevronUp)} />
@@ -77,7 +77,7 @@ export function ExerciseRow({
 
 			{expandable && (
 				<Collapse expanded={opened} className={classes.panel}>
-					<Group align="flex-start" gap={24} pt={6} pb={22}>
+					<Group align="flex-start" gap="lg" pt="xs" pb="lg">
 						{content}
 					</Group>
 				</Collapse>

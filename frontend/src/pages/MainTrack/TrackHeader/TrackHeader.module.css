@@ -2,8 +2,8 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 48px;
-    padding: 28px 32px 24px;
+    gap: calc(var(--mantine-spacing-xl) * 1.5);
+    padding: var(--mantine-spacing-xl) var(--mantine-spacing-xl) var(--mantine-spacing-lg);
     border-bottom: 1px solid var(--mantine-color-gray-2);
 }
 

@@ -1,14 +1,14 @@
 import { IconCheck, IconChevronLeft, IconPlayerPlayFilled } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { Box, Button, Group, Skeleton, Text, Title } from '@mantine/core';
+import { Box, Button, Card, Container, Group, Skeleton, Text, Title } from '@mantine/core';
 import { useApi } from '@/api/hooks';
-import { Workout, WorkoutSection } from '@/types/domain';
+import { WorkoutSection } from '@/types/domain';
 import { formatIsoDate, formatWeekday, isToday } from '@/utils/dates';
 import { RouteLink } from '../RouteLink/RouteLink';
 import { TrackProgress } from '../TrackProgress/TrackProgress';
 import { TrackProgressSkeleton } from '../TrackProgress/TrackProgressSkeleton';
-import { WorkoutProtocol } from '../WorkoutProtocol/WorkoutProtocol';
-import { WorkoutProtocolSkeleton } from '../WorkoutProtocol/WorkoutProtocolSkeleton';
+import { WorkoutSections } from '../WorkoutSections/WorkoutSections';
+import { WorkoutSectionsSkeleton } from '../WorkoutSections/WorkoutSectionsSkeleton';
 import classes from './WorkoutView.module.css';
 
 interface WorkoutViewProps {
@@ -24,39 +24,39 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 
 	if (isPending || !data) {
 		return (
-			<Box className={classes.page}>
-				<Box my={24}>
+			<Container px="xl" pt="lg" className={classes.page}>
+				<Box my="lg">
 					<Skeleton height={52} width={420} />
 				</Box>
 
 				<div className={classes.layout}>
-					<div className={classes.protocolCard}>
-						<WorkoutProtocolSkeleton rows={4} />
-					</div>
+					<Card className={classes.sectionsCard} px="xl" py="lg">
+						<WorkoutSectionsSkeleton rows={4} />
+					</Card>
 					<TrackProgressSkeleton compact />
 				</div>
-			</Box>
+			</Container>
 		);
 	}
 
 	const workout = data.Workout;
 
 	return (
-		<Box className={classes.page}>
-			<RouteLink to="/workouts" fz={14} fw={600} c="gray.7" underline="never">
-				<Group gap={8} wrap="nowrap">
+		<Container px="xl" pt="lg" className={classes.page}>
+			<RouteLink to="/workouts" fz="sm" fw={600} c="gray.7" underline="never">
+				<Group gap="xs" wrap="nowrap">
 					<IconChevronLeft size={15} />
 					<span>Нескучный спорт</span>
 				</Group>
 			</RouteLink>
 
-			<Group component="header" justify="space-between" align="flex-end" gap={40} mt={14} mb={24}>
+			<Group component="header" justify="space-between" align="flex-end" gap="xl" mt="sm" mb="lg">
 				<div>
-					<Group gap={12} mb={8}>
+					<Group gap="sm" mb="xs">
 						{isToday(workout.Date) && (
 							<Text
 								span
-								fz={12}
+								fz="xs"
 								fw={700}
 								lts="0.1em"
 								tt="uppercase"
@@ -67,30 +67,28 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 								Сегодня
 							</Text>
 						)}
-						<Text span fz={14} c="gray.7">
+						<Text span fz="sm" c="gray.7">
 							{formatWeekday(workout.Date)}
 						</Text>
 					</Group>
-					<Title order={1} lts="0.01em">
-						Тренировка {formatIsoDate(workout.Date)}
-					</Title>
+					<Title order={1}>Тренировка {formatIsoDate(workout.Date)}</Title>
 				</div>
 
 				{/* Прохождение и отметка выполнения — второй этап, кнопки пока нерабочие */}
-				<Group gap={10} wrap="nowrap">
-					<Button size="md" h={46} disabled leftSection={<IconPlayerPlayFilled size={17} />}>
+				<Group gap="xs" wrap="nowrap">
+					<Button size="md" disabled leftSection={<IconPlayerPlayFilled size={17} />}>
 						Начать тренировку
 					</Button>
-					<Button size="md" h={46} disabled variant="default" leftSection={<IconCheck size={17} />}>
+					<Button size="md" disabled variant="default" leftSection={<IconCheck size={17} />}>
 						Выполнено
 					</Button>
 				</Group>
 			</Group>
 
 			<div className={classes.layout}>
-				<div className={classes.protocolCard}>
-					<WorkoutProtocol sections={workout.Sections} />
-				</div>
+				<Card className={classes.sectionsCard} px="xl" py="lg">
+					<WorkoutSections sections={workout.Sections} />
+				</Card>
 
 				<aside className={classes.side}>
 					<Cheatsheet sections={workout.Sections} />
@@ -102,23 +100,21 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 							total={trackWorkouts.Workouts.length}
 						/>
 					)}
-
-					{trackWorkouts && <Neighbours workouts={trackWorkouts.Workouts} current={workout} />}
 				</aside>
 			</div>
-		</Box>
+		</Container>
 	);
 }
 
-/** Шпаргалка — тот же протокол, ужатый до предписаний и названий. */
+/** Шпаргалка — те же секции, ужатые до предписаний и названий. */
 function Cheatsheet({ sections }: { sections: Array<WorkoutSection> }) {
 	return (
-		<div className={classes.sideCard}>
+		<Card padding={0}>
 			<Text
-				px={18}
-				py={13}
+				px="md"
+				py="sm"
 				ff="heading"
-				fz={15}
+				fz="sm"
 				fw={600}
 				lts="0.08em"
 				tt="uppercase"
@@ -128,14 +124,14 @@ function Cheatsheet({ sections }: { sections: Array<WorkoutSection> }) {
 				Шпаргалка
 			</Text>
 
-			<Box px={18} py={14} className={classes.cheatsheetBody}>
+			<Box px="md" py="sm" className={classes.cheatsheetBody}>
 				{sections.map((section, sectionIndex) => (
 					<div key={`${section.Title}-${sectionIndex}`}>
-						<Group justify="space-between" align="baseline" gap={10} mb={6}>
-							<Text span fz={13} fw={700} lts="0.05em" tt="uppercase">
+						<Group justify="space-between" align="baseline" gap="xs" mb="xs">
+							<Text span fz="xs" fw={700} lts="0.05em" tt="uppercase">
 								{section.Title}
 							</Text>
-							<Text span fz={13} fw={600} c="slate.7" ta="right">
+							<Text span fz="xs" fw={600} c="slate.7" ta="right">
 								{section.Protocol.Title}
 							</Text>
 						</Group>
@@ -146,12 +142,12 @@ function Cheatsheet({ sections }: { sections: Array<WorkoutSection> }) {
 									<li key={`${exercise.Name}-${exerciseIndex}`} className={classes.cheatsheetItem}>
 										<span className={classes.cheatsheetPrescription}>
 											{exercise.Prescription.map((line) => (
-												<Text key={line} span ff="heading" fz={14} fw={600} c="copper.6">
+												<Text key={line} span ff="heading" fz="sm" fw={600} c="copper.6">
 													{line}
 												</Text>
 											))}
 										</span>
-										<Text span fz={14} lh={1.4} c="gray.8">
+										<Text span fz="sm" lh="xs" c="gray.8">
 											{exercise.Name}
 										</Text>
 									</li>
@@ -161,48 +157,6 @@ function Cheatsheet({ sections }: { sections: Array<WorkoutSection> }) {
 					</div>
 				))}
 			</Box>
-		</div>
-	);
-}
-
-/** Соседние тренировки. Статуса выполнения пока нет — только даты. */
-function Neighbours({ workouts, current }: { workouts: Array<Workout>; current: Workout }) {
-	const index = workouts.findIndex((workout) => workout.ID === current.ID);
-	if (index === -1) {
-		return null;
-	}
-
-	const neighbours = [
-		{ label: 'Следующая', workout: workouts[index - 1] },
-		{ label: 'Предыдущая', workout: workouts[index + 1] },
-	].filter((item) => item.workout);
-
-	if (neighbours.length === 0) {
-		return null;
-	}
-
-	return (
-		<div className={classes.sideCard}>
-			<Box px={18} py={14}>
-				{neighbours.map(({ label, workout }) => (
-					<RouteLink
-						key={workout.ID}
-						to="/workouts/$workoutId"
-						params={{ workoutId: workout.ID }}
-						c="inherit"
-						underline="never"
-					>
-						<Group justify="space-between" align="baseline" gap={10} py={10}>
-							<Text span fz={14} c="gray.8">
-								{formatIsoDate(workout.Date)}
-							</Text>
-							<Text span fz={13} c="gray.7">
-								{label}
-							</Text>
-						</Group>
-					</RouteLink>
-				))}
-			</Box>
-		</div>
+		</Card>
 	);
 }

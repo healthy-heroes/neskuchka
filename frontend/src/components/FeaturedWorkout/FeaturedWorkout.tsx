@@ -1,9 +1,9 @@
 import { IconCheck, IconPlayerPlayFilled } from '@tabler/icons-react';
-import { Box, Button, Card, Group, Text } from '@mantine/core';
+import { Box, Button, Card, Group, Text, Title } from '@mantine/core';
 import { Workout } from '@/types/domain';
 import { formatIsoDate, formatWeekday, isToday } from '@/utils/dates';
 import { RouteLink } from '../RouteLink/RouteLink';
-import { WorkoutProtocol } from '../WorkoutProtocol/WorkoutProtocol';
+import { WorkoutSections } from '../WorkoutSections/WorkoutSections';
 import classes from './FeaturedWorkout.module.css';
 
 export interface FeaturedWorkoutProps {
@@ -26,43 +26,42 @@ export function FeaturedWorkout({ workout }: FeaturedWorkoutProps) {
 			<Group
 				component="header"
 				justify="space-between"
-				px={28}
-				py={18}
+				px="xl"
+				py="md"
 				bg={today ? 'slate.7' : 'gray.0'}
 				className={today ? undefined : classes.headPast}
 			>
-				<Group align="baseline" gap={16}>
+				<Group align="baseline" gap="md">
 					<Text
 						span
 						ff="heading"
-						fz={14}
+						fz="sm"
 						fw={500}
 						lts="0.14em"
 						tt="uppercase"
-						c={today ? undefined : 'copper.6'}
-						className={today ? classes.eyebrowToday : undefined}
+						c={today ? 'copper.3' : 'copper.6'}
 					>
 						{today ? 'Сегодня' : 'Последняя тренировка'}
 					</Text>
-					<Text span ff="heading" fz={30} fw={600} tt="uppercase" c={today ? 'white' : 'gray.9'}>
+					<Title order={3} c={today ? 'white' : 'gray.9'}>
 						{formatIsoDate(workout.Date)}
-					</Text>
-					<Text span fz={14} c={today ? 'slate.2' : 'gray.7'}>
+					</Title>
+					<Text span fz="sm" c={today ? 'slate.2' : 'gray.7'}>
 						{formatWeekday(workout.Date)}
 					</Text>
 				</Group>
 			</Group>
 
-			<Box px={28} pt={10} pb={22}>
-				<WorkoutProtocol sections={workout.Sections} />
+			<Box px="xl" pt="xs" pb="lg">
+				<WorkoutSections sections={workout.Sections} />
 			</Box>
 
 			{/* Прохождение и отметка выполнения — второй этап, кнопки пока нерабочие */}
-			<Group px={28} pb={28} gap={12}>
-				<Button h={44} fz={15} disabled leftSection={<IconPlayerPlayFilled size={16} />}>
+			<Group px="xl" pb="xl" gap="sm">
+				<Button h={44} fz="sm" disabled leftSection={<IconPlayerPlayFilled size={16} />}>
 					Начать тренировку
 				</Button>
-				<Button h={44} fz={15} disabled variant="default" leftSection={<IconCheck size={16} />}>
+				<Button h={44} fz="sm" disabled variant="default" leftSection={<IconCheck size={16} />}>
 					Отметить выполненной
 				</Button>
 
@@ -70,7 +69,7 @@ export function FeaturedWorkout({ workout }: FeaturedWorkoutProps) {
 					to="/workouts/$workoutId"
 					params={{ workoutId: workout.ID }}
 					ml="auto"
-					fz={15}
+					fz="sm"
 					fw={600}
 					c="copper.6"
 					underline="never"

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Text } from '@mantine/core';
+import { Box, Container, Text } from '@mantine/core';
 import { useApi } from '@/api/hooks';
 import { TrackHeader } from '@/pages/MainTrack/TrackHeader/TrackHeader';
 import { isPublished, isToday } from '@/utils/dates';
@@ -28,14 +28,14 @@ export function Workouts() {
 	const featured = published.find((workout) => isToday(workout.Date)) ?? published[0];
 
 	return (
-		<div className={classes.page}>
+		<Container px={0}>
 			{track && <TrackHeader track={track} workouts={published} loading={isPending} />}
 
-			<div className={classes.body}>
+			<Box px="xl" py="xl" bg="gray.0">
 				{isPending && <FeaturedWorkoutSkeleton />}
 
 				{!isPending && !featured && (
-					<Text component="p" my={0} p={28} fz={16} lh={1.55} c="gray.8" className={classes.empty}>
+					<Text component="p" my={0} p="xl" fz="md" lh="md" c="gray.8" className={classes.empty}>
 						Тренировок пока нет — они появятся, когда их опубликуют
 					</Text>
 				)}
@@ -47,7 +47,7 @@ export function Workouts() {
 						<WorkoutHistory workouts={published} featured={featured} />
 					</>
 				)}
-			</div>
-		</div>
+			</Box>
+		</Container>
 	);
 }

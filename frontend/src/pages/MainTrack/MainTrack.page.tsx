@@ -3,7 +3,6 @@ import { Navigate, Outlet } from '@tanstack/react-router';
 import { useApi } from '@/api/hooks';
 import { Header } from '@/components/Header/Header';
 import { PageSkeleton } from '@/components/PageSkeleton/PageSkeleton';
-import classes from './MainTrack.page.module.css';
 
 /**
  * MainTrackPage — общий слой для всего /workouts.
@@ -24,9 +23,9 @@ export function MainTrackPage() {
 	}
 
 	return (
-		<div className={classes.track}>
+		<>
 			<Header />
 			<Outlet />
-		</div>
+		</>
 	);
 }

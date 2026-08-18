@@ -1,7 +1,7 @@
-.protocol {
+.sections {
     display: grid;
     grid-template-columns: max-content 1fr auto;
-    gap: 0 24px;
+    gap: 0 var(--mantine-spacing-lg);
     align-items: baseline;
 }
 
@@ -18,7 +18,7 @@
 .divider {
     grid-column: 1 / -1;
     border-top: 1px solid var(--mantine-color-gray-1);
-    margin: 18px 0 20px;
+    margin: var(--mantine-spacing-md) 0 var(--mantine-spacing-lg);
 }
 
 /* Чип протокола: Badge не подходит — он фиксированной высоты, а чип живёт по контенту */

@@ -11,8 +11,3 @@
 .headPast {
     border-bottom: 1px solid var(--mantine-color-gray-2);
 }
-
-/* Единственный цвет из макета вне шкалы: тёплый акцент на тёмной плашке */
-.eyebrowToday {
-    color: #dcaa89;
-}

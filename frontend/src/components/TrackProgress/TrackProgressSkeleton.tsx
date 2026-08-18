@@ -1,5 +1,4 @@
-import clsx from 'clsx';
-import { Skeleton } from '@mantine/core';
+import { Paper, Skeleton } from '@mantine/core';
 import classes from './TrackProgress.module.css';
 
 const SEGMENTS = 12;
@@ -11,7 +10,7 @@ export interface TrackProgressSkeletonProps {
 /** Скелетон полосы прогресса: столько же сегментов, сколько влезает в окно 30 дней. */
 export function TrackProgressSkeleton({ compact = false }: TrackProgressSkeletonProps) {
 	return (
-		<div className={clsx(classes.root, compact && classes.compact)}>
+		<Paper withBorder radius="lg" p="md" bg={compact ? undefined : 'gray.0'}>
 			<div className={classes.head}>
 				<Skeleton height={13} width={130} />
 				<Skeleton height={14} width={70} />
@@ -23,7 +22,7 @@ export function TrackProgressSkeleton({ compact = false }: TrackProgressSkeleton
 				))}
 			</div>
 
-			<Skeleton height={13} width="60%" mt={10} />
-		</div>
+			<Skeleton height={13} width="60%" mt="xs" />
+		</Paper>
 	);
 }
