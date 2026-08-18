@@ -3,7 +3,7 @@ import { useApi } from '@/api/hooks';
 import { TrackHeader } from '@/pages/MainTrack/TrackHeader/TrackHeader';
 import { isPublished, isToday } from '@/utils/dates';
 import { FeaturedWorkout } from '../FeaturedWorkout/FeaturedWorkout';
-import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
+import { FeaturedWorkoutSkeleton } from '../FeaturedWorkout/FeaturedWorkoutSkeleton';
 import { WorkoutHistory } from '../WorkoutHistory/WorkoutHistory';
 import classes from './Workouts.module.css';
 
@@ -28,11 +28,11 @@ export function Workouts() {
 
 	return (
 		<div className={classes.page}>
-			{track && <TrackHeader track={track} workouts={published} />}
+			{track && <TrackHeader track={track} workouts={published} loading={isPending} />}
 
 			<div className={classes.body}>
 				{isPending ? (
-					<WorkoutCardSkeleton />
+					<FeaturedWorkoutSkeleton />
 				) : (
 					<>
 						{featured && <FeaturedWorkout workout={featured} />}

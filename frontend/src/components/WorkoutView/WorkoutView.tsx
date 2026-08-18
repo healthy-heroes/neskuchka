@@ -1,13 +1,14 @@
 import { IconCheck, IconChevronLeft, IconPlayerPlayFilled } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { Box, Button, Group } from '@mantine/core';
+import { Box, Button, Group, Skeleton } from '@mantine/core';
 import { useApi } from '@/api/hooks';
 import { Workout, WorkoutSection } from '@/types/domain';
 import { formatIsoDate, formatWeekday, isToday } from '@/utils/dates';
 import { RouteLink } from '../RouteLink/RouteLink';
 import { TrackProgress } from '../TrackProgress/TrackProgress';
-import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
+import { TrackProgressSkeleton } from '../TrackProgress/TrackProgressSkeleton';
 import { WorkoutProtocol } from '../WorkoutProtocol/WorkoutProtocol';
+import { WorkoutProtocolSkeleton } from '../WorkoutProtocol/WorkoutProtocolSkeleton';
 import classes from './WorkoutView.module.css';
 
 interface WorkoutViewProps {
@@ -24,7 +25,16 @@ export function WorkoutView({ workoutId }: WorkoutViewProps) {
 	if (isPending || !data) {
 		return (
 			<Box className={classes.page}>
-				<WorkoutCardSkeleton />
+				<header className={classes.title}>
+					<Skeleton height={52} width={420} />
+				</header>
+
+				<div className={classes.layout}>
+					<div className={classes.protocolCard}>
+						<WorkoutProtocolSkeleton rows={4} />
+					</div>
+					<TrackProgressSkeleton compact />
+				</div>
 			</Box>
 		);
 	}

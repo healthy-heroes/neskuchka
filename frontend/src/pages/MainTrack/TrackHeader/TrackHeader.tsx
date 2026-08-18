@@ -1,6 +1,7 @@
 import { Avatar } from '@mantine/core';
 import { TrackData } from '@/api/services/workouts';
 import { TrackProgress } from '@/components/TrackProgress/TrackProgress';
+import { TrackProgressSkeleton } from '@/components/TrackProgress/TrackProgressSkeleton';
 import { Workout } from '@/types/domain';
 import classes from './TrackHeader.module.css';
 
@@ -9,9 +10,12 @@ interface TrackHeaderProps {
 
 	/** Нужны блоку прогресса: он считает окно последних 30 дней. */
 	workouts: Array<Workout>;
+
+	/** Трек приезжает раньше списка тренировок, полосе пока нечего показывать. */
+	loading?: boolean;
 }
 
-export function TrackHeader({ track, workouts }: TrackHeaderProps) {
+export function TrackHeader({ track, workouts, loading = false }: TrackHeaderProps) {
 	const { Name, Description, Author } = track.Track;
 
 	return (
@@ -29,7 +33,11 @@ export function TrackHeader({ track, workouts }: TrackHeaderProps) {
 				)}
 			</div>
 
-			<TrackProgress workouts={workouts} total={workouts.length} />
+			{loading ? (
+				<TrackProgressSkeleton />
+			) : (
+				<TrackProgress workouts={workouts} total={workouts.length} />
+			)}
 		</header>
 	);
 }
