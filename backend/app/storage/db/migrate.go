@@ -13,7 +13,7 @@ import (
 //go:embed migrations/*.sql
 var migrationsFS embed.FS
 
-// migrate докатывает схему до актуальной версии embed'нутыми миграциями.
+// migrate brings the schema up to date by applying the embedded migrations.
 func (e *Engine) migrate(logger zerolog.Logger) error {
 	dir, err := fs.Sub(migrationsFS, "migrations")
 	if err != nil {
