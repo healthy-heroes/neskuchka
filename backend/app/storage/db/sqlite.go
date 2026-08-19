@@ -20,6 +20,7 @@ func NewSqliteEngine(fileSource string, logger zerolog.Logger) (*Engine, error) 
 
 	if err := engine.setup(); err != nil {
 		logger.Error().Err(err).Msg("failed to setup sqlite engine")
+		return nil, err
 	}
 
 	if err := engine.migrate(logger); err != nil {
