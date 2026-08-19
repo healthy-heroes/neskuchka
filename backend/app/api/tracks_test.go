@@ -140,6 +140,13 @@ func Test_ApiTracks_GetMainTrack(t *testing.T) {
 		data := ReadJSON[trackResp](t, resp)
 		assert.False(t, data.IsOwner)
 	})
+
+	t.Run("should return 404 when the main track is missing", func(t *testing.T) {
+		app := NewTestApp(t)
+
+		resp := app.GET(t, "/api/v1/tracks/main")
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
 }
 
 func Test_ApiTracks_GetMainTrackLastWorkouts(t *testing.T) {
@@ -207,6 +214,13 @@ func Test_ApiTracks_GetMainTrackLastWorkouts(t *testing.T) {
 		data := ReadJSON[workoutsRespWrapper](t, resp)
 		require.Len(t, data.Workouts, 1)
 		assert.Equal(t, "mine", data.Workouts[0].Notes)
+	})
+
+	t.Run("should return 404 when the main track is missing", func(t *testing.T) {
+		app := NewTestApp(t)
+
+		resp := app.GET(t, "/api/v1/tracks/main/last_workouts")
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})
 }
 

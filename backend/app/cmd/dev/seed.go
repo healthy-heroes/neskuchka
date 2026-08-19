@@ -156,7 +156,10 @@ func section(title, protocol, note string, exercises ...domain.WorkoutExercise) 
 
 // seedWorkouts builds three weeks of workouts, three per week, counted back from today.
 // Dates are relative on purpose: the track page puts today's workout in focus, so the
-// seed has to produce one whenever it is run.
+// seed has to produce one whenever it is run. They are stored absolute, so the newest
+// workout stops being today's overnight — the track page falls back to the latest one
+// and the heading switches to "Последняя тренировка". Run `mise run //backend:seed`
+// to get the today state back; it drops the database and seeds it again.
 //
 // Content is taken from the Нескучный спорт telegram channel. There a session is split
 // across two posts — [РАЗМИНКА] and [ТРЕНИРОВКА ДНЯ] minutes apart — and both become

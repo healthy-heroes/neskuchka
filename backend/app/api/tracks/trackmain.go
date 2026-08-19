@@ -15,7 +15,7 @@ func (s *Service) GetMainTrack(w http.ResponseWriter, r *http.Request) {
 
 	track, err := s.dataStore.GetMainTrack(r.Context())
 	if err != nil {
-		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to get main track")
+		httpx.RenderDomainError(w, logger, err, "Failed to get main track")
 		return
 	}
 
@@ -39,7 +39,7 @@ func (s *Service) GetMainTrackLastWorkouts(w http.ResponseWriter, r *http.Reques
 
 	track, err := s.dataStore.GetMainTrack(r.Context())
 	if err != nil {
-		httpx.RenderError(w, logger, http.StatusInternalServerError, err, "Failed to get main track")
+		httpx.RenderDomainError(w, logger, err, "Failed to get main track")
 		return
 	}
 
