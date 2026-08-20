@@ -16,3 +16,6 @@ docs/*.taskpaper
 
 backend/bin/
 backend/app/cmd/web
+
+# Профиль браузера и скриншоты Playwright MCP
+.playwright/
