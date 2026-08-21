@@ -3,9 +3,9 @@ import { useAuth } from '@/auth/hooks';
 import { PageSkeleton } from '@/components/PageSkeleton/PageSkeleton';
 
 export function HomePage() {
-	const { isAuthenticated, isLoading } = useAuth();
+	const { isAuthenticated, isPending } = useAuth();
 
-	if (isLoading) {
+	if (isPending) {
 		return <PageSkeleton />;
 	}
 
