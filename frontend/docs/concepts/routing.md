@@ -42,7 +42,7 @@ Guard component для проверки авторизации. Использу
 ### Гарантии RequireAuth
 
 Компонент внутри `RequireAuth` получает гарантии:
-- ✅ Auth запрос завершён (`isLoading = false`)
+- ✅ Auth запрос завершён (`isPending = false`)
 - ✅ Юзер авторизован (`isAuthenticated = true`)
 - ✅ `user !== null`
 
@@ -102,9 +102,9 @@ function WorkoutEdit({ workoutId }: { workoutId: string }) {
   // Owner check уже гарантирован TrackOwnerOnly
   // Компонент загружает только данные workout
   const { workouts } = useApi()
-  const { data, isLoading } = useQuery(workouts.getWorkoutQuery(workoutId))
+  const { data, isPending } = useQuery(workouts.getWorkoutQuery(workoutId))
 
-  if (isLoading) {
+  if (isPending) {
     return <PageSkeleton />
   }
 

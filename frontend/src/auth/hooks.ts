@@ -11,7 +11,7 @@ import { User } from '@/types/domain';
 type AuthState = {
 	user: User | null;
 	isAuthenticated: boolean;
-	isLoading: boolean;
+	isPending: boolean;
 	logout: UseMutateAsyncFunction<void, Error, void>;
 };
 
@@ -32,7 +32,7 @@ export function useAuth(): AuthState {
 	return {
 		user: userQuery.data?.data ?? null,
 		isAuthenticated: !!userQuery.data,
-		isLoading: userQuery.isPending,
+		isPending: userQuery.isPending,
 		logout: logout.mutateAsync,
 	};
 }

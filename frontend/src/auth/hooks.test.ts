@@ -18,13 +18,13 @@ describe('useAuth', () => {
 		vi.clearAllMocks();
 	});
 
-	it('should return loading state initially', async () => {
+	it('should return pending state initially', async () => {
 		const userMock = createUserServiceMock({ user: mockUser });
 		vi.mocked(useApi).mockReturnValue(createApiServiceMock({ user: userMock }));
 
 		const { result } = renderHook(() => useAuth());
 
-		expect(result.current.isLoading).toBe(true);
+		expect(result.current.isPending).toBe(true);
 		expect(result.current.user).toBe(null);
 		expect(result.current.isAuthenticated).toBe(false);
 	});
@@ -36,7 +36,7 @@ describe('useAuth', () => {
 		const { result } = renderHook(() => useAuth());
 
 		await waitFor(() => {
-			expect(result.current.isLoading).toBe(false);
+			expect(result.current.isPending).toBe(false);
 		});
 
 		expect(result.current.user).toEqual(mockUser);
@@ -50,7 +50,7 @@ describe('useAuth', () => {
 		const { result } = renderHook(() => useAuth());
 
 		await waitFor(() => {
-			expect(result.current.isLoading).toBe(false);
+			expect(result.current.isPending).toBe(false);
 		});
 
 		expect(result.current.user).toBe(null);

@@ -4,9 +4,9 @@ import { useAuth } from '@/auth/hooks';
 import { RouteLink } from '../RouteLink/RouteLink';
 
 export function UserMenu() {
-	const { user, isAuthenticated, isLoading, logout } = useAuth();
+	const { user, isAuthenticated, isPending, logout } = useAuth();
 
-	if (isLoading) {
+	if (isPending) {
 		return <Skeleton height={36} width={36} circle />;
 	}
 

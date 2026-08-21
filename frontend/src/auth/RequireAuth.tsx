@@ -8,9 +8,9 @@ type RequireAuthProps = {
 };
 
 export function RequireAuth({ children, loadingComponent, guestOnly }: RequireAuthProps) {
-	const { isAuthenticated, isLoading } = useAuth();
+	const { isAuthenticated, isPending } = useAuth();
 
-	if (isLoading) {
+	if (isPending) {
 		return loadingComponent;
 	}
 
