@@ -16,7 +16,10 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 )
 
-const maxAvatarSize = 1024 * 1024 // 1mb
+// maxAvatarSize caps the upload. A photo straight from a phone is several
+// megabytes, and since the server downscales it anyway, rejecting it for its
+// weight alone only annoys the user. Mastodon draws the same line at 8mb.
+const maxAvatarSize = 8 * 1024 * 1024
 
 var allowedMimeTypes = []string{
 	"image/jpeg",

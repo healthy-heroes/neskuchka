@@ -24,10 +24,13 @@ const (
 	// MimeType is the content type every normalized avatar is stored with.
 	MimeType = "image/png"
 
-	// maxDimension caps the side of an accepted image. The upload is already
-	// capped in bytes, but a megabyte of PNG unpacks into gigabytes of
-	// pixels, so the header is inspected before anything is decoded.
-	maxDimension = 8192
+	// maxPixels caps the area of an accepted image, because area is what
+	// decoding costs: every pixel becomes four bytes in memory. Bytes on the
+	// wire say nothing about it — a few kilobytes of PNG unpack into a
+	// quarter of a gigabyte if the picture is 8000x8000 of one colour — so
+	// the header is inspected before anything is decoded. The limit leaves
+	// room for a 50 megapixel photo, more than any phone puts into 8mb.
+	maxPixels = 50_000_000
 )
 
 var (
@@ -35,8 +38,8 @@ var (
 	// the decoders registered here understand.
 	ErrUnsupportedFormat = errors.New("unsupported image format")
 
-	// ErrTooLarge reports an image whose declared dimensions are beyond
-	// anything an avatar needs, and which is therefore not worth decoding.
+	// ErrTooLarge reports an image with more pixels than an avatar could ever
+	// need, and which is therefore not worth decoding.
 	ErrTooLarge = errors.New("image dimensions are too large")
 )
 
@@ -50,7 +53,7 @@ func Normalize(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("%w: %w", ErrUnsupportedFormat, err)
 	}
 
-	if cfg.Width > maxDimension || cfg.Height > maxDimension {
+	if int64(cfg.Width)*int64(cfg.Height) > maxPixels {
 		return nil, fmt.Errorf("%w: %dx%d", ErrTooLarge, cfg.Width, cfg.Height)
 	}
 

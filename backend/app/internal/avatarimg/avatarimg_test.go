@@ -226,8 +226,9 @@ func TestNormalize(t *testing.T) {
 		assertColor(t, img, Size-20, 20, red)
 	})
 
-	t.Run("should reject an image with absurd dimensions", func(t *testing.T) {
-		_, err := Normalize(pngHeader(20000, 20000))
+	t.Run("should reject an image with too many pixels", func(t *testing.T) {
+		// Neither side is outlandish on its own; the area is.
+		_, err := Normalize(pngHeader(8000, 8000))
 		require.ErrorIs(t, err, ErrTooLarge)
 	})
 

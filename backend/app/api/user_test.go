@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/color"
 	"image/jpeg"
 	"image/png"
+	"math/rand/v2"
 	"net/http"
 	"testing"
 
@@ -245,6 +247,27 @@ func Test_ApiUserService_UploadAvatar(t *testing.T) {
 		return buf.Bytes()
 	}
 
+	// makeNoisePNG builds a PNG that does not compress, so that its encoded
+	// size is roughly w*h*3 bytes and the upload limit can be exercised.
+	makeNoisePNG := func(t *testing.T, w, h int) []byte {
+		t.Helper()
+		rnd := rand.New(rand.NewPCG(1, 2))
+		img := image.NewRGBA(image.Rect(0, 0, w, h))
+		for y := range h {
+			for x := range w {
+				img.Set(x, y, color.RGBA{
+					R: uint8(rnd.UintN(256)),
+					G: uint8(rnd.UintN(256)),
+					B: uint8(rnd.UintN(256)),
+					A: 255,
+				})
+			}
+		}
+		buf := new(bytes.Buffer)
+		require.NoError(t, png.Encode(buf, img))
+		return buf.Bytes()
+	}
+
 	decodeSaved := func(t *testing.T, data []byte) image.Image {
 		t.Helper()
 		img, format, err := image.Decode(bytes.NewReader(data))
@@ -328,6 +351,19 @@ func Test_ApiUserService_UploadAvatar(t *testing.T) {
 			WithMultipartFile("avatar", "photo.png", "image/png", broken),
 		)
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	})
+
+	t.Run("should accept a photo weighing more than a megabyte", func(t *testing.T) {
+		userID := domain.NewUserID()
+
+		photo := makeNoisePNG(t, 900, 900)
+		require.Greater(t, len(photo), 1024*1024, "fixture is not big enough to test the limit")
+
+		resp := app.POST(t, "/api/v1/user/me/avatar",
+			WithCookie(app.LoginAs(t, userID)),
+			WithMultipartFile("avatar", "photo.png", "image/png", photo),
+		)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
 	t.Run("should return 400 when file field is missing", func(t *testing.T) {
