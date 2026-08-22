@@ -167,13 +167,13 @@ func decodePNG(t *testing.T, data []byte) image.Image {
 }
 
 func TestNormalize(t *testing.T) {
-	t.Run("should downscale a large image to Size", func(t *testing.T) {
+	t.Run("should downscale a large image to MaxSide", func(t *testing.T) {
 		out, err := Normalize(solidPNG(t, 1000, 1000, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
 		require.NoError(t, err)
 
 		img := decodePNG(t, out)
-		assert.Equal(t, Size, img.Bounds().Dx())
-		assert.Equal(t, Size, img.Bounds().Dy())
+		assert.Equal(t, MaxSide, img.Bounds().Dx())
+		assert.Equal(t, MaxSide, img.Bounds().Dy())
 	})
 
 	t.Run("should crop a wide image to its center instead of squashing it", func(t *testing.T) {
@@ -185,8 +185,8 @@ func TestNormalize(t *testing.T) {
 		require.NoError(t, err)
 
 		img := decodePNG(t, out)
-		assertColor(t, img, 5, Size/2, green)
-		assertColor(t, img, Size-5, Size/2, green)
+		assertColor(t, img, 5, MaxSide/2, green)
+		assertColor(t, img, MaxSide-5, MaxSide/2, green)
 	})
 
 	t.Run("should re-encode a jpeg as png", func(t *testing.T) {
@@ -195,7 +195,7 @@ func TestNormalize(t *testing.T) {
 
 		// decodePNG fails unless the output really is a PNG.
 		img := decodePNG(t, out)
-		assert.Equal(t, Size, img.Bounds().Dx())
+		assert.Equal(t, MaxSide, img.Bounds().Dx())
 	})
 
 	t.Run("should accept webp and store it as png", func(t *testing.T) {
@@ -206,8 +206,8 @@ func TestNormalize(t *testing.T) {
 		require.NoError(t, err)
 
 		img := decodePNG(t, out)
-		assert.Equal(t, Size, img.Bounds().Dx())
-		assertColor(t, img, Size/2, Size/2, color.RGBA{G: 255, A: 255})
+		assert.Equal(t, MaxSide, img.Bounds().Dx())
+		assertColor(t, img, MaxSide/2, MaxSide/2, color.RGBA{G: 255, A: 255})
 	})
 
 	t.Run("should rotate a jpeg according to its EXIF orientation", func(t *testing.T) {
@@ -223,7 +223,7 @@ func TestNormalize(t *testing.T) {
 
 		img := decodePNG(t, out)
 		assertColor(t, img, 20, 20, blue)
-		assertColor(t, img, Size-20, 20, red)
+		assertColor(t, img, MaxSide-20, 20, red)
 	})
 
 	t.Run("should reject an image with too many pixels", func(t *testing.T) {
@@ -237,7 +237,7 @@ func TestNormalize(t *testing.T) {
 		require.ErrorIs(t, err, ErrUnsupportedFormat)
 	})
 
-	t.Run("should not upscale an image smaller than Size", func(t *testing.T) {
+	t.Run("should not upscale an image smaller than MaxSide", func(t *testing.T) {
 		out, err := Normalize(solidPNG(t, 100, 100, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
 		require.NoError(t, err)
 

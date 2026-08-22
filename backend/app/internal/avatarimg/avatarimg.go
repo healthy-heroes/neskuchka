@@ -16,20 +16,20 @@ import (
 )
 
 const (
-	// Size is the side of the stored avatar in pixels. It doubles the
-	// largest place the avatar is rendered in, so that retina screens have
-	// pixels to spare.
-	Size = 512
+	// MaxSide is the longest side a stored avatar can have, in pixels. It
+	// doubles the largest place the avatar is rendered in, so that retina
+	// screens have pixels to spare.
+	MaxSide = 512
 
 	// MimeType is the content type every normalized avatar is stored with.
 	MimeType = "image/png"
 
 	// maxPixels caps the area of an accepted image, because area is what
-	// decoding costs: every pixel becomes four bytes in memory. Bytes on the
-	// wire say nothing about it — a few kilobytes of PNG unpack into a
-	// quarter of a gigabyte if the picture is 8000x8000 of one colour — so
-	// the header is inspected before anything is decoded. The limit leaves
-	// room for a 50 megapixel photo, more than any phone puts into 8mb.
+	// decoding costs: every pixel becomes four bytes in memory, and the
+	// weight of the file says nothing about it — 258kb of PNG unpacks into
+	// 244mb when the picture is 8000x8000 of one colour. Hence the header is
+	// inspected before anything is decoded. Fifty megapixels clears any
+	// ordinary photo and keeps the worst case around 200mb.
 	maxPixels = 50_000_000
 )
 
@@ -44,9 +44,9 @@ var (
 )
 
 // Normalize turns an uploaded image into a stored avatar: it applies the EXIF
-// orientation, crops the largest centered square and scales it down to Size,
-// then encodes the result as PNG. An image smaller than Size keeps its size —
-// upscaling invents no detail.
+// orientation, crops the largest centered square and scales it down to
+// MaxSide, then encodes the result as PNG. A picture smaller than that keeps
+// its size — upscaling invents no detail.
 func Normalize(data []byte) ([]byte, error) {
 	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
@@ -65,8 +65,8 @@ func Normalize(data []byte) ([]byte, error) {
 	side := min(img.Bounds().Dx(), img.Bounds().Dy())
 	img = imaging.CropCenter(img, side, side)
 
-	if side > Size {
-		img = imaging.Resize(img, Size, Size, imaging.Lanczos)
+	if side > MaxSide {
+		img = imaging.Resize(img, MaxSide, MaxSide, imaging.Lanczos)
 	}
 
 	buf := new(bytes.Buffer)

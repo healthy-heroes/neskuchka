@@ -290,8 +290,8 @@ func Test_ApiUserService_UploadAvatar(t *testing.T) {
 		assert.Equal(t, "image/png", saved.MimeType)
 
 		img := decodeSaved(t, saved.Data)
-		assert.Equal(t, avatarimg.Size, img.Bounds().Dx())
-		assert.Equal(t, avatarimg.Size, img.Bounds().Dy())
+		assert.Equal(t, avatarimg.MaxSide, img.Bounds().Dx())
+		assert.Equal(t, avatarimg.MaxSide, img.Bounds().Dy())
 	})
 
 	t.Run("should store an uploaded jpeg avatar as png", func(t *testing.T) {
@@ -307,7 +307,7 @@ func Test_ApiUserService_UploadAvatar(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, "image/png", saved.MimeType)
 
-		// 80x80 is below Size, so the picture keeps its size and only the
+		// 80x80 is below MaxSide, so the picture keeps its size and only the
 		// encoding changes.
 		img := decodeSaved(t, saved.Data)
 		assert.Equal(t, 80, img.Bounds().Dx())
