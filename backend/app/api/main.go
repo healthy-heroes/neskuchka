@@ -28,6 +28,14 @@ import (
 const Issuer = "Neskuchka"
 const prefixApi = "/api/v1"
 
+// requestTimeout is how long a request may take before chi cancels its
+// context. Anything a route makes a client wait for has to fit inside it.
+const requestTimeout = 10 * time.Second
+
+// headerTimeout is how long a client has to send its headers. They are small
+// and every client sends them at once, so this needs no room to breathe.
+const headerTimeout = 5 * time.Second
+
 // clientIPKey keys the rate limiters off the client IP resolved by chi's
 // ClientIPFrom* middleware. CanonicalizeIP buckets IPv6 clients by their /64,
 // so one client can't get a fresh budget per address in its prefix.
@@ -63,6 +71,10 @@ func (api *Api) Run(address string, port int) {
 	api.httpServer = &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", address, port),
 		Handler: api.Handler(),
+
+		// Without it a client holds a connection open on any route, and without
+		// logging in, simply by never finishing its headers.
+		ReadHeaderTimeout: headerTimeout,
 	}
 	api.lock.Unlock()
 
@@ -125,7 +137,7 @@ func (api *Api) Handler() *chi.Mux {
 	// api routes
 	router.Route(prefixApi, func(r chi.Router) {
 		r.Use(httprate.LimitBy(60, time.Minute, clientIPKey))
-		r.Use(chiMW.Timeout(10 * time.Second))
+		r.Use(chiMW.Timeout(requestTimeout))
 
 		api.addAuthRoutes(r, session)
 		api.addUserRoutes(r, session)
@@ -155,6 +167,23 @@ func (api *Api) addAuthRoutes(router chi.Router, session *session.Manager) {
 	})
 }
 
+// Decoding a picture the user chose is the one thing here that costs the
+// process hundreds of megabytes, and httprate counts per client — N clients
+// buy N decodes at once. Hence a ceiling of its own; two of them at their worst
+// is around 400mb, and the wait has to leave the decode room in requestTimeout.
+const (
+	maxAvatarUploads  = 2
+	avatarUploadQueue = 4
+	avatarUploadWait  = 5 * time.Second
+
+	// A slot is held for as long as the handler runs, and reading the body is
+	// part of that, so an upload that stops arriving has to be cut off — two
+	// clients trickling their bytes would otherwise close avatar uploads for
+	// everybody. Eight megabytes, the size cap in api/user, inside a minute
+	// asks about a megabit per second of whoever is uploading.
+	maxAvatarUploadTime = time.Minute
+)
+
 // addUserRoutes is adding user routes
 func (api *Api) addUserRoutes(router chi.Router, session *session.Manager) {
 	avatarURLFunc := func(userID domain.UserID) string {
@@ -174,7 +203,12 @@ func (api *Api) addUserRoutes(router chi.Router, session *session.Manager) {
 			r.Get("/", h.Me)
 
 			r.Get("/avatar", h.MyAvatar)
-			r.Post("/avatar", h.UploadAvatar)
+			// The deadline goes inside the throttle, so that it starts counting
+			// when the upload gets its slot rather than while it waits for one.
+			r.With(
+				mw.Throttle(maxAvatarUploads, avatarUploadQueue, avatarUploadWait),
+				mw.ReadDeadline(log.Logger, maxAvatarUploadTime),
+			).Post("/avatar", h.UploadAvatar)
 			r.Delete("/avatar", h.DeleteAvatar)
 
 			r.Get("/settings", h.GetSettings)
@@ -218,7 +252,7 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 
 	router.Route("/", func(r chi.Router) {
 		r.Use(httprate.LimitBy(60, time.Minute, clientIPKey))
-		r.Use(chiMW.Timeout(10 * time.Second))
+		r.Use(chiMW.Timeout(requestTimeout))
 		r.Use(mw.CacheControl(10*time.Minute, api.Version))
 
 		r.Handle("/favicon.*", http.FileServer(http.FS(staticFS)))

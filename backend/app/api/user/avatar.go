@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"slices"
 	"strconv"
 
@@ -74,6 +75,13 @@ func (s *Service) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		var maxBytesErr *http.MaxBytesError
 		if errors.As(err, &maxBytesErr) {
 			httpx.RenderError(w, s.logger, http.StatusRequestEntityTooLarge, err, "file is too large")
+			return
+		}
+
+		// The read deadline the route puts on the upload ran out, which is a
+		// bad connection rather than a bad request.
+		if errors.Is(err, os.ErrDeadlineExceeded) {
+			httpx.RenderError(w, s.logger, http.StatusRequestTimeout, err, "upload took too long")
 			return
 		}
 
