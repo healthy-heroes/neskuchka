@@ -28,6 +28,21 @@ import (
 const Issuer = "Neskuchka"
 const prefixApi = "/api/v1"
 
+// requestTimeout is how long a request may take before chi cancels its
+// context. Anything a route makes a client wait for has to fit inside it.
+const requestTimeout = 10 * time.Second
+
+// headerTimeout is how long a client has to send its headers. They are small
+// and every client sends them at once, so this needs no room to breathe.
+const headerTimeout = 5 * time.Second
+
+// maxRequestTimeout is the ceiling every API route sits under, not the budget
+// any of them is meant to use: routes shorten it to what they actually need,
+// and one that forgets to is left bounded rather than running forever. It stays
+// above the longest route on purpose, so that the route's own timeout is the
+// one that fires and reaches whoever is waiting.
+const maxRequestTimeout = 90 * time.Second
+
 // clientIPKey keys the rate limiters off the client IP resolved by chi's
 // ClientIPFrom* middleware. CanonicalizeIP buckets IPv6 clients by their /64,
 // so one client can't get a fresh budget per address in its prefix.
@@ -63,6 +78,10 @@ func (api *Api) Run(address string, port int) {
 	api.httpServer = &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", address, port),
 		Handler: api.Handler(),
+
+		// Without it a client holds a connection open on any route, and without
+		// logging in, simply by never finishing its headers.
+		ReadHeaderTimeout: headerTimeout,
 	}
 	api.lock.Unlock()
 
@@ -122,10 +141,12 @@ func (api *Api) Handler() *chi.Mux {
 		w.Write([]byte("pong"))
 	})
 
-	// api routes
+	// api routes. Each group states its own timeout, because chi's Timeout can
+	// only ever shorten — context.WithTimeout keeps the earlier of the two
+	// deadlines — and the avatar upload needs longer than the rest.
 	router.Route(prefixApi, func(r chi.Router) {
 		r.Use(httprate.LimitBy(60, time.Minute, clientIPKey))
-		r.Use(chiMW.Timeout(10 * time.Second))
+		r.Use(chiMW.Timeout(maxRequestTimeout))
 
 		api.addAuthRoutes(r, session)
 		api.addUserRoutes(r, session)
@@ -149,11 +170,41 @@ func (api *Api) addAuthRoutes(router chi.Router, session *session.Manager) {
 	})
 
 	router.Route("/auth", func(r chi.Router) {
+		r.Use(chiMW.Timeout(requestTimeout))
+
 		r.Post("/login", h.Login)
 		r.Post("/login/confirm", h.Confirm)
 		r.Post("/logout", h.Logout)
 	})
 }
+
+// Decoding a picture the user chose is the one thing here that costs the
+// process hundreds of megabytes, and httprate counts per client — N clients
+// buy N decodes at once. Hence a ceiling of its own; two of them at their worst
+// is around 400mb, and the wait has to leave the decode room in requestTimeout.
+const (
+	maxAvatarUploads  = 2
+	avatarUploadQueue = 4
+	avatarUploadWait  = 5 * time.Second
+
+	// A slot is held for as long as the handler runs, and reading the body is
+	// part of that, so an upload that stops arriving has to be cut off — two
+	// clients trickling their bytes would otherwise close avatar uploads for
+	// everybody. Eight megabytes, the size cap in api/user, inside a minute
+	// asks about a megabit per second of whoever is uploading.
+	maxAvatarUploadTime = time.Minute
+
+	// avatarDecodeTime is what is left over for turning the bytes into a stored
+	// avatar once they have all arrived — decoding, scaling, one write.
+	avatarDecodeTime = 10 * time.Second
+
+	// avatarUploadTimeout is the budget for all of it, and it is a sum rather
+	// than a number so that raising any part above raises the whole. Getting
+	// this wrong is quiet and expensive: the body would still be read in full
+	// and decoded, only for the write to find a context that expired while it
+	// was happening.
+	avatarUploadTimeout = avatarUploadWait + maxAvatarUploadTime + avatarDecodeTime
+)
 
 // addUserRoutes is adding user routes
 func (api *Api) addUserRoutes(router chi.Router, session *session.Manager) {
@@ -171,17 +222,33 @@ func (api *Api) addUserRoutes(router chi.Router, session *session.Manager) {
 		r.Route("/me", func(r chi.Router) {
 			r.Use(session.Authenticator(httpx.RenderUnauthorized))
 
-			r.Get("/", h.Me)
+			// An upload is the one request here that a slow connection stretches
+			// for honest reasons, so it takes avatarUploadTimeout instead of the
+			// budget the routes below share. The throttle goes inside it and the
+			// read deadline inside the throttle, so that the deadline starts
+			// counting when the upload gets its slot rather than while it waits.
+			r.With(
+				chiMW.Timeout(avatarUploadTimeout),
+				mw.Throttle(maxAvatarUploads, avatarUploadQueue, avatarUploadWait),
+				mw.ReadDeadline(log.Logger, maxAvatarUploadTime),
+			).Post("/avatar", h.UploadAvatar)
 
-			r.Get("/avatar", h.MyAvatar)
-			r.Post("/avatar", h.UploadAvatar)
-			r.Delete("/avatar", h.DeleteAvatar)
+			r.Group(func(r chi.Router) {
+				r.Use(chiMW.Timeout(requestTimeout))
 
-			r.Get("/settings", h.GetSettings)
-			r.Put("/settings", h.UpdateSettings)
+				r.Get("/", h.Me)
+
+				r.Get("/avatar", h.MyAvatar)
+				r.Delete("/avatar", h.DeleteAvatar)
+
+				r.Get("/settings", h.GetSettings)
+				r.Put("/settings", h.UpdateSettings)
+			})
 		})
 
 		r.Route("/{id}", func(r chi.Router) {
+			r.Use(chiMW.Timeout(requestTimeout))
+
 			r.Get("/avatar", h.UserAvatar)
 		})
 	})
@@ -197,6 +264,8 @@ func (api *Api) addTracksRoutes(router chi.Router, session *session.Manager) {
 	auth := session.Authenticator(httpx.RenderUnauthorized)
 
 	router.Route("/tracks/main", func(r chi.Router) {
+		r.Use(chiMW.Timeout(requestTimeout))
+
 		r.Get("/", h.GetMainTrack)
 		r.Get("/last_workouts", h.GetMainTrackLastWorkouts)
 
@@ -218,7 +287,7 @@ func (api *Api) addStaticRoutes(router *chi.Mux) {
 
 	router.Route("/", func(r chi.Router) {
 		r.Use(httprate.LimitBy(60, time.Minute, clientIPKey))
-		r.Use(chiMW.Timeout(10 * time.Second))
+		r.Use(chiMW.Timeout(requestTimeout))
 		r.Use(mw.CacheControl(10*time.Minute, api.Version))
 
 		r.Handle("/favicon.*", http.FileServer(http.FS(staticFS)))
