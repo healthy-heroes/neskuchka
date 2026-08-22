@@ -12,10 +12,14 @@ import (
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/avatarimg"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 )
 
-const maxAvatarSize = 1024 * 1024 // 1mb
+// maxAvatarSize caps the upload. A photo straight from a phone is several
+// megabytes, and since the server downscales it anyway, rejecting it for its
+// weight alone only annoys the user.
+const maxAvatarSize = 8 * 1024 * 1024
 
 var allowedMimeTypes = []string{
 	"image/jpeg",
@@ -108,9 +112,23 @@ func (s *Service) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Whoever uploads something heavy is worth naming in the log.
+	logger := s.logger.With().Str("user_id", string(id)).Logger()
+
+	normalized, err := avatarimg.Normalize(logger, data)
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, avatarimg.ErrUnsupportedFormat) || errors.Is(err, avatarimg.ErrTooLarge) {
+			status = http.StatusBadRequest
+		}
+
+		httpx.RenderError(w, s.logger, status, err, "failed to process image")
+		return
+	}
+
 	avatar := domain.Avatar{
-		MimeType: mimeType,
-		Data:     data,
+		MimeType: avatarimg.MimeType,
+		Data:     normalized,
 	}
 
 	err = s.avatarStore.Save(r.Context(), id, avatar)

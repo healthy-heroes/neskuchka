@@ -3,6 +3,7 @@ module github.com/healthy-heroes/neskuchka/backend
 go 1.26.6
 
 require (
+	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi/v5 v5.3.1
 	github.com/go-chi/cors v1.2.2
 	github.com/go-chi/httprate v0.16.0
@@ -18,6 +19,7 @@ require (
 	github.com/pressly/goose/v3 v3.27.3
 	github.com/rs/zerolog v1.35.1
 	github.com/stretchr/testify v1.11.1
+	golang.org/x/image v0.45.0
 	modernc.org/sqlite v1.56.0
 )
 
