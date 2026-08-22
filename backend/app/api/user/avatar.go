@@ -123,9 +123,14 @@ func (s *Service) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if normalized.SourceWidth*normalized.SourceHeight > avatarimg.HeavyPixels {
+		s.logger.Warn().Msgf("heavy avatar upload by %s: %dx%d in %d kb",
+			id, normalized.SourceWidth, normalized.SourceHeight, len(data)/1024)
+	}
+
 	avatar := domain.Avatar{
 		MimeType: avatarimg.MimeType,
-		Data:     normalized,
+		Data:     normalized.Data,
 	}
 
 	err = s.avatarStore.Save(r.Context(), id, avatar)

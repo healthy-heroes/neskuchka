@@ -168,10 +168,10 @@ func decodePNG(t *testing.T, data []byte) image.Image {
 
 func TestNormalize(t *testing.T) {
 	t.Run("should downscale a large image to MaxSide", func(t *testing.T) {
-		out, err := Normalize(solidPNG(t, 1000, 1000, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
+		res, err := Normalize(solidPNG(t, 1000, 1000, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
 		require.NoError(t, err)
 
-		img := decodePNG(t, out)
+		img := decodePNG(t, res.Data)
 		assert.Equal(t, MaxSide, img.Bounds().Dx())
 		assert.Equal(t, MaxSide, img.Bounds().Dy())
 	})
@@ -181,20 +181,20 @@ func TestNormalize(t *testing.T) {
 		green := color.RGBA{G: 255, A: 255}
 		blue := color.RGBA{B: 255, A: 255}
 
-		out, err := Normalize(stripesPNG(t, 1800, 600, red, green, blue))
+		res, err := Normalize(stripesPNG(t, 1800, 600, red, green, blue))
 		require.NoError(t, err)
 
-		img := decodePNG(t, out)
+		img := decodePNG(t, res.Data)
 		assertColor(t, img, 5, MaxSide/2, green)
 		assertColor(t, img, MaxSide-5, MaxSide/2, green)
 	})
 
 	t.Run("should re-encode a jpeg as png", func(t *testing.T) {
-		out, err := Normalize(solidJPEG(t, 800, 800, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
+		res, err := Normalize(solidJPEG(t, 800, 800, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
 		require.NoError(t, err)
 
 		// decodePNG fails unless the output really is a PNG.
-		img := decodePNG(t, out)
+		img := decodePNG(t, res.Data)
 		assert.Equal(t, MaxSide, img.Bounds().Dx())
 	})
 
@@ -202,10 +202,10 @@ func TestNormalize(t *testing.T) {
 		data, err := os.ReadFile(filepath.Join("testdata", "stripes.webp"))
 		require.NoError(t, err)
 
-		out, err := Normalize(data)
+		res, err := Normalize(data)
 		require.NoError(t, err)
 
-		img := decodePNG(t, out)
+		img := decodePNG(t, res.Data)
 		assert.Equal(t, MaxSide, img.Bounds().Dx())
 		assertColor(t, img, MaxSide/2, MaxSide/2, color.RGBA{G: 255, A: 255})
 	})
@@ -218,12 +218,20 @@ func TestNormalize(t *testing.T) {
 		// the top half of the source to the right half of the picture.
 		data := withEXIFOrientation(t, halvesJPEG(t, 1200, 800, red, blue), 6)
 
-		out, err := Normalize(data)
+		res, err := Normalize(data)
 		require.NoError(t, err)
 
-		img := decodePNG(t, out)
+		img := decodePNG(t, res.Data)
 		assertColor(t, img, 20, 20, blue)
 		assertColor(t, img, MaxSide-20, 20, red)
+	})
+
+	t.Run("should report the size of the source picture", func(t *testing.T) {
+		res, err := Normalize(solidPNG(t, 1000, 800, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
+		require.NoError(t, err)
+
+		assert.Equal(t, 1000, res.SourceWidth)
+		assert.Equal(t, 800, res.SourceHeight)
 	})
 
 	t.Run("should reject an image with too many pixels", func(t *testing.T) {
@@ -238,10 +246,10 @@ func TestNormalize(t *testing.T) {
 	})
 
 	t.Run("should not upscale an image smaller than MaxSide", func(t *testing.T) {
-		out, err := Normalize(solidPNG(t, 100, 100, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
+		res, err := Normalize(solidPNG(t, 100, 100, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
 		require.NoError(t, err)
 
-		img := decodePNG(t, out)
+		img := decodePNG(t, res.Data)
 		assert.Equal(t, 100, img.Bounds().Dx())
 		assert.Equal(t, 100, img.Bounds().Dy())
 	})
