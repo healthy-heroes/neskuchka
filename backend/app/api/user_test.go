@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/avatarimg"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/testutil"
 )
 
@@ -244,36 +245,49 @@ func Test_ApiUserService_UploadAvatar(t *testing.T) {
 		return buf.Bytes()
 	}
 
-	t.Run("should upload png avatar", func(t *testing.T) {
+	decodeSaved := func(t *testing.T, data []byte) image.Image {
+		t.Helper()
+		img, format, err := image.Decode(bytes.NewReader(data))
+		require.NoError(t, err)
+		require.Equal(t, "png", format)
+		return img
+	}
+
+	t.Run("should downscale an uploaded png avatar", func(t *testing.T) {
 		userID := domain.NewUserID()
-		pngData := makePNG(t, 100, 100)
 
 		resp := app.POST(t, "/api/v1/user/me/avatar",
 			WithCookie(app.LoginAs(t, userID)),
-			WithMultipartFile("avatar", "photo.png", "image/png", pngData),
+			WithMultipartFile("avatar", "photo.png", "image/png", makePNG(t, 1000, 1000)),
 		)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		saved, err := app.AvatarStorage.Get(t.Context(), userID)
 		require.NoError(t, err)
 		assert.Equal(t, "image/png", saved.MimeType)
-		assert.Equal(t, pngData, saved.Data)
+
+		img := decodeSaved(t, saved.Data)
+		assert.Equal(t, avatarimg.Size, img.Bounds().Dx())
+		assert.Equal(t, avatarimg.Size, img.Bounds().Dy())
 	})
 
-	t.Run("should upload jpeg avatar", func(t *testing.T) {
+	t.Run("should store an uploaded jpeg avatar as png", func(t *testing.T) {
 		userID := domain.NewUserID()
-		jpegData := makeJPEG(t, 80, 80)
 
 		resp := app.POST(t, "/api/v1/user/me/avatar",
 			WithCookie(app.LoginAs(t, userID)),
-			WithMultipartFile("avatar", "photo.jpg", "image/jpeg", jpegData),
+			WithMultipartFile("avatar", "photo.jpg", "image/jpeg", makeJPEG(t, 80, 80)),
 		)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		saved, err := app.AvatarStorage.Get(t.Context(), userID)
 		require.NoError(t, err)
-		assert.Equal(t, "image/jpeg", saved.MimeType)
-		assert.Equal(t, jpegData, saved.Data)
+		assert.Equal(t, "image/png", saved.MimeType)
+
+		// 80x80 is below Size, so the picture keeps its size and only the
+		// encoding changes.
+		img := decodeSaved(t, saved.Data)
+		assert.Equal(t, 80, img.Bounds().Dx())
 	})
 
 	t.Run("should return 401 if user is not logged in", func(t *testing.T) {
@@ -299,6 +313,19 @@ func Test_ApiUserService_UploadAvatar(t *testing.T) {
 		resp := app.POST(t, "/api/v1/user/me/avatar",
 			WithCookie(app.LoginAs(t, userID)),
 			WithMultipartFile("avatar", "fake.png", "image/png", []byte("not an image at all")),
+		)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	})
+
+	t.Run("should return 400 for an image that fails to decode", func(t *testing.T) {
+		userID := domain.NewUserID()
+
+		// Passes the content type sniffing, falls apart on decoding.
+		broken := append([]byte("\x89PNG\r\n\x1a\n"), []byte("truncated junk")...)
+
+		resp := app.POST(t, "/api/v1/user/me/avatar",
+			WithCookie(app.LoginAs(t, userID)),
+			WithMultipartFile("avatar", "photo.png", "image/png", broken),
 		)
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})

@@ -12,6 +12,7 @@ import (
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
+	"github.com/healthy-heroes/neskuchka/backend/app/internal/avatarimg"
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 )
 
@@ -108,9 +109,20 @@ func (s *Service) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	normalized, err := avatarimg.Normalize(data)
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, avatarimg.ErrUnsupportedFormat) || errors.Is(err, avatarimg.ErrTooLarge) {
+			status = http.StatusBadRequest
+		}
+
+		httpx.RenderError(w, s.logger, status, err, "failed to process image")
+		return
+	}
+
 	avatar := domain.Avatar{
-		MimeType: mimeType,
-		Data:     data,
+		MimeType: avatarimg.MimeType,
+		Data:     normalized,
 	}
 
 	err = s.avatarStore.Save(r.Context(), id, avatar)
