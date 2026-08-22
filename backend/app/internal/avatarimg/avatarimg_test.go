@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -168,10 +169,10 @@ func decodePNG(t *testing.T, data []byte) image.Image {
 
 func TestNormalize(t *testing.T) {
 	t.Run("should downscale a large image to MaxSide", func(t *testing.T) {
-		res, err := Normalize(solidPNG(t, 1000, 1000, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
+		out, err := Normalize(zerolog.Nop(), solidPNG(t, 1000, 1000, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
 		require.NoError(t, err)
 
-		img := decodePNG(t, res.Data)
+		img := decodePNG(t, out)
 		assert.Equal(t, MaxSide, img.Bounds().Dx())
 		assert.Equal(t, MaxSide, img.Bounds().Dy())
 	})
@@ -181,20 +182,20 @@ func TestNormalize(t *testing.T) {
 		green := color.RGBA{G: 255, A: 255}
 		blue := color.RGBA{B: 255, A: 255}
 
-		res, err := Normalize(stripesPNG(t, 1800, 600, red, green, blue))
+		out, err := Normalize(zerolog.Nop(), stripesPNG(t, 1800, 600, red, green, blue))
 		require.NoError(t, err)
 
-		img := decodePNG(t, res.Data)
+		img := decodePNG(t, out)
 		assertColor(t, img, 5, MaxSide/2, green)
 		assertColor(t, img, MaxSide-5, MaxSide/2, green)
 	})
 
 	t.Run("should re-encode a jpeg as png", func(t *testing.T) {
-		res, err := Normalize(solidJPEG(t, 800, 800, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
+		out, err := Normalize(zerolog.Nop(), solidJPEG(t, 800, 800, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
 		require.NoError(t, err)
 
 		// decodePNG fails unless the output really is a PNG.
-		img := decodePNG(t, res.Data)
+		img := decodePNG(t, out)
 		assert.Equal(t, MaxSide, img.Bounds().Dx())
 	})
 
@@ -202,10 +203,10 @@ func TestNormalize(t *testing.T) {
 		data, err := os.ReadFile(filepath.Join("testdata", "stripes.webp"))
 		require.NoError(t, err)
 
-		res, err := Normalize(data)
+		out, err := Normalize(zerolog.Nop(), data)
 		require.NoError(t, err)
 
-		img := decodePNG(t, res.Data)
+		img := decodePNG(t, out)
 		assert.Equal(t, MaxSide, img.Bounds().Dx())
 		assertColor(t, img, MaxSide/2, MaxSide/2, color.RGBA{G: 255, A: 255})
 	})
@@ -218,38 +219,51 @@ func TestNormalize(t *testing.T) {
 		// the top half of the source to the right half of the picture.
 		data := withEXIFOrientation(t, halvesJPEG(t, 1200, 800, red, blue), 6)
 
-		res, err := Normalize(data)
+		out, err := Normalize(zerolog.Nop(), data)
 		require.NoError(t, err)
 
-		img := decodePNG(t, res.Data)
+		img := decodePNG(t, out)
 		assertColor(t, img, 20, 20, blue)
 		assertColor(t, img, MaxSide-20, 20, red)
 	})
 
-	t.Run("should report the size of the source picture", func(t *testing.T) {
-		res, err := Normalize(solidPNG(t, 1000, 800, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
+	t.Run("should log an upload heavier than an ordinary photo", func(t *testing.T) {
+		log := new(bytes.Buffer)
+
+		// Thirteen megapixels: past what a phone produces, inside the cap.
+		_, err := Normalize(zerolog.New(log),
+			solidPNG(t, 3600, 3600, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
 		require.NoError(t, err)
 
-		assert.Equal(t, 1000, res.SourceWidth)
-		assert.Equal(t, 800, res.SourceHeight)
+		assert.Contains(t, log.String(), "3600x3600")
+	})
+
+	t.Run("should say nothing about an ordinary upload", func(t *testing.T) {
+		log := new(bytes.Buffer)
+
+		_, err := Normalize(zerolog.New(log),
+			solidPNG(t, 1000, 1000, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
+		require.NoError(t, err)
+
+		assert.Empty(t, log.String())
 	})
 
 	t.Run("should reject an image with too many pixels", func(t *testing.T) {
 		// Neither side is outlandish on its own; the area is.
-		_, err := Normalize(pngHeader(8000, 8000))
+		_, err := Normalize(zerolog.Nop(), pngHeader(8000, 8000))
 		require.ErrorIs(t, err, ErrTooLarge)
 	})
 
 	t.Run("should reject data that is not an image", func(t *testing.T) {
-		_, err := Normalize([]byte("definitely not an image"))
+		_, err := Normalize(zerolog.Nop(), []byte("definitely not an image"))
 		require.ErrorIs(t, err, ErrUnsupportedFormat)
 	})
 
 	t.Run("should not upscale an image smaller than MaxSide", func(t *testing.T) {
-		res, err := Normalize(solidPNG(t, 100, 100, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
+		out, err := Normalize(zerolog.Nop(), solidPNG(t, 100, 100, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
 		require.NoError(t, err)
 
-		img := decodePNG(t, res.Data)
+		img := decodePNG(t, out)
 		assert.Equal(t, 100, img.Bounds().Dx())
 		assert.Equal(t, 100, img.Bounds().Dy())
 	})

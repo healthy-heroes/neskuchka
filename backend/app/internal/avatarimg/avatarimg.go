@@ -8,6 +8,7 @@ import (
 	"image"
 
 	"github.com/disintegration/imaging"
+	"github.com/rs/zerolog"
 
 	// Registers the webp decoder with image.Decode. Go has webp support
 	// neither in the standard library nor, for encoding, anywhere at all,
@@ -32,10 +33,10 @@ const (
 	// upload limit anyway, and doubling it doubles the worst case.
 	maxPixels = 25_000_000
 
-	// HeavyPixels marks an upload worth a line in the log. An ordinary phone
+	// heavyPixels marks an upload worth a line in the log. An ordinary phone
 	// photo is twelve megapixels; past that it is either a proper camera or
 	// somebody feeling out what the server will swallow.
-	HeavyPixels = 12_000_000
+	heavyPixels = 12_000_000
 )
 
 var (
@@ -48,33 +49,30 @@ var (
 	ErrTooLarge = errors.New("image dimensions are too large")
 )
 
-// Result is a normalized avatar together with the size of the picture it came
-// from, which the caller needs in order to tell an ordinary photo from an
-// upload worth a line in the log.
-type Result struct {
-	Data []byte
-
-	SourceWidth  int
-	SourceHeight int
-}
-
 // Normalize turns an uploaded image into a stored avatar: it applies the EXIF
 // orientation, crops the largest centered square and scales it down to
 // MaxSide, then encodes the result as PNG. A picture smaller than that keeps
-// its size — upscaling invents no detail.
-func Normalize(data []byte) (Result, error) {
+// its size — upscaling invents no detail. An upload heavier than an ordinary
+// photo is noted in the log before it is decoded.
+func Normalize(logger zerolog.Logger, data []byte) ([]byte, error) {
 	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
-		return Result{}, fmt.Errorf("%w: %w", ErrUnsupportedFormat, err)
+		return nil, fmt.Errorf("%w: %w", ErrUnsupportedFormat, err)
 	}
 
-	if int64(cfg.Width)*int64(cfg.Height) > maxPixels {
-		return Result{}, fmt.Errorf("%w: %dx%d", ErrTooLarge, cfg.Width, cfg.Height)
+	pixels := int64(cfg.Width) * int64(cfg.Height)
+	if pixels > maxPixels {
+		return nil, fmt.Errorf("%w: %dx%d", ErrTooLarge, cfg.Width, cfg.Height)
+	}
+
+	if pixels > heavyPixels {
+		logger.Warn().Msgf("heavy avatar upload: %dx%d, %d kb",
+			cfg.Width, cfg.Height, len(data)/1024)
 	}
 
 	img, err := imaging.Decode(bytes.NewReader(data), imaging.AutoOrientation(true))
 	if err != nil {
-		return Result{}, fmt.Errorf("%w: %w", ErrUnsupportedFormat, err)
+		return nil, fmt.Errorf("%w: %w", ErrUnsupportedFormat, err)
 	}
 
 	side := min(img.Bounds().Dx(), img.Bounds().Dy())
@@ -86,12 +84,8 @@ func Normalize(data []byte) (Result, error) {
 
 	buf := new(bytes.Buffer)
 	if err := imaging.Encode(buf, img, imaging.PNG); err != nil {
-		return Result{}, fmt.Errorf("encode avatar: %w", err)
+		return nil, fmt.Errorf("encode avatar: %w", err)
 	}
 
-	return Result{
-		Data:         buf.Bytes(),
-		SourceWidth:  cfg.Width,
-		SourceHeight: cfg.Height,
-	}, nil
+	return buf.Bytes(), nil
 }

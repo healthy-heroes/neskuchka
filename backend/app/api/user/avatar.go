@@ -112,7 +112,10 @@ func (s *Service) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	normalized, err := avatarimg.Normalize(data)
+	// Whoever uploads something heavy is worth naming in the log.
+	logger := s.logger.With().Str("user_id", string(id)).Logger()
+
+	normalized, err := avatarimg.Normalize(logger, data)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if errors.Is(err, avatarimg.ErrUnsupportedFormat) || errors.Is(err, avatarimg.ErrTooLarge) {
@@ -123,14 +126,9 @@ func (s *Service) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if normalized.SourceWidth*normalized.SourceHeight > avatarimg.HeavyPixels {
-		s.logger.Warn().Msgf("heavy avatar upload by %s: %dx%d in %d kb",
-			id, normalized.SourceWidth, normalized.SourceHeight, len(data)/1024)
-	}
-
 	avatar := domain.Avatar{
 		MimeType: avatarimg.MimeType,
-		Data:     normalized.Data,
+		Data:     normalized,
 	}
 
 	err = s.avatarStore.Save(r.Context(), id, avatar)
