@@ -181,7 +181,8 @@ func (api *Api) addAuthRoutes(router chi.Router, session *session.Manager) {
 // Decoding a picture the user chose is the one thing here that costs the
 // process hundreds of megabytes, and httprate counts per client — N clients
 // buy N decodes at once. Hence a ceiling of its own; two of them at their worst
-// is around 400mb, and the wait has to leave the decode room in requestTimeout.
+// is a little over 200mb, and the wait has to leave the decode room in
+// requestTimeout.
 const (
 	maxAvatarUploads  = 2
 	avatarUploadQueue = 4

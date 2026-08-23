@@ -26,11 +26,11 @@ const (
 	MimeType = "image/png"
 
 	// maxPixels caps the area of an accepted image, because area is what
-	// decoding costs and the weight of the file says nothing about it: 105kb
-	// of flat PNG peaks at 195mb of heap, the picture being held decoded and
-	// cropped at once. Hence the header is read before anything is decoded.
-	// Twenty five megapixels is around as much as a real photo fits into the
-	// upload limit anyway, and doubling it doubles the worst case.
+	// decoding costs and the weight of the file says nothing about it: 107kb
+	// of flat PNG peaks at 108mb of heap, four bytes of decoded pixel apiece.
+	// Hence the header is read before anything is decoded. Twenty five
+	// megapixels is around as much as a real photo fits into the upload limit
+	// anyway, and doubling it doubles the worst case.
 	maxPixels = 25_000_000
 
 	// heavyPixels marks an upload worth a line in the log. An ordinary phone
@@ -75,10 +75,9 @@ func Normalize(logger zerolog.Logger, data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("%w: %w", ErrUnsupportedFormat, err)
 	}
 
-	side := min(img.Bounds().Dx(), img.Bounds().Dy())
-	img = imaging.CropCenter(img, side, side)
+	img = cropSquare(img)
 
-	if side > MaxSide {
+	if img.Bounds().Dx() > MaxSide {
 		img = imaging.Resize(img, MaxSide, MaxSide, imaging.Lanczos)
 	}
 
@@ -88,4 +87,30 @@ func Normalize(logger zerolog.Logger, data []byte) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+// subImager is the SubImage method that image.Image leaves out and every image
+// type the decoders here hand back provides.
+type subImager interface {
+	SubImage(r image.Rectangle) image.Image
+}
+
+// cropSquare returns the largest centered square of img. The crop shares the
+// pixels of the source rather than copying them: it is held alongside the
+// picture it came out of, so a copy would put a second picture on the heap and
+// double what an upload peaks at. An image that cannot give out a sub-image is
+// copied after all, but no decoder registered here produces one.
+func cropSquare(img image.Image) image.Image {
+	b := img.Bounds()
+	side := min(b.Dx(), b.Dy())
+	square := image.Rect(0, 0, side, side).Add(image.Pt(
+		b.Min.X+(b.Dx()-side)/2,
+		b.Min.Y+(b.Dy()-side)/2,
+	))
+
+	if sub, ok := img.(subImager); ok {
+		return sub.SubImage(square)
+	}
+
+	return imaging.Crop(img, square)
 }

@@ -2,12 +2,12 @@ package avatarimg
 
 import (
 	"bytes"
+	"encoding/binary"
+	"hash/crc32"
 	"image"
 	"image/color"
 	"image/jpeg"
 	"image/png"
-	"encoding/binary"
-	"hash/crc32"
 	"os"
 	"path/filepath"
 	"testing"
@@ -116,11 +116,9 @@ func pngHeader(w, h uint32) []byte {
 	return out.Bytes()
 }
 
-// stripesPNG makes a w×h image split into three vertical stripes of equal
-// width, so that a centered square crop keeps the middle one only.
-func stripesPNG(t *testing.T, w, h int, left, middle, right color.Color) []byte {
-	t.Helper()
-
+// stripes makes a w×h image split into three vertical stripes of equal width,
+// so that a centered square crop keeps the middle one only.
+func stripes(w, h int, left, middle, right color.Color) image.Image {
 	img := image.NewRGBA(image.Rect(0, 0, w, h))
 	for y := range h {
 		for x := range w {
@@ -135,8 +133,25 @@ func stripesPNG(t *testing.T, w, h int, left, middle, right color.Color) []byte 
 		}
 	}
 
+	return img
+}
+
+// stripesPNG encodes stripes as PNG.
+func stripesPNG(t *testing.T, w, h int, left, middle, right color.Color) []byte {
+	t.Helper()
+
 	buf := new(bytes.Buffer)
-	require.NoError(t, png.Encode(buf, img))
+	require.NoError(t, png.Encode(buf, stripes(w, h, left, middle, right)))
+	return buf.Bytes()
+}
+
+// stripesJPEG encodes stripes as JPEG, which decodes into subsampled YCbCr
+// planes rather than into the RGBA a PNG gives back.
+func stripesJPEG(t *testing.T, w, h int, left, middle, right color.Color) []byte {
+	t.Helper()
+
+	buf := new(bytes.Buffer)
+	require.NoError(t, jpeg.Encode(buf, stripes(w, h, left, middle, right), nil))
 	return buf.Bytes()
 }
 
@@ -167,6 +182,10 @@ func decodePNG(t *testing.T, data []byte) image.Image {
 	return img
 }
 
+// opaqueImage hides the SubImage method of the image it wraps, standing in for
+// a decoder that hands out a type the crop cannot share pixels with.
+type opaqueImage struct{ image.Image }
+
 func TestNormalize(t *testing.T) {
 	t.Run("should downscale a large image to MaxSide", func(t *testing.T) {
 		out, err := Normalize(zerolog.Nop(), solidPNG(t, 1000, 1000, color.RGBA{R: 10, G: 20, B: 30, A: 255}))
@@ -188,6 +207,21 @@ func TestNormalize(t *testing.T) {
 		img := decodePNG(t, out)
 		assertColor(t, img, 5, MaxSide/2, green)
 		assertColor(t, img, MaxSide-5, MaxSide/2, green)
+	})
+
+	t.Run("should crop a wide jpeg to its center as well", func(t *testing.T) {
+		red := color.RGBA{R: 255, A: 255}
+		green := color.RGBA{G: 255, A: 255}
+		blue := color.RGBA{B: 255, A: 255}
+
+		// An odd width leaves the crop at an odd offset, where the chroma
+		// planes of a subsampled JPEG are indexed a pixel off the luma one.
+		out, err := Normalize(zerolog.Nop(), stripesJPEG(t, 1802, 600, red, green, blue))
+		require.NoError(t, err)
+
+		img := decodePNG(t, out)
+		assertColor(t, img, MaxSide/4, MaxSide/2, green)
+		assertColor(t, img, 3*MaxSide/4, MaxSide/2, green)
 	})
 
 	t.Run("should re-encode a jpeg as png", func(t *testing.T) {
@@ -266,5 +300,43 @@ func TestNormalize(t *testing.T) {
 		img := decodePNG(t, out)
 		assert.Equal(t, 100, img.Bounds().Dx())
 		assert.Equal(t, 100, img.Bounds().Dy())
+	})
+}
+
+func TestCropSquare(t *testing.T) {
+	t.Run("should take the centered square of a wide image", func(t *testing.T) {
+		out := cropSquare(image.NewNRGBA(image.Rect(0, 0, 100, 40)))
+
+		assert.Equal(t, 40, out.Bounds().Dx())
+		assert.Equal(t, 40, out.Bounds().Dy())
+		assert.Equal(t, image.Pt(30, 0), out.Bounds().Min)
+	})
+
+	t.Run("should take the centered square of a tall image", func(t *testing.T) {
+		out := cropSquare(image.NewNRGBA(image.Rect(0, 0, 40, 100)))
+
+		assert.Equal(t, 40, out.Bounds().Dx())
+		assert.Equal(t, 40, out.Bounds().Dy())
+		assert.Equal(t, image.Pt(0, 30), out.Bounds().Min)
+	})
+
+	t.Run("should share the pixels of the source instead of copying them", func(t *testing.T) {
+		src := image.NewNRGBA(image.Rect(0, 0, 100, 40))
+		out := cropSquare(src)
+
+		red := color.RGBA{R: 255, A: 255}
+		src.Set(50, 20, red)
+
+		assertColor(t, out, 50, 20, red)
+	})
+
+	t.Run("should copy an image that cannot give out a sub-image", func(t *testing.T) {
+		red := color.RGBA{R: 255, A: 255}
+		src := image.NewNRGBA(image.Rect(0, 0, 100, 40))
+		src.Set(50, 20, red)
+
+		out := cropSquare(opaqueImage{src})
+		assert.Equal(t, 40, out.Bounds().Dx())
+		assertColor(t, out, 20, 20, red)
 	})
 }
