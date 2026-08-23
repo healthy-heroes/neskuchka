@@ -1,7 +1,7 @@
 # design-sync: заметки по репозиторию
 
 Монорепо: `frontend/` — приложение на Vite + React 19 + Mantine 9.5.1, оно же пакет
-дизайн-системы (`mantine-vite-template`, приватный). Shape — `storybook`.
+дизайн-системы (`neskuchka-frontend`, приватный). Shape — `storybook`.
 Конвертер запускается **из корня репозитория**.
 
 ## Сборка

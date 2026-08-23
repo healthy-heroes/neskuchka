@@ -1,7 +1,7 @@
 {
 	"projectId": "7936765d-eb40-4689-9706-51c21668f9ba",
 	"shape": "storybook",
-	"pkg": "mantine-vite-template",
+	"pkg": "neskuchka-frontend",
 	"globalName": "NeskuchkaDS",
 	"entry": "frontend/dist-ds/ds.cjs",
 	"cssEntry": "dist-ds/ds.css",

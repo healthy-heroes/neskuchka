@@ -26,5 +26,7 @@ backend/app/cmd/web
 .design-sync/sb-reference/
 .design-sync/.cache/
 .design-sync/learnings/
+.design-sync/*.log
+.design-sync/upload-*.json
 .ds-sync/
 ds-bundle/

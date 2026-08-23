@@ -1,5 +1,5 @@
 {
-  "name": "mantine-vite-template",
+  "name": "neskuchka-frontend",
   "private": true,
   "type": "module",
   "types": "dist-ds/types/design/index.d.ts",
