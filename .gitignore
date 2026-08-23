@@ -1,5 +1,6 @@
 # General ignores
 .DS_Store
+node_modules/
 .idea/
 .kiro/
 .vscode/
@@ -19,3 +20,11 @@ backend/app/cmd/web
 
 # Профиль браузера и скриншоты Playwright MCP
 .playwright/
+
+# Claude Design: рабочее состояние design-sync.
+# Коммитим только config.json, NOTES.md и previews/ — остальное пересобирается.
+.design-sync/sb-reference/
+.design-sync/.cache/
+.design-sync/learnings/
+.ds-sync/
+ds-bundle/

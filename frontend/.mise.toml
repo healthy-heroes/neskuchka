@@ -71,3 +71,27 @@ if ! output=$(pnpm -s run build 2>&1); then
     exit 1
 fi
 '''
+
+[tasks.ds-bundle]
+description = "Build the design-system bundle for design-sync, silent unless it fails"
+quiet = true
+run = '''
+if ! output=$(pnpm -s run build:ds 2>&1); then
+    printf '%s\n' "$output"
+    exit 1
+fi
+'''
+
+[tasks.ds-reference]
+description = "Build the reference Storybook for design-sync, silent unless it fails"
+quiet = true
+run = '''
+root=$(git rev-parse --show-toplevel)
+# Локальный бинарь, а не npx: npx тянет свежий storybook, и его загрузчик пресетов
+# падает на наших прибитых аддонах.
+if ! output=$(./node_modules/.bin/storybook build -o "$root/.design-sync/sb-reference" 2>&1); then
+    printf '%s\n' "$output"
+    exit 1
+fi
+'''
+

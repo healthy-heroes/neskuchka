@@ -1,0 +1,41 @@
+{
+	"shape": "storybook",
+	"pkg": "mantine-vite-template",
+	"globalName": "NeskuchkaDS",
+	"entry": "frontend/dist-ds/ds.js",
+	"bundleCss": "frontend/dist-ds/ds.css",
+	"storybookConfigDir": "frontend/.storybook",
+	"storybookStatic": ".design-sync/sb-reference",
+	"buildCmd": "mise run //frontend:ds-bundle",
+	"titleMap": {
+		"Foundation/Colors": "ColorRamps",
+		"Foundation/Typography": "TypeScale",
+		"Foundation/Sizes": "SizeScale",
+		"Primitives/Buttons": "ButtonSpecimen",
+		"Primitives/Surfaces": "SurfaceSpecimen",
+		"Primitives/Badges": "BadgeSpecimen",
+		"Auth/Login": "LoginForm",
+		"Auth/LoginConfirm": "LoginConfirm",
+		"Pages/Landing": "LandingPage"
+	},
+	"provider": {
+		"component": "DatesProvider",
+		"props": {
+			"settings": {
+				"locale": "ru",
+				"firstDayOfWeek": 0,
+				"weekendDays": [
+					0
+				]
+			}
+		},
+		"inner": {
+			"component": "MantineProvider",
+			"props": {
+				"theme": {
+					"$ref": "theme"
+				}
+			}
+		}
+	}
+}
