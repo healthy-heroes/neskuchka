@@ -9,7 +9,10 @@ export default {
 	title: 'Workouts',
 };
 
-const workouts = createTrackWorkouts();
+// Восемь, а не четырнадцать: страница трека целиком должна влезать в кадр
+// карточки дизайн-системы (потолок захвата — 2000px), да и на карточке
+// история в полгода нечитаема.
+const workouts = createTrackWorkouts({ count: 8 });
 
 const apiService = createApiServiceMock({
 	workouts: {

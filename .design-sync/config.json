@@ -1,22 +1,22 @@
 {
+	"projectId": "7936765d-eb40-4689-9706-51c21668f9ba",
 	"shape": "storybook",
 	"pkg": "mantine-vite-template",
 	"globalName": "NeskuchkaDS",
-	"entry": "frontend/dist-ds/ds.js",
-	"bundleCss": "frontend/dist-ds/ds.css",
+	"entry": "frontend/dist-ds/ds.cjs",
+	"cssEntry": "dist-ds/ds.css",
 	"storybookConfigDir": "frontend/.storybook",
 	"storybookStatic": ".design-sync/sb-reference",
 	"buildCmd": "mise run //frontend:ds-bundle",
 	"titleMap": {
-		"Foundation/Colors": "ColorRamps",
-		"Foundation/Typography": "TypeScale",
-		"Foundation/Sizes": "SizeScale",
-		"Primitives/Buttons": "ButtonSpecimen",
-		"Primitives/Surfaces": "SurfaceSpecimen",
-		"Primitives/Badges": "BadgeSpecimen",
-		"Auth/Login": "LoginForm",
-		"Auth/LoginConfirm": "LoginConfirm",
-		"Pages/Landing": "LandingPage"
+		"Colors": "ColorRamps",
+		"Typography": "TypeScale",
+		"Sizes": "SizeScale",
+		"Buttons": "ButtonSpecimen",
+		"Surfaces": "SurfaceSpecimen",
+		"Badges": "BadgeSpecimen",
+		"Login": "LoginForm",
+		"Landing": "LandingPage"
 	},
 	"provider": {
 		"component": "DatesProvider",
@@ -37,5 +37,29 @@
 				}
 			}
 		}
-	}
+	},
+	"storyImports": {
+		"shim": [
+			"@mantine/core",
+			"Landing.page"
+		]
+	},
+	"overrides": {
+		"LandingPage": {
+			"viewport": "900x1500"
+		},
+		"TypeScale": {
+			"viewport": "900x780"
+		},
+		"WorkoutForm": {
+			"viewport": "900x1560"
+		},
+		"WorkoutHistory": {
+			"viewport": "900x1560"
+		},
+		"Workouts": {
+			"viewport": "900x1700"
+		}
+	},
+	"readmeHeader": ".design-sync/conventions.md"
 }
