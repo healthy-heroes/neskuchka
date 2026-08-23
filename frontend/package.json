@@ -1,12 +1,14 @@
 {
-  "name": "mantine-vite-template",
+  "name": "neskuchka-frontend",
   "private": true,
   "type": "module",
+  "types": "dist-ds/types/design/index.d.ts",
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
     "dev2back": "VITE_BACKEND_PORT=8000 vite",
     "build": "tsc && vite build",
+    "build:ds": "vite build --config vite.ds.config.mjs && tsc -p tsconfig.ds.json && node scripts/ds-dts-paths.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "eslint": "eslint . --cache",

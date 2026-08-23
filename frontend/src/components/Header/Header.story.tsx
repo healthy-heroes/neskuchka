@@ -1,4 +1,5 @@
 import { createApiServiceMock } from '@/api/fixtures/api';
+import avatar from '@/api/fixtures/avatar.jpg';
 import { createUserServiceMock, mockUser } from '@/api/fixtures/user';
 import { StoryPreview } from '../StoryBook/StoryPreview';
 import { Header } from './Header';
@@ -30,7 +31,7 @@ export function LoggedIn() {
 export function LoggedInWithAvatar() {
 	const apiService = createApiServiceMock({
 		user: createUserServiceMock({
-			user: { ...mockUser, Avatar: '/img/avatar.jpg' },
+			user: { ...mockUser, Avatar: avatar },
 		}),
 	});
 

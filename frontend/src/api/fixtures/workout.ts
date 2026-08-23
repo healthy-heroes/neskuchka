@@ -1,7 +1,8 @@
+import dayjs from 'dayjs';
 import { randomId } from '@mantine/hooks';
 import { Workout } from '@/types/domain';
 
-export default function createWorkout(): Workout {
+export default function createWorkout(overrides: Partial<Workout> = {}): Workout {
 	return {
 		ID: randomId(),
 		TrackID: 'track-1',
@@ -31,5 +32,37 @@ export default function createWorkout(): Workout {
 				],
 			},
 		],
+		...overrides,
 	};
+}
+
+export interface TrackWorkoutsOptions {
+	/** Сколько тренировок вернуть. */
+	count?: number;
+	/** Начинать ли с сегодняшней: без неё трек выглядит как «сегодня отдых». */
+	includeToday?: boolean;
+}
+
+/**
+ * Тренировки трека, свежие первыми — по одной раз в два дня.
+ *
+ * ID и даты детерминированы намеренно. Статус выполнения считается по хешу ID
+ * (см. utils/completion), а design-sync сравнивает два рендера одной стори
+ * скриншотами: со случайными ID полоса прогресса каждый раз разная и сравнение
+ * не сходится никогда.
+ */
+export function createTrackWorkouts({
+	count = 14,
+	includeToday = true,
+}: TrackWorkoutsOptions = {}): Array<Workout> {
+	const today = dayjs().startOf('day');
+
+	return Array.from({ length: count }, (_, index) => {
+		const offset = includeToday ? index * 2 : index * 2 + 1;
+
+		return createWorkout({
+			ID: `workout-${index + 1}`,
+			Date: today.subtract(offset, 'day').format('YYYY-MM-DD'),
+		});
+	});
 }

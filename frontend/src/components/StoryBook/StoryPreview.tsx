@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import {
 	createMemoryHistory,
 	createRootRoute,
@@ -36,10 +35,7 @@ export function StoryPreview(props: StoryPreviewProps) {
 
 	return (
 		<ApiContext.Provider value={service}>
-			<QueryClientProvider client={queryClient}>
-				{getPageWrapper(props)}
-				<ReactQueryDevtools />
-			</QueryClientProvider>
+			<QueryClientProvider client={queryClient}>{getPageWrapper(props)}</QueryClientProvider>
 		</ApiContext.Provider>
 	);
 }

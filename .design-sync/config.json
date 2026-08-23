@@ -1,0 +1,65 @@
+{
+	"projectId": "7936765d-eb40-4689-9706-51c21668f9ba",
+	"shape": "storybook",
+	"pkg": "neskuchka-frontend",
+	"globalName": "NeskuchkaDS",
+	"entry": "frontend/dist-ds/ds.cjs",
+	"cssEntry": "dist-ds/ds.css",
+	"storybookConfigDir": "frontend/.storybook",
+	"storybookStatic": ".design-sync/sb-reference",
+	"buildCmd": "mise run //frontend:ds-bundle",
+	"titleMap": {
+		"Colors": "ColorRamps",
+		"Typography": "TypeScale",
+		"Sizes": "SizeScale",
+		"Buttons": "ButtonSpecimen",
+		"Surfaces": "SurfaceSpecimen",
+		"Badges": "BadgeSpecimen",
+		"Login": "LoginForm",
+		"Landing": "LandingPage"
+	},
+	"provider": {
+		"component": "DatesProvider",
+		"props": {
+			"settings": {
+				"locale": "ru",
+				"firstDayOfWeek": 0,
+				"weekendDays": [
+					0
+				]
+			}
+		},
+		"inner": {
+			"component": "MantineProvider",
+			"props": {
+				"theme": {
+					"$ref": "theme"
+				}
+			}
+		}
+	},
+	"storyImports": {
+		"shim": [
+			"@mantine/core",
+			"Landing.page"
+		]
+	},
+	"overrides": {
+		"LandingPage": {
+			"viewport": "900x1500"
+		},
+		"TypeScale": {
+			"viewport": "900x780"
+		},
+		"WorkoutForm": {
+			"viewport": "900x1560"
+		},
+		"WorkoutHistory": {
+			"viewport": "900x1560"
+		},
+		"Workouts": {
+			"viewport": "900x1700"
+		}
+	},
+	"readmeHeader": ".design-sync/conventions.md"
+}

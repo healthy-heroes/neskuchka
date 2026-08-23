@@ -19,7 +19,8 @@ cd frontend && mise run checks # то же самое из подкаталог�
 
 Прочее: `//backend:seed` (пересоздаёт `bin/app.db`), `//backend:token`, `//backend:coverage`,
 `//frontend:app` (`--back` — прокси на локальный бэкенд), `//frontend:build`,
-`//frontend:storybook`.
+`//frontend:storybook`, `//frontend:ds-bundle` и `//frontend:ds-reference` (сборки
+для Claude Design, см. `frontend/docs/concepts/design-system.md`).
 
 Git-хуков нет — коммит и пуш ничего не гоняют. Всё вместе (`checks` + `tests` +
 `//frontend:build`) запускает `mise run ci`; это команда для человека перед пушем.
@@ -82,7 +83,18 @@ React + Mantine + TanStack Router + TanStack Query. Файловый роути�
 - Загрузка: `<PageSkeleton />`. Ссылки между роутами: `<RouteLink />`.
 - Права проверяются по полю `IsOwner: bool` из ответа API, а не сравнением ID на клиенте.
 
-Подробнее: `frontend/docs/concepts/routing.md`, `frontend/docs/concepts/queries.md`.
+Подробнее: `frontend/docs/concepts/routing.md`, `frontend/docs/concepts/queries.md`,
+`frontend/docs/concepts/design-system.md`.
+
+### Дизайн-система
+
+Экраны рисуются на [claude.ai/design](https://claude.ai/design) нашими компонентами
+с нашей темой. Вход дизайн-системы — `src/design/index.ts`: что там экспортировано,
+то в системе существует. Storybook при этом источник правды, а не витрина — конвертер
+сравнивает превью с референсным рендером скриншотами, поэтому **стори обязаны быть
+детерминированными** (см. `createTrackWorkouts`).
+
+Весь флоу, команды и ловушки — `frontend/docs/concepts/design-system.md`.
 
 ### Mantine
 

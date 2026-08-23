@@ -1,0 +1,12 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"noEmit": false,
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"outDir": "dist-ds/types",
+		"rootDir": "src"
+	},
+	"include": ["src"],
+	"exclude": ["src/routeTree.gen.ts", "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.story.tsx"]
+}
