@@ -70,7 +70,7 @@ function WorkoutRow({
 			</Text>
 
 			{workout.CanEdit && (
-				<Group gap="xs" justify="flex-end" wrap="nowrap">
+				<Group gap="xs" justify="flex-end" wrap="nowrap" className={classes.actions}>
 					{/* renderRoot, а не component: через полиморфный проп Button теряет
 					    типы роутера, и params перестают проверяться по маршруту */}
 					<Button
