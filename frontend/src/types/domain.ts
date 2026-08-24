@@ -54,4 +54,9 @@ export interface Workout {
 	Sections: Array<WorkoutSection>;
 
 	Notes?: string;
+
+	/** Видна ли тренировка участникам: будущие ещё не опубликованы. */
+	IsPublished?: boolean;
+	/** Можно ли её ещё править и удалять. Считает бэкенд, клиент не пересчитывает. */
+	CanEdit?: boolean;
 }

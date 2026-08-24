@@ -59,8 +59,14 @@ Git-хуков нет — коммит и пуш ничего не гоняют.
 - Поведение живёт на агрегате (`Workout.ApplyUpdate`, `Workout.Ref`), не на `Store`.
 - **Аутентификация — на уровне middleware** (`session.Authenticator`).
   **Авторизация (проверка прав) — в домене**, в методах `Store`, не в хендлерах.
-- Доменные ошибки: `ErrNotFound`, `ErrForbidden` (`domain/errors.go`); хендлеры мапят их
-  через `httpx.RenderDomainError`.
+- Доменные ошибки: `ErrNotFound`, `ErrForbidden`, `ErrLocked` (`domain/errors.go`); хендлеры
+  мапят их через `httpx.RenderDomainError`. `ErrLocked` (409) — это не «нет прав», а «объект
+  не в том состоянии»: у владельца права есть, но окно уже закрыто.
+- **Публикация и окно правки** — на агрегате `Workout` (`IsPublished`, `IsEditable`,
+  `editWindowDays = 1`). Тренировка видна участникам с её даты, править и удалять её можно
+  ещё сутки после. `Store.FindWorkouts` сама ставит `PublishedOnly` — публичный путь не
+  может отдать черновик; весь трек владельцу отдаёт `FindTrackWorkouts`. В API оба признака
+  приезжают готовыми полями `IsPublished` и `CanEdit`, клиент их не пересчитывает.
 - Схема БД — goose-миграции в `backend/app/storage/db/migrations/`, embed'ятся в бинарь
   и применяются на старте. Изменение схемы = новый файл `NNNN_<name>.sql` со следующим
   номером и секцией `-- +goose Up`; обычный DDL без `IF NOT EXISTS` — он был нужен
@@ -79,7 +85,8 @@ React + Mantine + TanStack Router + TanStack Query. Файловый роути�
 - Редиректы по авторизации — в компонентах страниц через `<Navigate to="..." />`,
   не в `beforeLoad` на уровне роута.
 - Гарды оборачивают компонент страницы: `<RequireAuth>` — только для залогиненных,
-  `<TrackOwnerOnly>` — только для владельца трека.
+  `<TrackOwnerOnly>` — только для владельца трека. Под обоими — `/workouts/manage`,
+  админка трека; вход в неё пунктом в `UserMenu`, видимым по `IsOwner`.
 - Загрузка: `<PageSkeleton />`. Ссылки между роутами: `<RouteLink />`.
 - Права проверяются по полю `IsOwner: bool` из ответа API, а не сравнением ID на клиенте.
 

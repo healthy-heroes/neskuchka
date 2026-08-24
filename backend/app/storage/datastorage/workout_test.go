@@ -193,3 +193,129 @@ func Test_Workout_FindWorkouts(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, list, 0)
 }
+
+func Test_Workout_FindWorkouts_Paging(t *testing.T) {
+	ds := setupTestStorage(t)
+
+	trackID := domain.NewTrackID()
+	for _, date := range []string{"2025-02-01", "2025-02-02", "2025-02-03"} {
+		_, err := ds.CreateWorkout(t.Context(), domain.Workout{
+			ID:      domain.NewWorkoutID(),
+			TrackID: trackID,
+			Date:    workoutDate(date),
+		})
+		require.NoError(t, err)
+	}
+
+	page, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 2, Offset: 1})
+	require.NoError(t, err)
+	require.Len(t, page, 2)
+
+	// newest first, so offset 1 starts on the second newest
+	assert.Equal(t, workoutDate("2025-02-02"), page[0].Date)
+	assert.Equal(t, workoutDate("2025-02-01"), page[1].Date)
+
+	past, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 10, Offset: 10})
+	require.NoError(t, err)
+	assert.Len(t, past, 0)
+}
+
+func Test_Workout_FindWorkouts_PublishedOnly(t *testing.T) {
+	ds := setupTestStorage(t)
+
+	trackID := domain.NewTrackID()
+	today := time.Now()
+	dates := []time.Time{
+		today.AddDate(0, 0, 3),
+		today,
+		today.AddDate(0, 0, -3),
+	}
+	for _, date := range dates {
+		_, err := ds.CreateWorkout(t.Context(), domain.Workout{
+			ID:      domain.NewWorkoutID(),
+			TrackID: trackID,
+			Date:    date,
+		})
+		require.NoError(t, err)
+	}
+
+	all, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 10})
+	require.NoError(t, err)
+	assert.Len(t, all, 3)
+
+	published, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{
+		Limit:         10,
+		PublishedOnly: true,
+	})
+	require.NoError(t, err)
+	require.Len(t, published, 2)
+
+	// today is published, the one three days out is not
+	assert.Equal(t, today.Format(time.DateOnly), published[0].Date.Format(time.DateOnly))
+}
+
+func Test_Workout_CountWorkouts(t *testing.T) {
+	ds := setupTestStorage(t)
+
+	trackID := domain.NewTrackID()
+	now := time.Now()
+	for _, date := range []time.Time{now.AddDate(0, 0, 5), now.AddDate(0, 0, 1), now, now.AddDate(0, 0, -1)} {
+		_, err := ds.CreateWorkout(t.Context(), domain.Workout{
+			ID:      domain.NewWorkoutID(),
+			TrackID: trackID,
+			Date:    date,
+		})
+		require.NoError(t, err)
+	}
+
+	// a workout of another track must not be counted in
+	_, err := ds.CreateWorkout(t.Context(), domain.Workout{
+		ID:      domain.NewWorkoutID(),
+		TrackID: domain.NewTrackID(),
+		Date:    now,
+	})
+	require.NoError(t, err)
+
+	total, planned, err := ds.CountWorkouts(t.Context(), trackID, now)
+	require.NoError(t, err)
+
+	assert.Equal(t, 4, total)
+	assert.Equal(t, 2, planned)
+
+	// an empty track counts to zero rather than failing
+	total, planned, err = ds.CountWorkouts(t.Context(), domain.NewTrackID(), now)
+	require.NoError(t, err)
+	assert.Equal(t, 0, total)
+	assert.Equal(t, 0, planned)
+}
+
+func Test_Workout_Delete(t *testing.T) {
+	ds := setupTestStorage(t)
+
+	trackID := domain.NewTrackID()
+	created, err := ds.CreateWorkout(t.Context(), domain.Workout{
+		ID:      domain.NewWorkoutID(),
+		TrackID: trackID,
+		Date:    workoutDate("2025-02-01"),
+	})
+	require.NoError(t, err)
+
+	require.NoError(t, ds.DeleteWorkout(t.Context(), created.Ref()))
+
+	_, err = ds.GetWorkout(t.Context(), created.Ref())
+	assert.ErrorIs(t, err, domain.ErrNotFound)
+
+	// deleting what is not there is a miss, not a no-op
+	assert.ErrorIs(t, ds.DeleteWorkout(t.Context(), created.Ref()), domain.ErrNotFound)
+
+	// and the workout of another track is not reachable by id alone
+	other, err := ds.CreateWorkout(t.Context(), domain.Workout{
+		ID:      domain.NewWorkoutID(),
+		TrackID: domain.NewTrackID(),
+		Date:    workoutDate("2025-02-01"),
+	})
+	require.NoError(t, err)
+
+	err = ds.DeleteWorkout(t.Context(), domain.WorkoutRef{TrackID: trackID, WorkoutID: other.ID})
+	assert.ErrorIs(t, err, domain.ErrNotFound)
+}

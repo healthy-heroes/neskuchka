@@ -56,3 +56,35 @@ func Test_Track_NotFound(t *testing.T) {
 	_, err = ds.GetTrackBySlug(t.Context(), domain.TrackSlug("non-existent-slug"))
 	assert.ErrorIs(t, err, domain.ErrNotFound)
 }
+
+func Test_Track_Update(t *testing.T) {
+	ds := setupTestStorage(t)
+
+	created, err := ds.CreateTrack(t.Context(), domain.Track{
+		ID:          domain.NewTrackID(),
+		Slug:        domain.TrackSlug("testmain"),
+		Name:        "Test track",
+		Description: "Its track created for tests",
+		OwnerID:     domain.UserID("user-1"),
+	})
+	require.NoError(t, err)
+	createdRow := trackFromDB(t, ds.engine, string(created.ID))
+
+	updated, err := ds.UpdateTrack(t.Context(), domain.Track{
+		ID:          created.ID,
+		Name:        "Renamed",
+		Description: "Rewritten",
+	})
+	require.NoError(t, err)
+
+	assert.Equal(t, "Renamed", updated.Name)
+	assert.Equal(t, "Rewritten", updated.Description)
+
+	// the update statement touches the texts only
+	assert.Equal(t, created.Slug, updated.Slug)
+	assert.Equal(t, created.OwnerID, updated.OwnerID)
+
+	row := trackFromDB(t, ds.engine, string(created.ID))
+	assert.Equal(t, createdRow.CreatedAt, row.CreatedAt)
+	assert.GreaterOrEqual(t, row.UpdatedAt, createdRow.UpdatedAt)
+}

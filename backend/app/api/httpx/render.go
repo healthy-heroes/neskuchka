@@ -89,6 +89,8 @@ func RenderDomainError(w http.ResponseWriter, l zerolog.Logger, err error, msg s
 		RenderError(w, l, http.StatusNotFound, err, "Not found")
 	case errors.Is(err, domain.ErrForbidden):
 		RenderError(w, l, http.StatusForbidden, err, "Forbidden")
+	case errors.Is(err, domain.ErrLocked):
+		RenderError(w, l, http.StatusConflict, err, "Conflict")
 	default:
 		RenderError(w, l, http.StatusInternalServerError, err, msg)
 	}

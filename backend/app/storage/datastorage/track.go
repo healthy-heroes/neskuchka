@@ -70,3 +70,18 @@ func (s *Storage) CreateTrack(ctx context.Context, track domain.Track) (domain.T
 
 	return s.GetTrack(ctx, track.ID)
 }
+
+func (s *Storage) UpdateTrack(ctx context.Context, track domain.Track) (domain.Track, error) {
+	t := makeTrack(track)
+
+	_, err := s.engine.ExecContext(ctx,
+		"UPDATE track SET name = ?, description = ?, updated_at = ? WHERE id = ?",
+		t.Name, t.Description, t.UpdatedAt, t.ID,
+	)
+
+	if err != nil {
+		return domain.Track{}, storage.HandleSqlError(err)
+	}
+
+	return s.GetTrack(ctx, track.ID)
+}

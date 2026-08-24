@@ -29,6 +29,9 @@ type workoutResp struct {
 	Date     string
 	Notes    string
 	Sections []domain.WorkoutSection
+
+	IsPublished bool
+	CanEdit     bool
 }
 
 type workoutRespWrapper struct {
@@ -37,6 +40,13 @@ type workoutRespWrapper struct {
 
 type workoutsRespWrapper struct {
 	Workouts []workoutResp
+}
+
+type workoutsPageResp struct {
+	Workouts []workoutResp
+
+	Total   int
+	Planned int
 }
 
 // tracksFixture is an app with the main track and its owner already created
@@ -87,6 +97,16 @@ func sections(title string) []domain.WorkoutSection {
 			},
 		},
 	}
+}
+
+// dateIn is a workout date relative to today, formatted the way the API takes
+// and returns them.
+//
+// The edit window is measured from today, so anything a test writes or changes
+// has to be dated from today too: a pinned calendar date passes, then quietly
+// falls outside the window and takes the test with it.
+func dateIn(days int) string {
+	return time.Now().AddDate(0, 0, days).Format(time.DateOnly)
 }
 
 func seedWorkout(t *testing.T, app *TestApp, trackID domain.TrackID, date, notes string) domain.Workout {
@@ -227,7 +247,7 @@ func Test_ApiTracks_GetMainTrackLastWorkouts(t *testing.T) {
 func Test_ApiTracks_GetWorkout(t *testing.T) {
 	t.Run("should return a workout by id", func(t *testing.T) {
 		f := setupTracks(t)
-		workout := seedWorkout(t, f.TestApp, f.Track.ID, "2026-01-10", "easy day")
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(0), "easy day")
 
 		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(workout.ID))
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -236,9 +256,12 @@ func Test_ApiTracks_GetWorkout(t *testing.T) {
 		assert.Equal(t, workoutResp{
 			ID:       string(workout.ID),
 			TrackID:  string(f.Track.ID),
-			Date:     "2026-01-10",
+			Date:     dateIn(0),
 			Notes:    "easy day",
 			Sections: sections("Warm-up"),
+
+			IsPublished: true,
+			CanEdit:     true,
 		}, data.Workout)
 	})
 
@@ -271,7 +294,7 @@ func Test_ApiTracks_CreateWorkout(t *testing.T) {
 	newWorkoutBody := func(trackID domain.TrackID) workoutResp {
 		return workoutResp{
 			TrackID:  string(trackID),
-			Date:     "2026-01-10",
+			Date:     dateIn(1),
 			Notes:    "new workout",
 			Sections: sections("Main part"),
 		}
@@ -288,7 +311,7 @@ func Test_ApiTracks_CreateWorkout(t *testing.T) {
 
 		data := ReadJSON[workoutRespWrapper](t, resp)
 		assert.NotEmpty(t, data.Workout.ID)
-		assert.Equal(t, "2026-01-10", data.Workout.Date)
+		assert.Equal(t, dateIn(1), data.Workout.Date)
 		assert.Equal(t, "new workout", data.Workout.Notes)
 		assert.Equal(t, sections("Main part"), data.Workout.Sections)
 
@@ -352,14 +375,14 @@ func Test_ApiTracks_CreateWorkout(t *testing.T) {
 func Test_ApiTracks_UpdateWorkout(t *testing.T) {
 	t.Run("should update the workout of the track owner", func(t *testing.T) {
 		f := setupTracks(t)
-		workout := seedWorkout(t, f.TestApp, f.Track.ID, "2026-01-10", "before")
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(0), "before")
 
 		resp := f.PUT(t, "/api/v1/tracks/main/workouts/"+string(workout.ID),
 			WithCookie(f.LoginAs(t, f.Owner.ID)),
 			WithJSON(workoutResp{
 				ID:       string(workout.ID),
 				TrackID:  string(f.Track.ID),
-				Date:     "2026-01-11",
+				Date:     dateIn(1),
 				Notes:    "after",
 				Sections: sections("Cool-down"),
 			}),
@@ -367,7 +390,7 @@ func Test_ApiTracks_UpdateWorkout(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		data := ReadJSON[workoutRespWrapper](t, resp)
-		assert.Equal(t, "2026-01-11", data.Workout.Date)
+		assert.Equal(t, dateIn(1), data.Workout.Date)
 		assert.Equal(t, "after", data.Workout.Notes)
 
 		stored, err := f.DataStorage.GetWorkout(t.Context(), workout.Ref())
@@ -378,13 +401,13 @@ func Test_ApiTracks_UpdateWorkout(t *testing.T) {
 
 	t.Run("should return 401 for an anonymous user", func(t *testing.T) {
 		f := setupTracks(t)
-		workout := seedWorkout(t, f.TestApp, f.Track.ID, "2026-01-10", "before")
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(0), "before")
 
 		resp := f.PUT(t, "/api/v1/tracks/main/workouts/"+string(workout.ID),
 			WithJSON(workoutResp{
 				ID:      string(workout.ID),
 				TrackID: string(f.Track.ID),
-				Date:    "2026-01-11",
+				Date:    dateIn(1),
 				Notes:   "after",
 			}),
 		)
@@ -398,14 +421,14 @@ func Test_ApiTracks_UpdateWorkout(t *testing.T) {
 	t.Run("should return 403 for a user who does not own the track", func(t *testing.T) {
 		f := setupTracks(t)
 		stranger := createUser(t, f.TestApp)
-		workout := seedWorkout(t, f.TestApp, f.Track.ID, "2026-01-10", "before")
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(0), "before")
 
 		resp := f.PUT(t, "/api/v1/tracks/main/workouts/"+string(workout.ID),
 			WithCookie(f.LoginAs(t, stranger.ID)),
 			WithJSON(workoutResp{
 				ID:      string(workout.ID),
 				TrackID: string(f.Track.ID),
-				Date:    "2026-01-11",
+				Date:    dateIn(1),
 				Notes:   "after",
 			}),
 		)
@@ -425,10 +448,269 @@ func Test_ApiTracks_UpdateWorkout(t *testing.T) {
 			WithJSON(workoutResp{
 				ID:      string(unknownID),
 				TrackID: string(f.Track.ID),
-				Date:    "2026-01-11",
+				Date:    dateIn(1),
 				Notes:   "after",
 			}),
 		)
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
+}
+
+func Test_ApiTracks_UpdateMainTrack(t *testing.T) {
+	body := func(name, description string) map[string]string {
+		return map[string]string{"Name": name, "Description": description}
+	}
+
+	t.Run("should rewrite the texts for the track owner", func(t *testing.T) {
+		f := setupTracks(t)
+
+		resp := f.PUT(t, "/api/v1/tracks/main",
+			WithCookie(f.LoginAs(t, f.Owner.ID)),
+			WithJSON(body("Renamed", "Rewritten")),
+		)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		data := ReadJSON[trackResp](t, resp)
+		assert.Equal(t, "Renamed", data.Track.Name)
+		assert.True(t, data.IsOwner)
+
+		stored, err := f.DataStorage.GetTrack(t.Context(), f.Track.ID)
+		require.NoError(t, err)
+		assert.Equal(t, "Renamed", stored.Name)
+		assert.Equal(t, "Rewritten", stored.Description)
+
+		// the slug is how the main track is found at all
+		assert.Equal(t, f.Track.Slug, stored.Slug)
+		assert.Equal(t, f.Owner.ID, stored.OwnerID)
+	})
+
+	t.Run("should return 401 for an anonymous user", func(t *testing.T) {
+		f := setupTracks(t)
+
+		resp := f.PUT(t, "/api/v1/tracks/main", WithJSON(body("Renamed", "Rewritten")))
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+
+		stored, err := f.DataStorage.GetTrack(t.Context(), f.Track.ID)
+		require.NoError(t, err)
+		assert.Equal(t, f.Track.Name, stored.Name)
+	})
+
+	t.Run("should return 403 for a user who does not own the track", func(t *testing.T) {
+		f := setupTracks(t)
+		stranger := createUser(t, f.TestApp)
+
+		resp := f.PUT(t, "/api/v1/tracks/main",
+			WithCookie(f.LoginAs(t, stranger.ID)),
+			WithJSON(body("Renamed", "Rewritten")),
+		)
+		assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+	})
+
+	t.Run("should return 422 for an empty name", func(t *testing.T) {
+		f := setupTracks(t)
+
+		resp := f.PUT(t, "/api/v1/tracks/main",
+			WithCookie(f.LoginAs(t, f.Owner.ID)),
+			WithJSON(body("", "Rewritten")),
+		)
+		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+	})
+}
+
+func Test_ApiTracks_GetMainTrackWorkouts(t *testing.T) {
+	t.Run("should return the whole track with its counters, drafts included", func(t *testing.T) {
+		f := setupTracks(t)
+
+		seedWorkout(t, f.TestApp, f.Track.ID, dateIn(4), "planned")
+		seedWorkout(t, f.TestApp, f.Track.ID, dateIn(1), "planned too")
+		seedWorkout(t, f.TestApp, f.Track.ID, dateIn(0), "today")
+		seedWorkout(t, f.TestApp, f.Track.ID, dateIn(-5), "old")
+
+		resp := f.GET(t, "/api/v1/tracks/main/workouts", WithCookie(f.LoginAs(t, f.Owner.ID)))
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		data := ReadJSON[workoutsPageResp](t, resp)
+		require.Len(t, data.Workouts, 4)
+		assert.Equal(t, 4, data.Total)
+		assert.Equal(t, 2, data.Planned)
+
+		// newest first, and the state of each row comes ready-made
+		assert.Equal(t, dateIn(4), data.Workouts[0].Date)
+		assert.False(t, data.Workouts[0].IsPublished)
+		assert.True(t, data.Workouts[0].CanEdit)
+
+		assert.True(t, data.Workouts[3].IsPublished)
+		assert.False(t, data.Workouts[3].CanEdit)
+	})
+
+	t.Run("should page through the track", func(t *testing.T) {
+		f := setupTracks(t)
+
+		for day := 1; day <= 10; day++ {
+			seedWorkout(t, f.TestApp, f.Track.ID, dateIn(-day), "")
+		}
+
+		cookie := f.LoginAs(t, f.Owner.ID)
+
+		first := ReadJSON[workoutsPageResp](t,
+			f.GET(t, "/api/v1/tracks/main/workouts", WithCookie(cookie)))
+		require.Len(t, first.Workouts, 8)
+		assert.Equal(t, 10, first.Total)
+		assert.Equal(t, dateIn(-1), first.Workouts[0].Date)
+
+		second := ReadJSON[workoutsPageResp](t,
+			f.GET(t, "/api/v1/tracks/main/workouts?offset=8", WithCookie(cookie)))
+		require.Len(t, second.Workouts, 2)
+		assert.Equal(t, 10, second.Total)
+		assert.Equal(t, dateIn(-9), second.Workouts[0].Date)
+	})
+
+	t.Run("should return an empty list, not null, for a track with no workouts", func(t *testing.T) {
+		f := setupTracks(t)
+
+		resp := f.GET(t, "/api/v1/tracks/main/workouts", WithCookie(f.LoginAs(t, f.Owner.ID)))
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		data := ReadJSON[workoutsPageResp](t, resp)
+		assert.NotNil(t, data.Workouts)
+		assert.Empty(t, data.Workouts)
+		assert.Equal(t, 0, data.Total)
+	})
+
+	t.Run("should return 401 for an anonymous user", func(t *testing.T) {
+		f := setupTracks(t)
+
+		resp := f.GET(t, "/api/v1/tracks/main/workouts")
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	})
+
+	t.Run("should return 403 for a user who does not own the track", func(t *testing.T) {
+		f := setupTracks(t)
+		stranger := createUser(t, f.TestApp)
+
+		resp := f.GET(t, "/api/v1/tracks/main/workouts", WithCookie(f.LoginAs(t, stranger.ID)))
+		assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+	})
+}
+
+func Test_ApiTracks_DeleteWorkout(t *testing.T) {
+	t.Run("should delete a workout inside the edit window", func(t *testing.T) {
+		f := setupTracks(t)
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(-1), "yesterday")
+
+		resp := f.DELETE(t, "/api/v1/tracks/main/workouts/"+string(workout.ID),
+			WithCookie(f.LoginAs(t, f.Owner.ID)))
+		assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+
+		_, err := f.DataStorage.GetWorkout(t.Context(), workout.Ref())
+		assert.ErrorIs(t, err, domain.ErrNotFound)
+	})
+
+	t.Run("should return 409 once the edit window has closed", func(t *testing.T) {
+		f := setupTracks(t)
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(-2), "settled")
+
+		resp := f.DELETE(t, "/api/v1/tracks/main/workouts/"+string(workout.ID),
+			WithCookie(f.LoginAs(t, f.Owner.ID)))
+		assert.Equal(t, http.StatusConflict, resp.StatusCode)
+
+		_, err := f.DataStorage.GetWorkout(t.Context(), workout.Ref())
+		assert.NoError(t, err)
+	})
+
+	t.Run("should return 401 for an anonymous user", func(t *testing.T) {
+		f := setupTracks(t)
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(0), "today")
+
+		resp := f.DELETE(t, "/api/v1/tracks/main/workouts/"+string(workout.ID))
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+
+		_, err := f.DataStorage.GetWorkout(t.Context(), workout.Ref())
+		assert.NoError(t, err)
+	})
+
+	t.Run("should return 403 for a user who does not own the track", func(t *testing.T) {
+		f := setupTracks(t)
+		stranger := createUser(t, f.TestApp)
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(0), "today")
+
+		resp := f.DELETE(t, "/api/v1/tracks/main/workouts/"+string(workout.ID),
+			WithCookie(f.LoginAs(t, stranger.ID)))
+		assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+
+		_, err := f.DataStorage.GetWorkout(t.Context(), workout.Ref())
+		assert.NoError(t, err)
+	})
+
+	t.Run("should return 404 for an unknown workout", func(t *testing.T) {
+		f := setupTracks(t)
+
+		resp := f.DELETE(t, "/api/v1/tracks/main/workouts/"+string(domain.NewWorkoutID()),
+			WithCookie(f.LoginAs(t, f.Owner.ID)))
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
+}
+
+func Test_ApiTracks_EditWindow(t *testing.T) {
+	t.Run("should return 409 when creating a workout in the past", func(t *testing.T) {
+		f := setupTracks(t)
+
+		resp := f.POST(t, "/api/v1/tracks/main/workouts",
+			WithCookie(f.LoginAs(t, f.Owner.ID)),
+			WithJSON(workoutResp{
+				TrackID:  string(f.Track.ID),
+				Date:     dateIn(-1),
+				Notes:    "backdated",
+				Sections: sections("Main part"),
+			}),
+		)
+		assert.Equal(t, http.StatusConflict, resp.StatusCode)
+	})
+
+	t.Run("should return 409 when updating a workout the window has closed on", func(t *testing.T) {
+		f := setupTracks(t)
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(-2), "before")
+
+		resp := f.PUT(t, "/api/v1/tracks/main/workouts/"+string(workout.ID),
+			WithCookie(f.LoginAs(t, f.Owner.ID)),
+			WithJSON(workoutResp{
+				ID:       string(workout.ID),
+				TrackID:  string(f.Track.ID),
+				Date:     dateIn(-2),
+				Notes:    "after",
+				Sections: sections("Main part"),
+			}),
+		)
+		assert.Equal(t, http.StatusConflict, resp.StatusCode)
+
+		stored, err := f.DataStorage.GetWorkout(t.Context(), workout.Ref())
+		require.NoError(t, err)
+		assert.Equal(t, "before", stored.Notes)
+	})
+}
+
+func Test_ApiTracks_LastWorkoutsHideDrafts(t *testing.T) {
+	t.Run("should not hand unpublished workouts to participants", func(t *testing.T) {
+		f := setupTracks(t)
+
+		seedWorkout(t, f.TestApp, f.Track.ID, dateIn(3), "draft")
+		seedWorkout(t, f.TestApp, f.Track.ID, dateIn(0), "today")
+		seedWorkout(t, f.TestApp, f.Track.ID, dateIn(-3), "old")
+
+		// not even to the owner: this route is the participants' view of the track
+		for name, opts := range map[string][]RequestOption{
+			"anonymous": nil,
+			"owner":     {WithCookie(f.LoginAs(t, f.Owner.ID))},
+		} {
+			resp := f.GET(t, "/api/v1/tracks/main/last_workouts", opts...)
+			assert.Equal(t, http.StatusOK, resp.StatusCode, name)
+
+			data := ReadJSON[workoutsRespWrapper](t, resp)
+			require.Len(t, data.Workouts, 2, name)
+			for _, workout := range data.Workouts {
+				assert.NotEqual(t, "draft", workout.Notes, name)
+				assert.True(t, workout.IsPublished, name)
+			}
+		}
 	})
 }

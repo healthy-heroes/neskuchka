@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Box, Container, Text } from '@mantine/core';
 import { useApi } from '@/api/hooks';
 import { TrackHeader } from '@/pages/MainTrack/TrackHeader/TrackHeader';
-import { isPublished, isToday } from '@/utils/dates';
+import { isToday } from '@/utils/dates';
 import { FeaturedWorkout } from '../FeaturedWorkout/FeaturedWorkout';
 import { FeaturedWorkoutSkeleton } from '../FeaturedWorkout/FeaturedWorkoutSkeleton';
 import { WorkoutHistory } from '../WorkoutHistory/WorkoutHistory';
@@ -21,7 +21,8 @@ export function Workouts() {
 	const { data, isPending } = useQuery(workouts.getMainTrackWorkoutsQuery());
 	const { data: track } = useQuery(workouts.getMainTrackQuery());
 
-	const published = (data?.Workouts ?? []).filter((workout) => isPublished(workout.Date));
+	// Неопубликованных в ответе нет: их отсекает бэкенд, а не эта страница
+	const published = data?.Workouts ?? [];
 
 	// В фокусе сегодняшняя, а если её нет — последняя опубликованная:
 	// пустой главный экран хуже, чем вчерашняя тренировка на нём

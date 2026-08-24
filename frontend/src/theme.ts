@@ -4,6 +4,7 @@ import {
 	Card,
 	Container,
 	createTheme,
+	Modal,
 	rem,
 	Title,
 	type MantineColorsTuple,
@@ -92,6 +93,21 @@ export const theme = createTheme({
 		}),
 		Card: Card.extend({
 			defaultProps: { radius: 'lg', withBorder: true },
+		}),
+		// Заголовок модалки Mantine рендерит голым h2, до которого Title.extend
+		// не достаёт, а вложить Title внутрь нельзя — получится h3 внутри h2.
+		// Поэтому те же правила заголовка задаются слоту напрямую
+		Modal: Modal.extend({
+			styles: {
+				title: {
+					fontFamily: 'var(--mantine-font-family-headings)',
+					fontSize: 'var(--mantine-h3-font-size)',
+					lineHeight: 'var(--mantine-h3-line-height)',
+					fontWeight: 600,
+					textTransform: 'uppercase',
+					letterSpacing: '0.03em',
+				},
+			},
 		}),
 		// Рабочая ширина экранов задаётся здесь и больше нигде
 		Container: Container.extend({
