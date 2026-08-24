@@ -61,7 +61,7 @@ export function TrackManagePage() {
 	}
 
 	return (
-		<Container>
+		<Container className={classes.page}>
 			<Box className={classes.about}>
 				<TrackAbout
 					track={trackQuery.data.Track}
