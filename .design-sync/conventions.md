@@ -70,6 +70,12 @@ defaults of Button, Badge, Card and Paper. Same — they are specimens, not buil
 with `ExerciseRow`, `WorkoutHistory`, `WorkoutCardSkeleton`, `WorkoutView`, `WorkoutForm`,
 `Workouts` (the whole track page), `LandingPage`, `LoginForm`, `LoginConfirm`.
 
+**Track administration** — `TrackAbout` (the track's title and description, editable in
+place) and `WorkoutRows` (every workout the owner has, unpublished ones included, each
+row carrying its own edit and delete actions). These two are the owner-only screen; the
+public track page is `Workouts`. There is no exported page composing them — build the
+screen from these two plus primitives.
+
 `ExerciseRow` is `display: contents` — it lays out into `WorkoutSections`' grid and
 collapses on its own. Never use it outside that parent.
 
