@@ -3,6 +3,7 @@ import { AuthService } from '../services/auth';
 import { UserService } from '../services/user';
 import { WorkoutsService } from '../services/workouts';
 import { createAuthServiceMock } from './auth';
+import { createWorkoutsServiceMock } from './track';
 import { createUserServiceMock } from './user';
 
 /**
@@ -48,10 +49,16 @@ type ApiServiceMockOptions = {
 export function createApiServiceMock(options: ApiServiceMockOptions = {}): ApiService {
 	const defaultAuth = createAuthServiceMock();
 	const defaultUser = createUserServiceMock({ user: null });
+	const defaultWorkouts = createWorkoutsServiceMock();
 
 	return {
 		auth: createStrictServiceMock<AuthService>('AuthService', options.auth ?? defaultAuth),
 		user: createStrictServiceMock<UserService>('UserService', options.user ?? defaultUser),
-		workouts: createStrictServiceMock<WorkoutsService>('WorkoutsService', options.workouts),
+		// Мержится, а не подменяется: стори мокает то, что ей нужно по сюжету,
+		// но шапка спрашивает трек на любой странице, и без него падает рендер
+		workouts: createStrictServiceMock<WorkoutsService>('WorkoutsService', {
+			...defaultWorkouts,
+			...options.workouts,
+		}),
 	} as ApiService;
 }

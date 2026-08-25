@@ -2,6 +2,7 @@ package tracks
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
@@ -32,7 +33,7 @@ func (s *Service) GetWorkout(w http.ResponseWriter, r *http.Request) {
 		httpx.RenderDomainError(w, logger, err, "failed to get workout")
 		return
 	}
-	httpx.Render(w, WorkoutSchema{Workout: MakeWorkoutInfo(workout)})
+	httpx.Render(w, WorkoutSchema{Workout: MakeWorkoutInfo(workout, time.Now())})
 }
 
 // UpdateWorkout updates a workout
@@ -58,7 +59,7 @@ func (s *Service) UpdateWorkout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.Render(w, WorkoutSchema{
-		Workout: MakeWorkoutInfo(workout),
+		Workout: MakeWorkoutInfo(workout, time.Now()),
 	})
 }
 
@@ -85,7 +86,7 @@ func (s *Service) CreateWorkout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.Render(w, WorkoutSchema{
-		Workout: MakeWorkoutInfo(workout),
+		Workout: MakeWorkoutInfo(workout, time.Now()),
 	})
 }
 
@@ -111,11 +112,13 @@ func (s *Service) GetMainTrackWorkouts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	now := time.Now()
 	page, err := s.dataStore.FindTrackWorkouts(r.Context(), domain.UserID(userID), track.ID,
 		domain.WorkoutFindCriteria{
 			Limit: httpx.QueryInt(r, "limit", managePageSize),
 			After: after,
 		},
+		now,
 	)
 	if err != nil {
 		httpx.RenderDomainError(w, logger, err, "Failed to get workouts")
@@ -123,7 +126,7 @@ func (s *Service) GetMainTrackWorkouts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.Render(w, WorkoutsPageSchema{
-		Workouts:   MakeWorkoutInfos(page.Workouts),
+		Workouts:   MakeWorkoutInfos(page.Workouts, now),
 		NextCursor: makeCursor(page.Next),
 		Total:      page.Total,
 		Planned:    page.Planned,

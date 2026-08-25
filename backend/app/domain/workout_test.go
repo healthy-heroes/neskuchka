@@ -307,7 +307,7 @@ func TestFindWorkouts(t *testing.T) {
 		}
 		service := NewStore(Opts{
 			Storage: &StorageStub{
-				FindWorkoutsFunc: func(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria) ([]Workout, error) {
+				FindWorkoutsFunc: func(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria, now time.Time) ([]Workout, error) {
 					usedCriteria = criteria
 					return workouts, nil
 				},
@@ -324,7 +324,7 @@ func TestFindWorkouts(t *testing.T) {
 		track := createTrack()
 		service := NewStore(Opts{
 			Storage: &StorageStub{
-				FindWorkoutsFunc: func(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria) ([]Workout, error) {
+				FindWorkoutsFunc: func(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria, now time.Time) ([]Workout, error) {
 					usedCriteria = criteria
 					return []Workout{}, nil
 				},
@@ -338,11 +338,11 @@ func TestFindWorkouts(t *testing.T) {
 		assert.True(t, usedCriteria.PublishedOnly)
 	})
 
-	t.Run("should fall back on a small limit and clamp a large one", func(t *testing.T) {
+	t.Run("should fall back to the default for a small limit and clamp a large one", func(t *testing.T) {
 		var usedLimit int
 		service := NewStore(Opts{
 			Storage: &StorageStub{
-				FindWorkoutsFunc: func(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria) ([]Workout, error) {
+				FindWorkoutsFunc: func(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria, now time.Time) ([]Workout, error) {
 					usedLimit = criteria.Limit
 					return []Workout{}, nil
 				},
@@ -549,7 +549,7 @@ func TestFindTrackWorkouts(t *testing.T) {
 				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
 					return track, nil
 				},
-				FindWorkoutsFunc: func(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria) ([]Workout, error) {
+				FindWorkoutsFunc: func(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria, now time.Time) ([]Workout, error) {
 					*used = criteria
 
 					return workouts, nil
@@ -569,7 +569,7 @@ func TestFindTrackWorkouts(t *testing.T) {
 
 		page, err := setup(track, workouts, &used).FindTrackWorkouts(
 			context.Background(), track.OwnerID, track.ID,
-			WorkoutFindCriteria{Limit: 8, After: cursor},
+			WorkoutFindCriteria{Limit: 8, After: cursor}, time.Now(),
 		)
 
 		assert.NoError(t, err)
@@ -588,6 +588,22 @@ func TestFindTrackWorkouts(t *testing.T) {
 		assert.True(t, page.Next.IsZero())
 	})
 
+	t.Run("should not hand back a cursor when the page ends exactly on Limit", func(t *testing.T) {
+		track := createTrack()
+		// storage is asked for Limit+1 and returns Limit: nothing is left
+		workouts := []Workout{workoutOn(track.ID, 2), workoutOn(track.ID, 0)}
+		var used WorkoutFindCriteria
+
+		page, err := setup(track, workouts, &used).FindTrackWorkouts(
+			context.Background(), track.OwnerID, track.ID,
+			WorkoutFindCriteria{Limit: 2}, time.Now(),
+		)
+
+		assert.NoError(t, err)
+		require.Len(t, page.Workouts, 2)
+		assert.True(t, page.Next.IsZero())
+	})
+
 	t.Run("should hand back a cursor when another page exists", func(t *testing.T) {
 		track := createTrack()
 		// three rows for a page of two: the extra one is the probe
@@ -596,7 +612,7 @@ func TestFindTrackWorkouts(t *testing.T) {
 
 		page, err := setup(track, workouts, &used).FindTrackWorkouts(
 			context.Background(), track.OwnerID, track.ID,
-			WorkoutFindCriteria{Limit: 2},
+			WorkoutFindCriteria{Limit: 2}, time.Now(),
 		)
 
 		assert.NoError(t, err)
@@ -610,7 +626,7 @@ func TestFindTrackWorkouts(t *testing.T) {
 		var used WorkoutFindCriteria
 
 		_, err := setup(track, nil, &used).FindTrackWorkouts(
-			context.Background(), NewUserID(), track.ID, WorkoutFindCriteria{},
+			context.Background(), NewUserID(), track.ID, WorkoutFindCriteria{}, time.Now(),
 		)
 
 		assert.ErrorIs(t, err, ErrForbidden)

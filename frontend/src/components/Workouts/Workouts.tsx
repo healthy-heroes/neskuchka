@@ -22,15 +22,15 @@ export function Workouts() {
 	const { data: track } = useQuery(workouts.getMainTrackQuery());
 
 	// Неопубликованных в ответе нет: их отсекает бэкенд, а не эта страница
-	const published = data?.Workouts ?? [];
+	const trackWorkouts = data?.Workouts ?? [];
 
 	// В фокусе сегодняшняя, а если её нет — последняя опубликованная:
 	// пустой главный экран хуже, чем вчерашняя тренировка на нём
-	const featured = published.find((workout) => isToday(workout.Date)) ?? published[0];
+	const featured = trackWorkouts.find((workout) => isToday(workout.Date)) ?? trackWorkouts[0];
 
 	return (
 		<Container px={0}>
-			{track && <TrackHeader track={track} workouts={published} loading={isPending} />}
+			{track && <TrackHeader track={track} workouts={trackWorkouts} loading={isPending} />}
 
 			<Box px="xl" py="xl" bg="gray.0">
 				{isPending && <FeaturedWorkoutSkeleton />}
@@ -45,7 +45,7 @@ export function Workouts() {
 					<>
 						<FeaturedWorkout workout={featured} />
 
-						<WorkoutHistory workouts={published} featured={featured} />
+						<WorkoutHistory workouts={trackWorkouts} featured={featured} />
 					</>
 				)}
 			</Box>

@@ -55,6 +55,19 @@ export const WorkoutsKeys = {
 /** Сколько строк тянем за раз — столько же ждёт бэкенд по умолчанию. */
 export const MANAGE_PAGE_SIZE = 8;
 
+/**
+ * Разворачивает конверт `{ data }` у каждой страницы.
+ *
+ * Вынесено из опций намеренно: react-query прогоняет select на каждый рендер и
+ * сверяет результат глубоким сравнением, а новая функция каждый раз лишает его
+ * мемоизации — на списке в несколько десятков строк это заметно.
+ */
+function unwrapPages(
+	data: InfiniteData<ApiResponse<TrackWorkoutsPageData>>
+): InfiniteData<TrackWorkoutsPageData> {
+	return { pages: data.pages.map((page) => page.data), pageParams: data.pageParams };
+}
+
 export class WorkoutsService extends Service {
 	/**
 	 * Get the main track
@@ -144,10 +157,7 @@ export class WorkoutsService extends Service {
 				),
 			initialPageParam: '',
 			getNextPageParam: (lastPage) => lastPage.data.NextCursor || undefined,
-			select: (data) => ({
-				pages: data.pages.map((page) => page.data),
-				pageParams: data.pageParams,
-			}),
+			select: unwrapPages,
 			// Иначе каждый возврат во вкладку перезапрашивает все загруженные
 			// страницы подряд
 			staleTime: 30 * 1000,

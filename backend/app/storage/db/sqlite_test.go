@@ -99,10 +99,11 @@ func TestNewSqliteEngine_AdoptsPreGooseDatabase(t *testing.T) {
 	require.NoError(t, err)
 	defer engine.Close()
 
-	// миграция 0001 прошла no-op'ом и зафиксировала версию
+	// миграция 0001 прошла no-op'ом и зафиксировала версию; дальше номер растёт
+	// с каждой новой миграцией, привязываться к нему тут незачем
 	var version int
 	require.NoError(t, engine.Get(&version, "SELECT MAX(version_id) FROM goose_db_version"))
-	require.Equal(t, 1, version)
+	require.GreaterOrEqual(t, version, 1)
 
 	// данные пережили adoption
 	var count int

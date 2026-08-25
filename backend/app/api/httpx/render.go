@@ -42,11 +42,11 @@ func Render(w http.ResponseWriter, data any) {
 // stale id — and is logged as a warning. Error level is for the server's own
 // failures, so that a log filtered to errors stays worth reading.
 func RenderError(w http.ResponseWriter, l zerolog.Logger, code int, err error, msg string) {
-	event := l.Error()
+	level := zerolog.ErrorLevel
 	if code < http.StatusInternalServerError {
-		event = l.Warn()
+		level = zerolog.WarnLevel
 	}
-	event.Err(err).Msg(msg)
+	l.WithLevel(level).Err(err).Msg(msg)
 
 	response := ErrorResponse{
 		Error: msg,

@@ -1,7 +1,8 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Navigate, useNavigate } from '@tanstack/react-router';
 import { Box, Title } from '@mantine/core';
 import { useApi } from '@/api/hooks';
+import { WorkoutsKeys } from '@/api/services/workouts';
 import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
 import { WorkoutForm } from '../WorkoutForm/WorkoutForm';
 
@@ -16,9 +17,16 @@ interface WorkoutEditProps {
  */
 export function WorkoutEdit({ workoutId }: WorkoutEditProps) {
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const { workouts } = useApi();
 
-	const workoutUpdating = useMutation(workouts.updateWorkoutMutation());
+	// Как и при создании: без сброса правка не доедет до списков трека
+	const workoutUpdating = useMutation({
+		...workouts.updateWorkoutMutation(),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: WorkoutsKeys.track() });
+		},
+	});
 	const { data, isSuccess, isPending } = useQuery(workouts.getWorkoutQuery(workoutId));
 
 	if (workoutUpdating.isSuccess) {

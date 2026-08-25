@@ -25,7 +25,7 @@ export interface TrackAboutProps {
 	error?: Error | null;
 
 	/** Сбрасывает ошибку прошлой попытки: она не должна встречать в новой форме. */
-	onDismissError?: () => void;
+	onClearError?: () => void;
 }
 
 /**
@@ -39,7 +39,7 @@ export function TrackAbout({
 	onSave,
 	isSaving = false,
 	error,
-	onDismissError,
+	onClearError,
 }: TrackAboutProps) {
 	const [editing, setEditing] = useState(false);
 
@@ -74,7 +74,7 @@ export function TrackAbout({
 		// раз это no-op, и в форму возвращается брошенный черновик
 		form.setValues({ Name: track.Name, Description: track.Description });
 		form.clearErrors();
-		onDismissError?.();
+		onClearError?.();
 		setEditing(true);
 	}
 

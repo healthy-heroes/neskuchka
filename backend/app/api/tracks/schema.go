@@ -6,6 +6,7 @@ import (
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/google/uuid"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
 )
@@ -28,9 +29,9 @@ type WorkoutInfo struct {
 	IsEditable  bool
 }
 
-func MakeWorkoutInfo(workout domain.Workout) WorkoutInfo {
-	now := time.Now()
-
+// MakeWorkoutInfo takes the clock rather than reading it, so that every row of
+// one response — and the counters beside them — answer against one instant.
+func MakeWorkoutInfo(workout domain.Workout, now time.Time) WorkoutInfo {
 	return WorkoutInfo{
 		ID:       string(workout.ID),
 		TrackID:  string(workout.TrackID),
@@ -83,10 +84,10 @@ func (w *WorkoutInfo) toDomain() (domain.Workout, error) {
 	}, nil
 }
 
-func MakeWorkoutInfos(workouts []domain.Workout) []WorkoutInfo {
+func MakeWorkoutInfos(workouts []domain.Workout, now time.Time) []WorkoutInfo {
 	workoutInfos := make([]WorkoutInfo, 0, len(workouts))
 	for _, workout := range workouts {
-		workoutInfos = append(workoutInfos, MakeWorkoutInfo(workout))
+		workoutInfos = append(workoutInfos, MakeWorkoutInfo(workout, now))
 	}
 	return workoutInfos
 }
@@ -130,8 +131,8 @@ func parseCursor(value string) (domain.WorkoutCursor, error) {
 		return domain.WorkoutCursor{}, nil
 	}
 
-	rawDate, id, found := strings.Cut(value, cursorSep)
-	if !found || id == "" {
+	rawDate, rawID, found := strings.Cut(value, cursorSep)
+	if !found {
 		return domain.WorkoutCursor{}, fmt.Errorf("malformed cursor %q", value)
 	}
 
@@ -140,7 +141,15 @@ func parseCursor(value string) (domain.WorkoutCursor, error) {
 		return domain.WorkoutCursor{}, fmt.Errorf("malformed cursor %q: %w", value, err)
 	}
 
-	return domain.WorkoutCursor{Date: date, ID: domain.WorkoutID(id)}, nil
+	// Both halves are checked: an id that is not an id would otherwise match no
+	// row and return an empty page, which a client reads as the end of the list
+	// rather than as the mistake it is.
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		return domain.WorkoutCursor{}, fmt.Errorf("malformed cursor %q: %w", value, err)
+	}
+
+	return domain.WorkoutCursor{Date: date, ID: domain.WorkoutID(id.String())}, nil
 }
 
 type TrackInfo struct {

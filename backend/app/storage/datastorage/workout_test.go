@@ -169,7 +169,7 @@ func Test_Workout_FindWorkouts(t *testing.T) {
 	// full list
 	list, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{
 		Limit: 3,
-	})
+	}, time.Now())
 	require.NoError(t, err)
 	require.Len(t, list, 3)
 
@@ -180,7 +180,7 @@ func Test_Workout_FindWorkouts(t *testing.T) {
 	// limited list
 	limited, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{
 		Limit: 2,
-	})
+	}, time.Now())
 	require.NoError(t, err)
 	require.Len(t, limited, 2)
 	assert.Equal(t, workoutDate("2025-02-05"), limited[0].Date)
@@ -189,7 +189,7 @@ func Test_Workout_FindWorkouts(t *testing.T) {
 	// empty list
 	list, err = ds.FindWorkouts(t.Context(), domain.NewTrackID(), domain.WorkoutFindCriteria{
 		Limit: 10,
-	})
+	}, time.Now())
 	require.NoError(t, err)
 	require.Len(t, list, 0)
 }
@@ -207,7 +207,7 @@ func Test_Workout_FindWorkouts_Paging(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	first, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 2})
+	first, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 2}, time.Now())
 	require.NoError(t, err)
 	require.Len(t, first, 2)
 	assert.Equal(t, workoutDate("2025-02-03"), first[0].Date)
@@ -215,14 +215,14 @@ func Test_Workout_FindWorkouts_Paging(t *testing.T) {
 
 	// the cursor names the last row read, and the next page starts past it
 	after := domain.WorkoutCursor{Date: first[1].Date, ID: first[1].ID}
-	second, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 2, After: after})
+	second, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 2, After: after}, time.Now())
 	require.NoError(t, err)
 	require.Len(t, second, 1)
 	assert.Equal(t, workoutDate("2025-02-01"), second[0].Date)
 
 	// past the end
 	end := domain.WorkoutCursor{Date: second[0].Date, ID: second[0].ID}
-	past, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 10, After: end})
+	past, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 10, After: end}, time.Now())
 	require.NoError(t, err)
 	assert.Len(t, past, 0)
 }
@@ -246,7 +246,7 @@ func Test_Workout_FindWorkouts_PagingTiesOnDate(t *testing.T) {
 	cursor := domain.WorkoutCursor{}
 	for range 4 {
 		page, err := ds.FindWorkouts(t.Context(), trackID,
-			domain.WorkoutFindCriteria{Limit: 1, After: cursor})
+			domain.WorkoutFindCriteria{Limit: 1, After: cursor}, time.Now())
 		require.NoError(t, err)
 		require.Len(t, page, 1)
 
@@ -278,14 +278,14 @@ func Test_Workout_FindWorkouts_PublishedOnly(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	all, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 10})
+	all, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 10}, time.Now())
 	require.NoError(t, err)
 	assert.Len(t, all, 3)
 
 	published, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{
 		Limit:         10,
 		PublishedOnly: true,
-	})
+	}, time.Now())
 	require.NoError(t, err)
 	require.Len(t, published, 2)
 

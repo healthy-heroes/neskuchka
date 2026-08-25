@@ -17,7 +17,7 @@ type StorageStub struct {
 	UpdateTrackFunc    func(context.Context, Track) (Track, error)
 
 	GetWorkoutFunc    func(context.Context, WorkoutRef) (Workout, error)
-	FindWorkoutsFunc  func(context.Context, TrackID, WorkoutFindCriteria) ([]Workout, error)
+	FindWorkoutsFunc  func(context.Context, TrackID, WorkoutFindCriteria, time.Time) ([]Workout, error)
 	CreateWorkoutFunc func(context.Context, Workout) (Workout, error)
 	UpdateWorkoutFunc func(context.Context, Workout) (Workout, error)
 	DeleteWorkoutFunc func(context.Context, WorkoutRef) error
@@ -56,8 +56,8 @@ func (s *StorageStub) GetWorkout(ctx context.Context, wr WorkoutRef) (Workout, e
 	return s.GetWorkoutFunc(ctx, wr)
 }
 
-func (s *StorageStub) FindWorkouts(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria) ([]Workout, error) {
-	return s.FindWorkoutsFunc(ctx, tid, criteria)
+func (s *StorageStub) FindWorkouts(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria, now time.Time) ([]Workout, error) {
+	return s.FindWorkoutsFunc(ctx, tid, criteria, now)
 }
 
 func (s *StorageStub) CreateWorkout(ctx context.Context, w Workout) (Workout, error) {

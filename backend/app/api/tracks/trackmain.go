@@ -2,6 +2,7 @@ package tracks
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
 	"github.com/healthy-heroes/neskuchka/backend/app/domain"
@@ -50,7 +51,7 @@ func (s *Service) GetMainTrackLastWorkouts(w http.ResponseWriter, r *http.Reques
 	}
 
 	httpx.Render(w, WorkoutsSchema{
-		Workouts: MakeWorkoutInfos(workouts),
+		Workouts: MakeWorkoutInfos(workouts, time.Now()),
 	})
 }
 

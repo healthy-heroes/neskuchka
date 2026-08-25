@@ -91,13 +91,13 @@ func (s *Storage) GetWorkout(ctx context.Context, wr domain.WorkoutRef) (domain.
 // created_at is only second-resolution and leaves same-second rows unordered.
 const workoutOrder = " ORDER BY date DESC, id DESC"
 
-func (s *Storage) FindWorkouts(ctx context.Context, tid domain.TrackID, criteria domain.WorkoutFindCriteria) ([]domain.Workout, error) {
+func (s *Storage) FindWorkouts(ctx context.Context, tid domain.TrackID, criteria domain.WorkoutFindCriteria, now time.Time) ([]domain.Workout, error) {
 	query := "SELECT * FROM workout WHERE track_id = ?"
 	args := []any{tid}
 
 	if criteria.PublishedOnly {
 		query += " AND date <= ?"
-		args = append(args, today())
+		args = append(args, now.Format(time.DateOnly))
 	}
 
 	if !criteria.After.IsZero() {
@@ -137,12 +137,6 @@ func (s *Storage) CountWorkouts(ctx context.Context, tid domain.TrackID, now tim
 	return counts.Total, counts.Planned, nil
 }
 
-// today is the cut-off for published workouts. Dates are stored as plain
-// YYYY-MM-DD text, so the comparison is a string one and the value has to be
-// formatted the same way.
-func today() string {
-	return time.Now().Format(time.DateOnly)
-}
 
 func (s *Storage) CreateWorkout(ctx context.Context, workout domain.Workout) (domain.Workout, error) {
 	w, err := makeWorkout(workout)

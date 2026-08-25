@@ -42,19 +42,23 @@ const editWindowDays = 1
 // IsPublished reports whether participants can already see the workout.
 // A workout shows up on its own day and not a moment earlier.
 func (w *Workout) IsPublished(now time.Time) bool {
-	return !w.Date.After(dayOf(now))
+	return !dayOf(w.Date).After(dayOf(now))
 }
 
 // IsEditable reports whether the owner may still change or drop the workout.
 // Past that window the workout is what people trained by, and rewriting it
 // would rewrite their history.
 func (w *Workout) IsEditable(now time.Time) bool {
-	return !w.Date.Before(dayOf(now).AddDate(0, 0, -editWindowDays))
+	return !dayOf(w.Date).Before(dayOf(now).AddDate(0, 0, -editWindowDays))
 }
 
-// dayOf is the calendar day of t as workout dates are stored: midnight, UTC.
-// Dates come from time.Parse(time.DateOnly, ...) and carry no zone of their own,
-// so comparing them against a zoned clock has to go through here.
+// dayOf is the calendar day of t, in t's own zone, expressed the way workout
+// dates are stored: midnight, UTC.
+//
+// Both sides of every comparison go through it, so a date parsed out of storage
+// (which carries no zone) and a zoned clock reading meet on the same footing.
+// For the clock that means the server's calendar day, deliberately: the track
+// publishes on the server's days, not on each reader's.
 func dayOf(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
 }
@@ -111,6 +115,10 @@ const (
 // read: one workout created or deleted above the reader shifts every offset
 // below it, showing one row twice and stepping over another. The key is
 // compound because a track may hold two workouts on one date.
+//
+// This holds against inserts and deletes, not against edits to the key itself:
+// a workout whose date is moved down past the reader is seen a second time.
+// Narrow enough to live with, but it is not a guarantee.
 type WorkoutCursor struct {
 	Date time.Time
 	ID   WorkoutID
@@ -135,8 +143,8 @@ type WorkoutFindCriteria struct {
 // normalize keeps a caller from asking for an unbounded read.
 //
 // An over-large limit is clamped to the ceiling rather than reset to the
-// default: a client paging by the limit it asked for would otherwise read one
-// short page and then step over everything in between.
+// default, so that a caller asking for more than it may have still gets as much
+// as it may have.
 func (c *WorkoutFindCriteria) normalize() {
 	if c.Limit <= 0 {
 		c.Limit = defaultWorkoutLimit
@@ -147,7 +155,11 @@ func (c *WorkoutFindCriteria) normalize() {
 }
 
 // WorkoutPage is a slice of a track's workouts together with the counters the
-// list header shows. Both come from one request, so they cannot disagree.
+// list header shows.
+//
+// Rows and counters are two statements against one clock but no shared
+// transaction, so a write landing between them can leave the header one ahead
+// of what the list can reach. It corrects itself on the next read.
 type WorkoutPage struct {
 	Workouts []Workout
 
@@ -277,13 +289,17 @@ func (s *Store) FindWorkouts(ctx context.Context, tid TrackID, criteria WorkoutF
 	criteria.normalize()
 	criteria.PublishedOnly = true
 
-	return s.storage.FindWorkouts(ctx, tid, criteria)
+	return s.storage.FindWorkouts(ctx, tid, criteria, time.Now())
 }
 
 // FindTrackWorkouts returns a page of the whole track, drafts included, to its
 // owner.
+//
+// The clock comes from the caller so that one request answers against one
+// instant: the rows, the counters and the per-row state the handler renders
+// afterwards would otherwise each read their own.
 func (s *Store) FindTrackWorkouts(
-	ctx context.Context, uid UserID, tid TrackID, criteria WorkoutFindCriteria,
+	ctx context.Context, uid UserID, tid TrackID, criteria WorkoutFindCriteria, now time.Time,
 ) (WorkoutPage, error) {
 	t, err := s.storage.GetTrack(ctx, tid)
 	if err != nil {
@@ -307,7 +323,7 @@ func (s *Store) FindTrackWorkouts(
 	probe := criteria
 	probe.Limit = criteria.Limit + 1
 
-	workouts, err := s.storage.FindWorkouts(ctx, tid, probe)
+	workouts, err := s.storage.FindWorkouts(ctx, tid, probe, now)
 	if err != nil {
 		return WorkoutPage{}, err
 	}
@@ -319,9 +335,7 @@ func (s *Store) FindTrackWorkouts(
 		next = WorkoutCursor{Date: last.Date, ID: last.ID}
 	}
 
-	// One clock for the page and its counters, so "planned" means the same thing
-	// in the rows and in the header above them.
-	total, planned, err := s.storage.CountWorkouts(ctx, tid, time.Now())
+	total, planned, err := s.storage.CountWorkouts(ctx, tid, now)
 	if err != nil {
 		return WorkoutPage{}, err
 	}
