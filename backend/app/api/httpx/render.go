@@ -36,9 +36,17 @@ func Render(w http.ResponseWriter, data any) {
 	renderJSONWithStatus(w, response, http.StatusOK)
 }
 
-// RenderError sends JSON response with error and status code
+// RenderError sends JSON response with error and status code.
+//
+// Anything below 500 is something the caller did — a closed edit window, a
+// stale id — and is logged as a warning. Error level is for the server's own
+// failures, so that a log filtered to errors stays worth reading.
 func RenderError(w http.ResponseWriter, l zerolog.Logger, code int, err error, msg string) {
-	l.Error().Err(err).Msg(msg)
+	event := l.Error()
+	if code < http.StatusInternalServerError {
+		event = l.Warn()
+	}
+	event.Err(err).Msg(msg)
 
 	response := ErrorResponse{
 		Error: msg,

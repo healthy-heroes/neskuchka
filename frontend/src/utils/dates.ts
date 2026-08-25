@@ -11,11 +11,6 @@ export function formatWeekday(isoDate: string) {
 	return dayjs(isoDate).format('dddd');
 }
 
-/** Опубликована ли тренировка: будущие на экранах не показываем вовсе. */
-export function isPublished(isoDate: string) {
-	return !dayjs(isoDate).isAfter(dayjs(), 'day');
-}
-
 /** Сегодняшняя ли дата — по календарному дню, без времени. */
 export function isToday(isoDate: string) {
 	return dayjs(isoDate).isSame(dayjs(), 'day');

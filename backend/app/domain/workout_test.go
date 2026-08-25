@@ -6,11 +6,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
-
-func wrf(tid TrackID, wid WorkoutID) WorkoutRef {
-	return WorkoutRef{TrackID: tid, WorkoutID: wid}
-}
 
 // day builds a workout date the way storage hands them back: midnight UTC,
 // counted in days from today.
@@ -115,19 +112,52 @@ func TestClearSlugs(t *testing.T) {
 }
 
 func TestGetWorkout(t *testing.T) {
-	t.Run("should return workout", func(t *testing.T) {
-		w := createWorkout(NewTrackID())
-		service := NewStore(Opts{
+	setup := func(track Track, w Workout) *Store {
+		return NewStore(Opts{
 			Storage: &StorageStub{
 				GetWorkoutFunc: func(ctx context.Context, wr WorkoutRef) (Workout, error) {
 					return w, nil
 				},
+				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
+					return track, nil
+				},
 			},
 		})
+	}
 
-		workout, err := service.GetWorkout(context.Background(), wrf(w.TrackID, w.ID))
+	t.Run("should return a published workout to anyone", func(t *testing.T) {
+		track := createTrack()
+		w := workoutOn(track.ID, 0)
+
+		workout, err := setup(track, w).GetWorkout(context.Background(), UserID(""), w.Ref())
+
 		assert.Nil(t, err)
 		assert.Equal(t, w, workout)
+	})
+
+	t.Run("should return an unpublished workout to the track owner", func(t *testing.T) {
+		track := createTrack()
+		w := workoutOn(track.ID, 3)
+
+		workout, err := setup(track, w).GetWorkout(context.Background(), track.OwnerID, w.Ref())
+
+		assert.Nil(t, err)
+		assert.Equal(t, w, workout)
+	})
+
+	t.Run("should hide an unpublished workout behind not found", func(t *testing.T) {
+		track := createTrack()
+		w := workoutOn(track.ID, 3)
+
+		for name, uid := range map[string]UserID{
+			"anonymous": UserID(""),
+			"stranger":  NewUserID(),
+		} {
+			_, err := setup(track, w).GetWorkout(context.Background(), uid, w.Ref())
+
+			// Not ErrForbidden: a 403 would confirm the id names something real
+			assert.ErrorIs(t, err, ErrNotFound, name)
+		}
 	})
 }
 
@@ -308,7 +338,7 @@ func TestFindWorkouts(t *testing.T) {
 		assert.True(t, usedCriteria.PublishedOnly)
 	})
 
-	t.Run("should set default limit if limit is less than 0 or greater than 50", func(t *testing.T) {
+	t.Run("should fall back on a small limit and clamp a large one", func(t *testing.T) {
 		var usedLimit int
 		service := NewStore(Opts{
 			Storage: &StorageStub{
@@ -319,12 +349,15 @@ func TestFindWorkouts(t *testing.T) {
 			},
 		})
 
+		// too small falls back to the default, too large is clamped to the
+		// ceiling — a client paging by its own limit must not step over rows
 		tcs := map[int]int{
-			-1: 10,
-			0:  10,
-			1:  1,
-			50: 50,
-			51: 10,
+			-1:  10,
+			0:   10,
+			1:   1,
+			50:  50,
+			51:  50,
+			500: 50,
 		}
 		for limit, expected := range tcs {
 			_, err := service.FindWorkouts(context.Background(), NewTrackID(), WorkoutFindCriteria{
@@ -368,7 +401,7 @@ func TestWorkout_IsEditable(t *testing.T) {
 }
 
 func TestCreateWorkout_DateWindow(t *testing.T) {
-	t.Run("should refuse a workout dated into the past", func(t *testing.T) {
+	t.Run("should refuse a workout dated past the edit window", func(t *testing.T) {
 		track := createTrack()
 		service := NewStore(Opts{
 			Storage: &StorageStub{
@@ -382,12 +415,12 @@ func TestCreateWorkout_DateWindow(t *testing.T) {
 			},
 		})
 
-		_, err := service.CreateWorkout(context.Background(), track.OwnerID, workoutOn(track.ID, -1))
+		_, err := service.CreateWorkout(context.Background(), track.OwnerID, workoutOn(track.ID, -2))
 
 		assert.ErrorIs(t, err, ErrLocked)
 	})
 
-	t.Run("should accept today and later", func(t *testing.T) {
+	t.Run("should accept anything the window still covers", func(t *testing.T) {
 		track := createTrack()
 		service := NewStore(Opts{
 			Storage: &StorageStub{
@@ -400,7 +433,7 @@ func TestCreateWorkout_DateWindow(t *testing.T) {
 			},
 		})
 
-		for _, offset := range []int{0, 3} {
+		for _, offset := range []int{-1, 0, 3} {
 			_, err := service.CreateWorkout(context.Background(), track.OwnerID, workoutOn(track.ID, offset))
 			assert.NoError(t, err, "offset %d", offset)
 		}
@@ -531,11 +564,12 @@ func TestFindTrackWorkouts(t *testing.T) {
 	t.Run("should return the page with its counters, drafts included", func(t *testing.T) {
 		track := createTrack()
 		workouts := []Workout{workoutOn(track.ID, 2), workoutOn(track.ID, -4)}
+		cursor := WorkoutCursor{Date: day(5), ID: NewWorkoutID()}
 		var used WorkoutFindCriteria
 
 		page, err := setup(track, workouts, &used).FindTrackWorkouts(
 			context.Background(), track.OwnerID, track.ID,
-			WorkoutFindCriteria{Limit: 8, Offset: 16},
+			WorkoutFindCriteria{Limit: 8, After: cursor},
 		)
 
 		assert.NoError(t, err)
@@ -544,7 +578,31 @@ func TestFindTrackWorkouts(t *testing.T) {
 		assert.Equal(t, 3, page.Planned)
 
 		assert.False(t, used.PublishedOnly)
-		assert.Equal(t, 16, used.Offset)
+		assert.Equal(t, cursor, used.After)
+
+		// the storage is asked for one row past the page, to learn whether
+		// another one exists without arithmetic on Total
+		assert.Equal(t, 9, used.Limit)
+
+		// fewer rows came back than were asked for, so this is the last page
+		assert.True(t, page.Next.IsZero())
+	})
+
+	t.Run("should hand back a cursor when another page exists", func(t *testing.T) {
+		track := createTrack()
+		// three rows for a page of two: the extra one is the probe
+		workouts := []Workout{workoutOn(track.ID, 2), workoutOn(track.ID, 0), workoutOn(track.ID, -4)}
+		var used WorkoutFindCriteria
+
+		page, err := setup(track, workouts, &used).FindTrackWorkouts(
+			context.Background(), track.OwnerID, track.ID,
+			WorkoutFindCriteria{Limit: 2},
+		)
+
+		assert.NoError(t, err)
+		require.Len(t, page.Workouts, 2, "the probe row is not part of the page")
+		assert.Equal(t, workouts[1].ID, page.Next.ID)
+		assert.Equal(t, workouts[1].Date, page.Next.Date)
 	})
 
 	t.Run("should refuse a stranger", func(t *testing.T) {

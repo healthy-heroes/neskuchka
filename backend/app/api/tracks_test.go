@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"testing"
 	"time"
 
@@ -31,7 +32,7 @@ type workoutResp struct {
 	Sections []domain.WorkoutSection
 
 	IsPublished bool
-	CanEdit     bool
+	IsEditable  bool
 }
 
 type workoutRespWrapper struct {
@@ -44,6 +45,8 @@ type workoutsRespWrapper struct {
 
 type workoutsPageResp struct {
 	Workouts []workoutResp
+
+	NextCursor string
 
 	Total   int
 	Planned int
@@ -99,12 +102,8 @@ func sections(title string) []domain.WorkoutSection {
 	}
 }
 
-// dateIn is a workout date relative to today, formatted the way the API takes
-// and returns them.
-//
-// The edit window is measured from today, so anything a test writes or changes
-// has to be dated from today too: a pinned calendar date passes, then quietly
-// falls outside the window and takes the test with it.
+// dateIn is a workout date relative to today: the edit window is measured from
+// today, so a pinned calendar date would eventually fall outside it.
 func dateIn(days int) string {
 	return time.Now().AddDate(0, 0, days).Format(time.DateOnly)
 }
@@ -261,7 +260,7 @@ func Test_ApiTracks_GetWorkout(t *testing.T) {
 			Sections: sections("Warm-up"),
 
 			IsPublished: true,
-			CanEdit:     true,
+			IsEditable:  true,
 		}, data.Workout)
 	})
 
@@ -537,10 +536,10 @@ func Test_ApiTracks_GetMainTrackWorkouts(t *testing.T) {
 		// newest first, and the state of each row comes ready-made
 		assert.Equal(t, dateIn(4), data.Workouts[0].Date)
 		assert.False(t, data.Workouts[0].IsPublished)
-		assert.True(t, data.Workouts[0].CanEdit)
+		assert.True(t, data.Workouts[0].IsEditable)
 
 		assert.True(t, data.Workouts[3].IsPublished)
-		assert.False(t, data.Workouts[3].CanEdit)
+		assert.False(t, data.Workouts[3].IsEditable)
 	})
 
 	t.Run("should page through the track", func(t *testing.T) {
@@ -558,11 +557,14 @@ func Test_ApiTracks_GetMainTrackWorkouts(t *testing.T) {
 		assert.Equal(t, 10, first.Total)
 		assert.Equal(t, dateIn(-1), first.Workouts[0].Date)
 
+		require.NotEmpty(t, first.NextCursor)
+
 		second := ReadJSON[workoutsPageResp](t,
-			f.GET(t, "/api/v1/tracks/main/workouts?offset=8", WithCookie(cookie)))
+			f.GET(t, "/api/v1/tracks/main/workouts?after="+url.QueryEscape(first.NextCursor), WithCookie(cookie)))
 		require.Len(t, second.Workouts, 2)
 		assert.Equal(t, 10, second.Total)
 		assert.Equal(t, dateIn(-9), second.Workouts[0].Date)
+		assert.Empty(t, second.NextCursor, "last page carries no cursor")
 	})
 
 	t.Run("should return an empty list, not null, for a track with no workouts", func(t *testing.T) {
@@ -652,7 +654,22 @@ func Test_ApiTracks_DeleteWorkout(t *testing.T) {
 }
 
 func Test_ApiTracks_EditWindow(t *testing.T) {
-	t.Run("should return 409 when creating a workout in the past", func(t *testing.T) {
+	t.Run("should return 409 when creating a workout past the window", func(t *testing.T) {
+		f := setupTracks(t)
+
+		resp := f.POST(t, "/api/v1/tracks/main/workouts",
+			WithCookie(f.LoginAs(t, f.Owner.ID)),
+			WithJSON(workoutResp{
+				TrackID:  string(f.Track.ID),
+				Date:     dateIn(-2),
+				Notes:    "backdated",
+				Sections: sections("Main part"),
+			}),
+		)
+		assert.Equal(t, http.StatusConflict, resp.StatusCode)
+	})
+
+	t.Run("should still create yesterday, the day of grace", func(t *testing.T) {
 		f := setupTracks(t)
 
 		resp := f.POST(t, "/api/v1/tracks/main/workouts",
@@ -660,11 +677,11 @@ func Test_ApiTracks_EditWindow(t *testing.T) {
 			WithJSON(workoutResp{
 				TrackID:  string(f.Track.ID),
 				Date:     dateIn(-1),
-				Notes:    "backdated",
+				Notes:    "yesterday",
 				Sections: sections("Main part"),
 			}),
 		)
-		assert.Equal(t, http.StatusConflict, resp.StatusCode)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
 	t.Run("should return 409 when updating a workout the window has closed on", func(t *testing.T) {
@@ -686,6 +703,45 @@ func Test_ApiTracks_EditWindow(t *testing.T) {
 		stored, err := f.DataStorage.GetWorkout(t.Context(), workout.Ref())
 		require.NoError(t, err)
 		assert.Equal(t, "before", stored.Notes)
+	})
+}
+
+func Test_ApiTracks_GetWorkoutHidesDrafts(t *testing.T) {
+	t.Run("should hide an unpublished workout behind 404", func(t *testing.T) {
+		f := setupTracks(t)
+		draft := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(3), "draft")
+		stranger := createUser(t, f.TestApp)
+
+		// Knowing the id is not enough: the list no longer hands drafts out,
+		// but ids leaked through it before, and they never expire
+		for name, opts := range map[string][]RequestOption{
+			"anonymous": nil,
+			"stranger":  {WithCookie(f.LoginAs(t, stranger.ID))},
+		} {
+			resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(draft.ID), opts...)
+			assert.Equal(t, http.StatusNotFound, resp.StatusCode, name)
+		}
+	})
+
+	t.Run("should show it to the track owner", func(t *testing.T) {
+		f := setupTracks(t)
+		draft := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(3), "draft")
+
+		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(draft.ID),
+			WithCookie(f.LoginAs(t, f.Owner.ID)))
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		data := ReadJSON[workoutRespWrapper](t, resp)
+		assert.Equal(t, "draft", data.Workout.Notes)
+		assert.False(t, data.Workout.IsPublished)
+	})
+
+	t.Run("should keep a published workout public", func(t *testing.T) {
+		f := setupTracks(t)
+		published := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(-3), "published")
+
+		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(published.ID))
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 }
 

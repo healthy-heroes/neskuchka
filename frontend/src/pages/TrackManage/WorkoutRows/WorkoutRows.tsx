@@ -38,6 +38,10 @@ function WorkoutRow({
 	const today = isToday(workout.Date);
 	const published = workout.IsPublished ?? true;
 
+	// Восемь одинаковых «Удалить» подряд: без даты в имени со скринридера
+	// не понять, какую тренировку удаляешь
+	const date = formatIsoDateShort(workout.Date);
+
 	return (
 		<div className={classes.row}>
 			<div>
@@ -49,7 +53,7 @@ function WorkoutRow({
 					lts="0.02em"
 					c={dateColor(today, published)}
 				>
-					{formatIsoDateShort(workout.Date)}
+					{date}
 				</Text>
 				<Text fz="xs" c="gray.7">
 					{formatWeekday(workout.Date)}
@@ -69,10 +73,12 @@ function WorkoutRow({
 				{published ? 'Опубликована' : 'Не опубликована'}
 			</Text>
 
-			{workout.CanEdit && (
-				<Group gap="xs" justify="flex-end" wrap="nowrap" className={classes.actions}>
+			{workout.IsEditable && (
+				<Group gap="xs" justify="flex-end" wrap="nowrap">
 					{/* renderRoot, а не component: через полиморфный проп Button теряет
 					    типы роутера, и params перестают проверяться по маршруту */}
+					{/* flex="none": обрезанная подпись выглядит как опечатка, а вылезший
+					    за край блок сразу виден и чинится */}
 					<Button
 						renderRoot={(props) => (
 							<RouteLink
@@ -84,10 +90,19 @@ function WorkoutRow({
 						)}
 						variant="default"
 						size="xs"
+						flex="none"
+						aria-label={`Изменить тренировку ${date}`}
 					>
 						Изменить
 					</Button>
-					<Button variant="default" size="xs" c="copper.7" onClick={() => onDelete(workout)}>
+					<Button
+						variant="default"
+						size="xs"
+						flex="none"
+						c="copper.7"
+						aria-label={`Удалить тренировку ${date}`}
+						onClick={() => onDelete(workout)}
+					>
 						Удалить
 					</Button>
 				</Group>

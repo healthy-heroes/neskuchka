@@ -1,6 +1,8 @@
 package tracks
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
@@ -16,12 +18,14 @@ type WorkoutInfo struct {
 	Notes    string
 	Sections []domain.WorkoutSection
 
-	// IsPublished and CanEdit are the workout's state, not its data: whether
-	// participants can see it yet and whether the owner may still change it.
-	// They ride along so that the client shows the same answer the domain would
-	// give, instead of reimplementing the rule next to the buttons.
+	// IsPublished and IsEditable are the workout's state, not its data, and not
+	// the reader's permission: whether participants can see it yet, and whether
+	// its edit window is still open. They ride along so that the client shows
+	// the same answer the domain would give, instead of reimplementing the rule
+	// next to the buttons. Who may act on that state is a separate question,
+	// answered by TrackSchema.IsOwner.
 	IsPublished bool
-	CanEdit     bool
+	IsEditable  bool
 }
 
 func MakeWorkoutInfo(workout domain.Workout) WorkoutInfo {
@@ -35,7 +39,7 @@ func MakeWorkoutInfo(workout domain.Workout) WorkoutInfo {
 		Sections: makeSections(workout.Sections),
 
 		IsPublished: workout.IsPublished(now),
-		CanEdit:     workout.IsEditable(now),
+		IsEditable:  workout.IsEditable(now),
 	}
 }
 
@@ -100,8 +104,43 @@ type WorkoutsSchema struct {
 type WorkoutsPageSchema struct {
 	Workouts []WorkoutInfo
 
+	// NextCursor is passed back as ?after= to read the next page, and is empty
+	// on the last one.
+	NextCursor string
+
 	Total   int
 	Planned int
+}
+
+// The cursor is opaque to the client but carries both halves of the sort key,
+// date and id. A bare id would have to be looked up to find its date, and would
+// then break the moment the row it names is deleted mid-paging.
+const cursorSep = "_"
+
+func makeCursor(c domain.WorkoutCursor) string {
+	if c.IsZero() {
+		return ""
+	}
+
+	return c.Date.Format(time.DateOnly) + cursorSep + string(c.ID)
+}
+
+func parseCursor(value string) (domain.WorkoutCursor, error) {
+	if value == "" {
+		return domain.WorkoutCursor{}, nil
+	}
+
+	rawDate, id, found := strings.Cut(value, cursorSep)
+	if !found || id == "" {
+		return domain.WorkoutCursor{}, fmt.Errorf("malformed cursor %q", value)
+	}
+
+	date, err := time.Parse(time.DateOnly, rawDate)
+	if err != nil {
+		return domain.WorkoutCursor{}, fmt.Errorf("malformed cursor %q: %w", value, err)
+	}
+
+	return domain.WorkoutCursor{Date: date, ID: domain.WorkoutID(id)}, nil
 }
 
 type TrackInfo struct {

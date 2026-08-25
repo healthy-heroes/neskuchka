@@ -88,8 +88,11 @@ func createWorkout(trackID TrackID) Workout {
 	return Workout{
 		ID:      NewWorkoutID(),
 		TrackID: trackID,
-		Date:    time.Now(),
-		Notes:   "Test workout notes",
+		// dayOf, not time.Now(): a workout date is a calendar day, and the
+		// window predicates compare against one. A zoned instant here makes the
+		// test pass or fail by the hour it runs at.
+		Date:  dayOf(time.Now()),
+		Notes: "Test workout notes",
 		Sections: []WorkoutSection{
 			{
 				Title: "Section 1",

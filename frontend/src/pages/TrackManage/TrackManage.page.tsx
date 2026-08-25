@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Box, Button, Container, Group, Modal, Stack, Text, Title } from '@mantine/core';
+import { Alert, Box, Button, Container, Group, Modal, Stack, Text, Title } from '@mantine/core';
 import { useApi } from '@/api/hooks';
 import { MANAGE_PAGE_SIZE, WorkoutsKeys } from '@/api/services/workouts';
 import { PageSkeleton } from '@/components/PageSkeleton/PageSkeleton';
@@ -21,7 +21,7 @@ export function TrackManagePage() {
 	const queryClient = useQueryClient();
 	const { workouts } = useApi();
 
-	const [confirming, setConfirming] = useState<Workout | null>(null);
+	const [workoutToDelete, setWorkoutToDelete] = useState<Workout | null>(null);
 
 	const trackQuery = useQuery(workouts.getMainTrackQuery());
 	const listQuery = useInfiniteQuery(workouts.getAllTrackWorkoutsQuery());
@@ -30,14 +30,22 @@ export function TrackManagePage() {
 	// ещё и в шапке страницы, так что после любой правки сбрасывается вся ветка
 	const invalidateTrack = () => queryClient.invalidateQueries({ queryKey: WorkoutsKeys.track() });
 
+	// Сохранение трека промис возвращает намеренно: форма закрывается только
+	// после того, как шапка перерисовалась, иначе мелькнёт старое название.
+	// Запрос ровно один, ждать дёшево.
 	const updateTrack = useMutation({
 		...workouts.updateTrackMutation(),
-		onSuccess: invalidateTrack,
+		onSuccess: () => invalidateTrack(),
 	});
 
+	// А удаление — нет: react-query ждёт onSuccess, и мутация висела бы, пока
+	// не перезапросятся все загруженные страницы, одна за другой. Строка уже
+	// удалена, держать спиннер не за чем
 	const deleteWorkout = useMutation({
 		...workouts.deleteWorkoutMutation(),
-		onSuccess: invalidateTrack,
+		onSuccess: () => {
+			invalidateTrack();
+		},
 	});
 
 	if (trackQuery.isPending || listQuery.isPending) {
@@ -45,19 +53,25 @@ export function TrackManagePage() {
 	}
 
 	if (!trackQuery.data || !listQuery.data) {
-		return null;
+		return (
+			<Container className={classes.page}>
+				<Alert color="red" variant="light" mt="xl">
+					Не удалось загрузить трек. Обновите страницу.
+				</Alert>
+			</Container>
+		);
 	}
 
 	const pages = listQuery.data.pages;
-	const rows = pages.flatMap((page) => page.data.Workouts);
-	const { Total, Planned } = pages[0].data;
+	const rows = pages.flatMap((page) => page.Workouts);
+	const { Total, Planned } = pages[0];
 
 	function handleConfirmDelete() {
-		if (!confirming) {
+		if (!workoutToDelete) {
 			return;
 		}
 
-		deleteWorkout.mutate(confirming.ID, { onSuccess: () => setConfirming(null) });
+		deleteWorkout.mutate(workoutToDelete.ID, { onSuccess: () => setWorkoutToDelete(null) });
 	}
 
 	return (
@@ -68,18 +82,19 @@ export function TrackManagePage() {
 					onSave={updateTrack.mutateAsync}
 					isSaving={updateTrack.isPending}
 					error={updateTrack.error}
+					onDismissError={updateTrack.reset}
 				/>
 			</Box>
 
 			<Group align="flex-end" justify="space-between" gap="xl" py="xl">
 				<div>
 					<Title order={3}>Тренировки</Title>
-					<Text fz="sm" c="gray.7" mt={6}>
+					<Text fz="sm" c="gray.7" mt="xs">
 						{countLabel(Total, Planned)}
 					</Text>
 				</div>
 
-				<Stack align="flex-end" gap={6}>
+				<Stack align="flex-end" gap="xs">
 					<Button component={RouteLink} to="/workouts/new" underline="never">
 						Новая тренировка
 					</Button>
@@ -93,7 +108,7 @@ export function TrackManagePage() {
 				<EmptyTrack />
 			) : (
 				<>
-					<Group gap="xl" mb="sm" px="lg" py="sm" bg="gray.1" className={classes.rules}>
+					<Group gap="xl" mb="sm" px="lg" py="sm" bg="gray.1" bdrs="md">
 						<Text fz="sm" lh="sm" c="gray.7">
 							Тренировка появляется у участников в свой день
 						</Text>
@@ -102,7 +117,7 @@ export function TrackManagePage() {
 						</Text>
 					</Group>
 
-					<WorkoutRows workouts={rows} onDelete={setConfirming} />
+					<WorkoutRows workouts={rows} onDelete={setWorkoutToDelete} />
 
 					{listQuery.hasNextPage && (
 						<Stack align="center" gap="xs" pt="lg">
@@ -122,21 +137,21 @@ export function TrackManagePage() {
 			)}
 
 			<Modal
-				opened={confirming !== null}
-				onClose={() => setConfirming(null)}
+				opened={workoutToDelete !== null}
+				onClose={() => setWorkoutToDelete(null)}
 				title="Удалить тренировку?"
 				centered
 			>
 				<Text fz="md" lh="md" c="gray.8">
-					{confirming &&
-						`Тренировка ${formatIsoDateShort(confirming.Date)} исчезнет у всех участников трека. Отменить это нельзя.`}
+					{workoutToDelete &&
+						`Тренировка ${formatIsoDateShort(workoutToDelete.Date)} исчезнет у всех участников трека. Отменить это нельзя.`}
 				</Text>
 
 				<Group justify="flex-end" gap="md" mt="xl">
 					<Button
 						variant="default"
 						disabled={deleteWorkout.isPending}
-						onClick={() => setConfirming(null)}
+						onClick={() => setWorkoutToDelete(null)}
 					>
 						Отмена
 					</Button>
@@ -151,7 +166,15 @@ export function TrackManagePage() {
 
 function EmptyTrack() {
 	return (
-		<Stack align="center" gap="md" px="xl" py={64} bg="white" className={classes.empty}>
+		<Stack
+			align="center"
+			gap="md"
+			px="xl"
+			py="xl"
+			bg="white"
+			bd="1px solid var(--mantine-color-gray-3)"
+			bdrs="lg"
+		>
 			<Title order={3}>В треке пока нет тренировок</Title>
 			<Text fz="md" lh="md" c="gray.7" ta="center" maw={420}>
 				Создайте первую — участники увидят её в тот день, на который она поставлена.

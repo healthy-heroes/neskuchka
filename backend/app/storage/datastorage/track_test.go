@@ -25,7 +25,7 @@ func Test_Track_Create(t *testing.T) {
 		ID:          domain.NewTrackID(),
 		Slug:        domain.TrackSlug("testmain"),
 		Name:        "Test track",
-		Description: "Its track created for tests",
+		Description: "A track created for tests",
 		OwnerID:     domain.UserID("user-1"),
 	}
 
@@ -64,7 +64,7 @@ func Test_Track_Update(t *testing.T) {
 		ID:          domain.NewTrackID(),
 		Slug:        domain.TrackSlug("testmain"),
 		Name:        "Test track",
-		Description: "Its track created for tests",
+		Description: "A track created for tests",
 		OwnerID:     domain.UserID("user-1"),
 	})
 	require.NoError(t, err)

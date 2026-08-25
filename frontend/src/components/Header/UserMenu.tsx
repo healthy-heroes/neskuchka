@@ -8,8 +8,9 @@ import { RouteLink } from '../RouteLink/RouteLink';
 export function UserMenu() {
 	const { user, isAuthenticated, isPending, logout } = useAuth();
 
-	// Трек уже в кэше — его грузит layout /workouts. Не владельцу пункт
-	// управления не показывается вовсе, ходить по нему всё равно некуда
+	// Шапка живёт на всех страницах, так что на /workouts трек берётся из кэша,
+	// а вне его — это один лишний запрос. Он публичный и гостю отвечает 200,
+	// так что дешевле запросить, чем городить условие
 	const { workouts } = useApi();
 	const { data: track } = useQuery(workouts.getMainTrackQuery());
 

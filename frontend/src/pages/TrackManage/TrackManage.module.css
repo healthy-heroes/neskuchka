@@ -7,12 +7,3 @@
     padding: var(--mantine-spacing-xl) 0 var(--mantine-spacing-lg);
     border-bottom: 1px solid var(--mantine-color-gray-2);
 }
-
-.rules {
-    border-radius: var(--mantine-radius-md);
-}
-
-.empty {
-    border: 1px solid var(--mantine-color-gray-3);
-    border-radius: var(--mantine-radius-lg);
-}

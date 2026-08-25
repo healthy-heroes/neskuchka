@@ -105,23 +105,44 @@ const (
 	maxWorkoutLimit     = 50
 )
 
+// WorkoutCursor points at a row in the track ordering.
+//
+// Paging is keyset rather than offset because the track is edited while it is
+// read: one workout created or deleted above the reader shifts every offset
+// below it, showing one row twice and stepping over another. The key is
+// compound because a track may hold two workouts on one date.
+type WorkoutCursor struct {
+	Date time.Time
+	ID   WorkoutID
+}
+
+func (c WorkoutCursor) IsZero() bool {
+	return c.ID == ""
+}
+
 // WorkoutFindCriteria is a criteria for finding workouts
 type WorkoutFindCriteria struct {
-	Limit  int
-	Offset int
+	Limit int
+
+	// After starts the page just past the row it names. Zero starts at the top.
+	After WorkoutCursor
 
 	// PublishedOnly drops workouts dated ahead of today. Everything a
 	// participant may read goes out with it set.
 	PublishedOnly bool
 }
 
-// normalize keeps a caller from asking for an unbounded read
+// normalize keeps a caller from asking for an unbounded read.
+//
+// An over-large limit is clamped to the ceiling rather than reset to the
+// default: a client paging by the limit it asked for would otherwise read one
+// short page and then step over everything in between.
 func (c *WorkoutFindCriteria) normalize() {
-	if c.Limit <= 0 || c.Limit > maxWorkoutLimit {
+	if c.Limit <= 0 {
 		c.Limit = defaultWorkoutLimit
 	}
-	if c.Offset < 0 {
-		c.Offset = 0
+	if c.Limit > maxWorkoutLimit {
+		c.Limit = maxWorkoutLimit
 	}
 }
 
@@ -130,13 +151,39 @@ func (c *WorkoutFindCriteria) normalize() {
 type WorkoutPage struct {
 	Workouts []Workout
 
+	// Next is zero on the last page.
+	Next WorkoutCursor
+
 	Total   int
 	Planned int
 }
 
-// GetWorkout gets a workout by id
-func (s *Store) GetWorkout(ctx context.Context, wr WorkoutRef) (Workout, error) {
-	return s.storage.GetWorkout(ctx, wr)
+// GetWorkout gets a workout by id.
+//
+// An unpublished workout belongs to its owner alone. A stranger asking for one
+// is told it does not exist rather than that it is off limits: ErrForbidden
+// would confirm the id names something real.
+func (s *Store) GetWorkout(ctx context.Context, uid UserID, wr WorkoutRef) (Workout, error) {
+	w, err := s.storage.GetWorkout(ctx, wr)
+	if err != nil {
+		return Workout{}, err
+	}
+
+	if w.IsPublished(time.Now()) {
+		return w, nil
+	}
+
+	t, err := s.storage.GetTrack(ctx, wr.TrackID)
+	if err != nil {
+		return Workout{}, err
+	}
+
+	// Permission check
+	if !t.IsOwner(uid) {
+		return Workout{}, ErrNotFound
+	}
+
+	return w, nil
 }
 
 // CreateWorkout creates a new workout
@@ -152,9 +199,9 @@ func (s *Store) CreateWorkout(ctx context.Context, uid UserID, w Workout) (Worko
 		return Workout{}, ErrForbidden
 	}
 
-	// A workout written into the past is born locked: nobody could train by it,
-	// and the edit window is already closed on it.
-	if w.Date.Before(dayOf(time.Now())) {
+	// The same window that governs editing governs creating: a workout dated
+	// outside it would be born locked, unreachable by the very screen that made it.
+	if !w.IsEditable(time.Now()) {
 		return Workout{}, ErrLocked
 	}
 
@@ -250,9 +297,26 @@ func (s *Store) FindTrackWorkouts(
 
 	criteria.normalize()
 
-	workouts, err := s.storage.FindWorkouts(ctx, tid, criteria)
+	// The counters below always describe the whole track, so the rows have to as
+	// well — a caller filtering here would get a page and a total that disagree.
+	criteria.PublishedOnly = false
+
+	// Read one row past the page. Whether another page exists is then a fact
+	// about the rows themselves, rather than arithmetic on a Total that another
+	// writer can move between requests.
+	probe := criteria
+	probe.Limit = criteria.Limit + 1
+
+	workouts, err := s.storage.FindWorkouts(ctx, tid, probe)
 	if err != nil {
 		return WorkoutPage{}, err
+	}
+
+	next := WorkoutCursor{}
+	if len(workouts) > criteria.Limit {
+		workouts = workouts[:criteria.Limit]
+		last := workouts[len(workouts)-1]
+		next = WorkoutCursor{Date: last.Date, ID: last.ID}
 	}
 
 	// One clock for the page and its counters, so "planned" means the same thing
@@ -262,5 +326,5 @@ func (s *Store) FindTrackWorkouts(
 		return WorkoutPage{}, err
 	}
 
-	return WorkoutPage{Workouts: workouts, Total: total, Planned: planned}, nil
+	return WorkoutPage{Workouts: workouts, Next: next, Total: total, Planned: planned}, nil
 }

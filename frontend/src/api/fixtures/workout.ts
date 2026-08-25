@@ -13,7 +13,7 @@ export default function createWorkout(overrides: Partial<Workout> = {}): Workout
 		// Состояние считает бэкенд, и фикстура считает его по тем же правилам:
 		// тренировка видна с её дня, а править её можно ещё сутки после
 		IsPublished: !dayjs(date).isAfter(dayjs(), 'day'),
-		CanEdit: !dayjs(date).isBefore(dayjs().subtract(1, 'day'), 'day'),
+		IsEditable: !dayjs(date).isBefore(dayjs().subtract(1, 'day'), 'day'),
 
 		Sections: [
 			{

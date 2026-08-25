@@ -30,6 +30,9 @@ export interface TrackWorkoutData {
 export interface TrackWorkoutsPageData {
 	Workouts: Array<Workout>;
 
+	/** Пусто на последней странице. */
+	NextCursor: string;
+
 	Total: number;
 	Planned: number;
 }
@@ -119,28 +122,35 @@ export class WorkoutsService extends Service {
 	/**
 	 * Весь трек владельцу, страницами — вместе с неопубликованным.
 	 *
+	 * Пагинация курсорная: трек правят, пока его читают, и offset после каждой
+	 * вставки или удаления сдвигает всё, что ниже, — одна строка приходит дважды,
+	 * другая теряется. Курсор непрозрачный, конец списка сервер отмечает пустым.
+	 *
 	 * Счётчики приезжают в каждой странице: они считаются по треку, а не по
 	 * загруженному куску, поэтому «Показаны 8 из 41» не врёт с первой страницы.
 	 */
 	getAllTrackWorkoutsQuery(): UseInfiniteQueryOptions<
 		ApiResponse<TrackWorkoutsPageData>,
 		Error,
-		InfiniteData<ApiResponse<TrackWorkoutsPageData>>,
+		InfiniteData<TrackWorkoutsPageData>,
 		QueryKey,
-		number
+		string
 	> {
 		return {
 			queryKey: WorkoutsKeys.allWorkouts(),
 			queryFn: ({ pageParam }) =>
 				this.api.get<ApiResponse<TrackWorkoutsPageData>>(
-					`tracks/main/workouts?limit=${MANAGE_PAGE_SIZE}&offset=${pageParam}`
+					`tracks/main/workouts?limit=${MANAGE_PAGE_SIZE}&after=${encodeURIComponent(pageParam)}`
 				),
-			initialPageParam: 0,
-			getNextPageParam: (lastPage, allPages) => {
-				const loaded = allPages.reduce((sum, page) => sum + page.data.Workouts.length, 0);
-
-				return loaded < lastPage.data.Total ? loaded : undefined;
-			},
+			initialPageParam: '',
+			getNextPageParam: (lastPage) => lastPage.data.NextCursor || undefined,
+			select: (data) => ({
+				pages: data.pages.map((page) => page.data),
+				pageParams: data.pageParams,
+			}),
+			// Иначе каждый возврат во вкладку перезапрашивает все загруженные
+			// страницы подряд
+			staleTime: 30 * 1000,
 		};
 	}
 

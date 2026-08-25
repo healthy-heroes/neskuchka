@@ -85,6 +85,12 @@ func (s *Storage) GetWorkout(ctx context.Context, wr domain.WorkoutRef) (domain.
 	return workout.toDomain()
 }
 
+// workoutOrder is the one ordering of a track, and the keyset predicate below
+// has to match it exactly. Ties on date break by id: ids are UUIDv7, so they
+// sort by creation, which is what created_at was reaching for — except
+// created_at is only second-resolution and leaves same-second rows unordered.
+const workoutOrder = " ORDER BY date DESC, id DESC"
+
 func (s *Storage) FindWorkouts(ctx context.Context, tid domain.TrackID, criteria domain.WorkoutFindCriteria) ([]domain.Workout, error) {
 	query := "SELECT * FROM workout WHERE track_id = ?"
 	args := []any{tid}
@@ -94,8 +100,14 @@ func (s *Storage) FindWorkouts(ctx context.Context, tid domain.TrackID, criteria
 		args = append(args, today())
 	}
 
-	query += " ORDER BY date DESC, created_at DESC LIMIT ? OFFSET ?"
-	args = append(args, criteria.Limit, criteria.Offset)
+	if !criteria.After.IsZero() {
+		query += " AND (date < ? OR (date = ? AND id < ?))"
+		cursorDate := criteria.After.Date.Format(time.DateOnly)
+		args = append(args, cursorDate, cursorDate, criteria.After.ID)
+	}
+
+	query += workoutOrder + " LIMIT ?"
+	args = append(args, criteria.Limit)
 
 	workouts := []workoutRow{}
 	err := s.engine.SelectContext(ctx, &workouts, query, args...)
@@ -158,8 +170,8 @@ func (s *Storage) DeleteWorkout(ctx context.Context, wr domain.WorkoutRef) error
 		return storage.HandleSqlError(err)
 	}
 
-	// DELETE is happy to remove nothing, so the caller has to be told apart the
-	// row that was deleted from the row that was never there.
+	// DELETE is happy to remove nothing, so the caller has to be able to tell a
+	// deleted row from one that was never there.
 	affected, err := result.RowsAffected()
 	if err != nil {
 		return err

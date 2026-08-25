@@ -2,7 +2,6 @@ package tracks
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/healthy-heroes/neskuchka/backend/app/api/httpx"
@@ -22,8 +21,13 @@ func (s *Service) GetWorkout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Anonymous readers have no user id, and that is fine: the domain only needs
+	// it to decide whether an unpublished workout may be shown.
+	userID, _ := session.GetUserID(r)
+
 	id := chi.URLParam(r, "id")
-	workout, err := s.dataStore.GetWorkout(r.Context(), domain.WorkoutRef{TrackID: track.ID, WorkoutID: domain.WorkoutID(id)})
+	workout, err := s.dataStore.GetWorkout(r.Context(), domain.UserID(userID),
+		domain.WorkoutRef{TrackID: track.ID, WorkoutID: domain.WorkoutID(id)})
 	if err != nil {
 		httpx.RenderDomainError(w, logger, err, "failed to get workout")
 		return
@@ -101,10 +105,16 @@ func (s *Service) GetMainTrackWorkouts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	after, err := parseCursor(r.URL.Query().Get("after"))
+	if err != nil {
+		httpx.RenderError(w, logger, http.StatusBadRequest, err, "Failed to parse cursor")
+		return
+	}
+
 	page, err := s.dataStore.FindTrackWorkouts(r.Context(), domain.UserID(userID), track.ID,
 		domain.WorkoutFindCriteria{
-			Limit:  queryInt(r, "limit", managePageSize),
-			Offset: queryInt(r, "offset", 0),
+			Limit: httpx.QueryInt(r, "limit", managePageSize),
+			After: after,
 		},
 	)
 	if err != nil {
@@ -113,9 +123,10 @@ func (s *Service) GetMainTrackWorkouts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.Render(w, WorkoutsPageSchema{
-		Workouts: MakeWorkoutInfos(page.Workouts),
-		Total:    page.Total,
-		Planned:  page.Planned,
+		Workouts:   MakeWorkoutInfos(page.Workouts),
+		NextCursor: makeCursor(page.Next),
+		Total:      page.Total,
+		Planned:    page.Planned,
 	})
 }
 
@@ -139,16 +150,4 @@ func (s *Service) DeleteWorkout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-// queryInt reads a paging parameter, falling back to the default on anything
-// that is not a number. Out-of-range values are the domain's business —
-// WorkoutFindCriteria caps them itself.
-func queryInt(r *http.Request, name string, fallback int) int {
-	value, err := strconv.Atoi(r.URL.Query().Get(name))
-	if err != nil {
-		return fallback
-	}
-
-	return value
 }

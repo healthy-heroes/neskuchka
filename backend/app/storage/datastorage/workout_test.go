@@ -207,17 +207,56 @@ func Test_Workout_FindWorkouts_Paging(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	page, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 2, Offset: 1})
+	first, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 2})
 	require.NoError(t, err)
-	require.Len(t, page, 2)
+	require.Len(t, first, 2)
+	assert.Equal(t, workoutDate("2025-02-03"), first[0].Date)
+	assert.Equal(t, workoutDate("2025-02-02"), first[1].Date)
 
-	// newest first, so offset 1 starts on the second newest
-	assert.Equal(t, workoutDate("2025-02-02"), page[0].Date)
-	assert.Equal(t, workoutDate("2025-02-01"), page[1].Date)
+	// the cursor names the last row read, and the next page starts past it
+	after := domain.WorkoutCursor{Date: first[1].Date, ID: first[1].ID}
+	second, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 2, After: after})
+	require.NoError(t, err)
+	require.Len(t, second, 1)
+	assert.Equal(t, workoutDate("2025-02-01"), second[0].Date)
 
-	past, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 10, Offset: 10})
+	// past the end
+	end := domain.WorkoutCursor{Date: second[0].Date, ID: second[0].ID}
+	past, err := ds.FindWorkouts(t.Context(), trackID, domain.WorkoutFindCriteria{Limit: 10, After: end})
 	require.NoError(t, err)
 	assert.Len(t, past, 0)
+}
+
+// Two workouts on one date must page without repeating or skipping either:
+// the cursor carries the id precisely so the date alone cannot tie.
+func Test_Workout_FindWorkouts_PagingTiesOnDate(t *testing.T) {
+	ds := setupTestStorage(t)
+
+	trackID := domain.NewTrackID()
+	for i := 0; i < 4; i++ {
+		_, err := ds.CreateWorkout(t.Context(), domain.Workout{
+			ID:      domain.NewWorkoutID(),
+			TrackID: trackID,
+			Date:    workoutDate("2025-02-01"),
+		})
+		require.NoError(t, err)
+	}
+
+	seen := map[domain.WorkoutID]bool{}
+	cursor := domain.WorkoutCursor{}
+	for range 4 {
+		page, err := ds.FindWorkouts(t.Context(), trackID,
+			domain.WorkoutFindCriteria{Limit: 1, After: cursor})
+		require.NoError(t, err)
+		require.Len(t, page, 1)
+
+		require.False(t, seen[page[0].ID], "row returned twice")
+		seen[page[0].ID] = true
+
+		cursor = domain.WorkoutCursor{Date: page[0].Date, ID: page[0].ID}
+	}
+
+	assert.Len(t, seen, 4)
 }
 
 func Test_Workout_FindWorkouts_PublishedOnly(t *testing.T) {
