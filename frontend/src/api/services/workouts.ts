@@ -56,16 +56,47 @@ export const WorkoutsKeys = {
 export const MANAGE_PAGE_SIZE = 8;
 
 /**
- * Разворачивает конверт `{ data }` у каждой страницы.
+ * Разворачивает конверт `{ data }` у каждой страницы и убирает строки,
+ * попавшие в две страницы сразу.
+ *
+ * Курсор защищает от вставок и удалений, но не от правки самой даты: если
+ * тренировку перенесли ниже курсора, пока читали, она приедет второй раз.
+ * Окно правки держит это в узде — всё, что ниже вчерашнего дня, изменить
+ * уже нельзя, — так что дубль возможен, только пока курсор сам внутри окна.
+ * Но React-ключи от этого ломаются по-настоящему, а стоит проверка недорого.
+ *
+ * Из двух копий остаётся нижняя: правка даты сдвинула строку именно туда, и
+ * там же её свежая версия.
+ *
+ * Обратный случай — строка уехала выше курсора и не попала ни в одну
+ * страницу — отсюда не виден и лечится только перезапросом.
  *
  * Вынесено из опций намеренно: react-query прогоняет select на каждый рендер и
  * сверяет результат глубоким сравнением, а новая функция каждый раз лишает его
- * мемоизации — на списке в несколько десятков строк это заметно.
+ * мемоизации.
  */
-function unwrapPages(
+export function unwrapPages(
 	data: InfiniteData<ApiResponse<TrackWorkoutsPageData>>
 ): InfiniteData<TrackWorkoutsPageData> {
-	return { pages: data.pages.map((page) => page.data), pageParams: data.pageParams };
+	const seen = new Set<string>();
+	const pages: Array<TrackWorkoutsPageData> = [];
+
+	// С конца, чтобы «первой встреченной» оказалась нижняя копия
+	for (let i = data.pages.length - 1; i >= 0; i -= 1) {
+		const page = data.pages[i].data;
+		const kept = page.Workouts.filter((workout) => {
+			if (seen.has(workout.ID)) {
+				return false;
+			}
+
+			seen.add(workout.ID);
+			return true;
+		});
+
+		pages.unshift(kept.length === page.Workouts.length ? page : { ...page, Workouts: kept });
+	}
+
+	return { pages, pageParams: data.pageParams };
 }
 
 export class WorkoutsService extends Service {
