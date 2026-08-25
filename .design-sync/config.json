@@ -59,6 +59,9 @@
 		},
 		"Workouts": {
 			"viewport": "900x1700"
+		},
+		"WorkoutRows": {
+			"viewport": "900x1100"
 		}
 	},
 	"readmeHeader": ".design-sync/conventions.md"
