@@ -1,17 +1,27 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Navigate, useNavigate } from '@tanstack/react-router';
 import { Box, Title } from '@mantine/core';
 import { useApi } from '@/api/hooks';
+import { WorkoutsKeys } from '@/api/services/workouts';
 import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
 import { WorkoutForm } from '../WorkoutForm/WorkoutForm';
 
 export function WorkoutCreate() {
 	const navigate = useNavigate();
 
+	const queryClient = useQueryClient();
 	const { workouts } = useApi();
 
 	const trackQuery = useQuery(workouts.getMainTrackQuery());
-	const mutation = useMutation(workouts.createWorkoutMutation());
+
+	// Списки трека кэшируются, и без сброса свежесозданная тренировка не
+	// появится ни в истории, ни на экране управления
+	const mutation = useMutation({
+		...workouts.createWorkoutMutation(),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: WorkoutsKeys.track() });
+		},
+	});
 
 	if (mutation.isSuccess) {
 		return <Navigate to="/workouts/$workoutId" params={{ workoutId: mutation.data.Workout.ID }} />;

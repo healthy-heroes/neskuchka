@@ -154,7 +154,14 @@ func section(title, protocol, note string, exercises ...domain.WorkoutExercise) 
 	}
 }
 
-// seedWorkouts builds three weeks of workouts, three per week, counted back from today.
+// plannedDaysAhead are the days the seed puts workouts on ahead of today. The track
+// management screen is built around workouts that have not been published yet —
+// their status, and the counter above the list — so the seed has to produce some.
+// Participants must not see them anywhere, which is the other thing they are here to show.
+var plannedDaysAhead = []int{2, 5}
+
+// seedWorkouts builds three weeks of workouts, three per week, counted back from today,
+// plus a couple planned ahead of it.
 // Dates are relative on purpose: the track page puts today's workout in focus, so the
 // seed has to produce one whenever it is run. They are stored absolute, so the newest
 // workout stops being today's overnight — the track page falls back to the latest one
@@ -291,7 +298,7 @@ func seedWorkouts(trackID domain.TrackID, today time.Time) []domain.Workout {
 		},
 	}
 
-	workouts := make([]domain.Workout, 0, len(sections))
+	workouts := make([]domain.Workout, 0, len(sections)+len(plannedDaysAhead))
 	for i, s := range sections {
 		// Three per week, every other day, counted back from today — so the newest
 		// workout is always today's: 0, 2, 4, then 7, 9, 11, then 14, 16, 18.
@@ -303,6 +310,17 @@ func seedWorkouts(trackID domain.TrackID, today time.Time) []domain.Workout {
 			TrackID:  trackID,
 			Date:     time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC),
 			Sections: s,
+		})
+	}
+
+	for i, daysAhead := range plannedDaysAhead {
+		date := today.AddDate(0, 0, daysAhead)
+
+		workouts = append(workouts, domain.Workout{
+			ID:       domain.NewWorkoutID(),
+			TrackID:  trackID,
+			Date:     time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC),
+			Sections: sections[i%len(sections)],
 		})
 	}
 

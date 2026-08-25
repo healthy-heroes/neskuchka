@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import {
 	IconSquareRoundedMinus2,
 	IconSquareRoundedPlus,
@@ -90,6 +91,8 @@ export function WorkoutForm({
 					valueFormat="DD MMMM YYYY"
 					label="Дата тренировки"
 					placeholder="Выберите дату"
+					description="Дата — не раньше вчерашней"
+					minDate={earliestDate()}
 					key={form.key('Date')}
 					{...form.getInputProps('Date')}
 				/>
@@ -275,4 +278,15 @@ function removeExercise(form: FormReturnType, sectionIndex: number, exerciseInde
 	} else {
 		form.removeListItem(`Sections.${sectionIndex}.Exercises`, exerciseIndex);
 	}
+}
+
+/**
+ * Раньше какой даты тренировку не поставить.
+ *
+ * Ту же границу держит домен: тренировка «живёт» сутки после своей даты, дальше
+ * её не изменить, не удалить и не создать. Календарь просто не даёт выбрать то,
+ * что бэкенд всё равно отклонит.
+ */
+function earliestDate(): string {
+	return dayjs().subtract(1, 'day').format('YYYY-MM-DD');
 }

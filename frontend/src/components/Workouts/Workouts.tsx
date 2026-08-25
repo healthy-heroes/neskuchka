@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Box, Container, Text } from '@mantine/core';
 import { useApi } from '@/api/hooks';
 import { TrackHeader } from '@/pages/MainTrack/TrackHeader/TrackHeader';
-import { isPublished, isToday } from '@/utils/dates';
+import { isToday } from '@/utils/dates';
 import { FeaturedWorkout } from '../FeaturedWorkout/FeaturedWorkout';
 import { FeaturedWorkoutSkeleton } from '../FeaturedWorkout/FeaturedWorkoutSkeleton';
 import { WorkoutHistory } from '../WorkoutHistory/WorkoutHistory';
@@ -21,15 +21,16 @@ export function Workouts() {
 	const { data, isPending } = useQuery(workouts.getMainTrackWorkoutsQuery());
 	const { data: track } = useQuery(workouts.getMainTrackQuery());
 
-	const published = (data?.Workouts ?? []).filter((workout) => isPublished(workout.Date));
+	// Неопубликованных в ответе нет: их отсекает бэкенд, а не эта страница
+	const trackWorkouts = data?.Workouts ?? [];
 
 	// В фокусе сегодняшняя, а если её нет — последняя опубликованная:
 	// пустой главный экран хуже, чем вчерашняя тренировка на нём
-	const featured = published.find((workout) => isToday(workout.Date)) ?? published[0];
+	const featured = trackWorkouts.find((workout) => isToday(workout.Date)) ?? trackWorkouts[0];
 
 	return (
 		<Container px={0}>
-			{track && <TrackHeader track={track} workouts={published} loading={isPending} />}
+			{track && <TrackHeader track={track} workouts={trackWorkouts} loading={isPending} />}
 
 			<Box px="xl" py="xl" bg="gray.0">
 				{isPending && <FeaturedWorkoutSkeleton />}
@@ -44,7 +45,7 @@ export function Workouts() {
 					<>
 						<FeaturedWorkout workout={featured} />
 
-						<WorkoutHistory workouts={published} featured={featured} />
+						<WorkoutHistory workouts={trackWorkouts} featured={featured} />
 					</>
 				)}
 			</Box>

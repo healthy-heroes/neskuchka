@@ -3,10 +3,18 @@ import { randomId } from '@mantine/hooks';
 import { Workout } from '@/types/domain';
 
 export default function createWorkout(overrides: Partial<Workout> = {}): Workout {
+	const date = overrides.Date ?? '2025-01-01';
+
 	return {
 		ID: randomId(),
 		TrackID: 'track-1',
-		Date: '2025-01-01',
+		Date: date,
+
+		// Состояние считает бэкенд, и фикстура считает его по тем же правилам:
+		// тренировка видна с её дня, а править её можно ещё сутки после
+		IsPublished: !dayjs(date).isAfter(dayjs(), 'day'),
+		IsEditable: !dayjs(date).isBefore(dayjs().subtract(1, 'day'), 'day'),
+
 		Sections: [
 			{
 				Title: 'Разминка',
@@ -37,10 +45,12 @@ export default function createWorkout(overrides: Partial<Workout> = {}): Workout
 }
 
 export interface TrackWorkoutsOptions {
-	/** Сколько тренировок вернуть. */
+	/** Сколько опубликованных тренировок вернуть. */
 	count?: number;
 	/** Начинать ли с сегодняшней: без неё трек выглядит как «сегодня отдых». */
 	includeToday?: boolean;
+	/** Сколько запланированных добавить впереди — их видит только владелец. */
+	planned?: number;
 }
 
 /**
@@ -54,10 +64,21 @@ export interface TrackWorkoutsOptions {
 export function createTrackWorkouts({
 	count = 14,
 	includeToday = true,
+	planned = 0,
 }: TrackWorkoutsOptions = {}): Array<Workout> {
 	const today = dayjs().startOf('day');
 
-	return Array.from({ length: count }, (_, index) => {
+	// Запланированные идут первыми: список везде отсортирован свежими вверх
+	const upcoming = Array.from({ length: planned }, (_, index) => {
+		const daysAhead = (planned - index) * 3;
+
+		return createWorkout({
+			ID: `workout-planned-${planned - index}`,
+			Date: today.add(daysAhead, 'day').format('YYYY-MM-DD'),
+		});
+	});
+
+	const published = Array.from({ length: count }, (_, index) => {
 		const offset = includeToday ? index * 2 : index * 2 + 1;
 
 		return createWorkout({
@@ -65,4 +86,6 @@ export function createTrackWorkouts({
 			Date: today.subtract(offset, 'day').format('YYYY-MM-DD'),
 		});
 	});
+
+	return [...upcoming, ...published];
 }

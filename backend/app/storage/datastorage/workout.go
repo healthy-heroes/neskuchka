@@ -85,18 +85,58 @@ func (s *Storage) GetWorkout(ctx context.Context, wr domain.WorkoutRef) (domain.
 	return workout.toDomain()
 }
 
-func (s *Storage) FindWorkouts(ctx context.Context, tid domain.TrackID, criteria domain.WorkoutFindCriteria) ([]domain.Workout, error) {
+// workoutOrder is the one ordering of a track, and the keyset predicate below
+// has to match it exactly. Ties on date break by id: ids are UUIDv7, so they
+// sort by creation, which is what created_at was reaching for — except
+// created_at is only second-resolution and leaves same-second rows unordered.
+const workoutOrder = " ORDER BY date DESC, id DESC"
+
+func (s *Storage) FindWorkouts(ctx context.Context, tid domain.TrackID, criteria domain.WorkoutFindCriteria, now time.Time) ([]domain.Workout, error) {
+	query := "SELECT * FROM workout WHERE track_id = ?"
+	args := []any{tid}
+
+	if criteria.PublishedOnly {
+		query += " AND date <= ?"
+		args = append(args, now.Format(time.DateOnly))
+	}
+
+	if !criteria.After.IsZero() {
+		query += " AND (date < ? OR (date = ? AND id < ?))"
+		cursorDate := criteria.After.Date.Format(time.DateOnly)
+		args = append(args, cursorDate, cursorDate, criteria.After.ID)
+	}
+
+	query += workoutOrder + " LIMIT ?"
+	args = append(args, criteria.Limit)
+
 	workouts := []workoutRow{}
-	err := s.engine.SelectContext(ctx, &workouts,
-		"SELECT * FROM workout WHERE track_id = ? ORDER BY date DESC, created_at DESC LIMIT ?",
-		tid, criteria.Limit,
-	)
+	err := s.engine.SelectContext(ctx, &workouts, query, args...)
 	if err != nil {
 		return nil, storage.HandleSqlError(err)
 	}
 
 	return rowsToDomain(workouts)
 }
+
+// CountWorkouts counts the track in one pass: everything in it, and the part
+// still ahead of now.
+func (s *Storage) CountWorkouts(ctx context.Context, tid domain.TrackID, now time.Time) (int, int, error) {
+	counts := struct {
+		Total   int
+		Planned int
+	}{}
+
+	err := s.engine.GetContext(ctx, &counts,
+		"SELECT COUNT(*) AS total, COALESCE(SUM(date > ?), 0) AS planned FROM workout WHERE track_id = ?",
+		now.Format(time.DateOnly), tid,
+	)
+	if err != nil {
+		return 0, 0, storage.HandleSqlError(err)
+	}
+
+	return counts.Total, counts.Planned, nil
+}
+
 
 func (s *Storage) CreateWorkout(ctx context.Context, workout domain.Workout) (domain.Workout, error) {
 	w, err := makeWorkout(workout)
@@ -113,6 +153,28 @@ func (s *Storage) CreateWorkout(ctx context.Context, workout domain.Workout) (do
 	}
 
 	return s.GetWorkout(ctx, domain.WorkoutRef{TrackID: workout.TrackID, WorkoutID: workout.ID})
+}
+
+func (s *Storage) DeleteWorkout(ctx context.Context, wr domain.WorkoutRef) error {
+	result, err := s.engine.ExecContext(ctx,
+		"DELETE FROM workout WHERE track_id = ? AND id = ?",
+		wr.TrackID, wr.WorkoutID,
+	)
+	if err != nil {
+		return storage.HandleSqlError(err)
+	}
+
+	// DELETE is happy to remove nothing, so the caller has to be able to tell a
+	// deleted row from one that was never there.
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return domain.ErrNotFound
+	}
+
+	return nil
 }
 
 func (s *Storage) UpdateWorkout(ctx context.Context, workout domain.Workout) (domain.Workout, error) {

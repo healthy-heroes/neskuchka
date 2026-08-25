@@ -36,9 +36,17 @@ func Render(w http.ResponseWriter, data any) {
 	renderJSONWithStatus(w, response, http.StatusOK)
 }
 
-// RenderError sends JSON response with error and status code
+// RenderError sends JSON response with error and status code.
+//
+// Anything below 500 is something the caller did — a closed edit window, a
+// stale id — and is logged as a warning. Error level is for the server's own
+// failures, so that a log filtered to errors stays worth reading.
 func RenderError(w http.ResponseWriter, l zerolog.Logger, code int, err error, msg string) {
-	l.Error().Err(err).Msg(msg)
+	level := zerolog.ErrorLevel
+	if code < http.StatusInternalServerError {
+		level = zerolog.WarnLevel
+	}
+	l.WithLevel(level).Err(err).Msg(msg)
 
 	response := ErrorResponse{
 		Error: msg,
@@ -89,6 +97,8 @@ func RenderDomainError(w http.ResponseWriter, l zerolog.Logger, err error, msg s
 		RenderError(w, l, http.StatusNotFound, err, "Not found")
 	case errors.Is(err, domain.ErrForbidden):
 		RenderError(w, l, http.StatusForbidden, err, "Forbidden")
+	case errors.Is(err, domain.ErrLocked):
+		RenderError(w, l, http.StatusConflict, err, "Conflict")
 	default:
 		RenderError(w, l, http.StatusInternalServerError, err, msg)
 	}

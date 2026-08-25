@@ -1,0 +1,62 @@
+.rows {
+    background: var(--mantine-color-white);
+    border: 1px solid var(--mantine-color-gray-3);
+    border-radius: var(--mantine-radius-lg);
+    overflow: hidden;
+}
+
+/* minmax(0, 1fr), а не 1fr: по умолчанию колонка не ужимается уже своего
+   min-content, и длинная сводка распирает строку за пределы карточки.
+
+   Колонка действий задана размером, а не содержимым, и иначе нельзя: каждая
+   строка — свой grid-контейнер, поэтому auto и max-content считаются в каждой
+   строке отдельно. Там, где кнопок нет, такая колонка схлопывается в ноль, и
+   статус уезжает вправо относительно соседних строк.
+
+   Размер в rem, а не в px: кнопки Mantine целиком в rem, и при увеличенном
+   шрифте браузера они перерастают фиксированную дорожку и вылезают из ячейки.
+   11.25rem — это 180px при обычных 16px, с запасом к нужным кнопкам 173px. */
+.row {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr) 150px 11.25rem;
+    align-items: center;
+    gap: var(--mantine-spacing-lg);
+    padding: var(--mantine-spacing-md) var(--mantine-spacing-lg);
+    border-bottom: 1px solid var(--mantine-color-gray-1);
+}
+
+.row:last-child {
+    border-bottom: none;
+}
+
+/* Четыре колонки в строку помещаются только на широком экране. На среднем дата
+   с составом остаются рядом, а статус и кнопки уезжают под них.
+
+   Размечены обе ячейки, и это важно: как только у статуса появляется явная
+   колонка, автораскладка ставит следующий за ним блок в начало новой строки —
+   то есть кнопки попадают в 110px колонку даты и обрезаются о край карточки. */
+@media (max-width: 62em) {
+    .row {
+        grid-template-columns: 110px minmax(0, 1fr);
+        gap: var(--mantine-spacing-sm) var(--mantine-spacing-lg);
+    }
+
+    .row > *:nth-child(3),
+    .row > *:nth-child(4) {
+        grid-column: 1 / -1;
+    }
+}
+
+/* На узком экране колонок не остаётся вовсе */
+@media (max-width: 36em) {
+    .row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Граница между секциями шире, чем разделитель «секция · протокол»,
+   иначе сводка читается плоским списком */
+.summarySep {
+    margin: 0 var(--mantine-spacing-xs);
+    color: var(--mantine-color-gray-6);
+}

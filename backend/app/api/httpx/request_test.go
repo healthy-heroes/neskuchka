@@ -89,3 +89,20 @@ func TestParseAndValidateBody(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, response.Code)
 	})
 }
+
+func TestQueryInt(t *testing.T) {
+	tcs := map[string]int{
+		"":         7, // отсутствует
+		"?n=3":     3,
+		"?n=-3":    -3, // границы — дело вызывающего
+		"?n=abc":   7,
+		"?n=":      7,
+		"?n=3.5":   7,
+		"?n=99999": 99999,
+	}
+
+	for query, expected := range tcs {
+		r := httptest.NewRequest(http.MethodGet, "/"+query, nil)
+		assert.Equal(t, expected, QueryInt(r, "n", 7), query)
+	}
+}

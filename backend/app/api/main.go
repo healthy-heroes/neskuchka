@@ -272,8 +272,18 @@ func (api *Api) addTracksRoutes(router chi.Router, session *session.Manager) {
 
 		r.Get("/workouts/{id}", h.GetWorkout)
 
-		r.With(auth).Post("/workouts", h.CreateWorkout)
-		r.With(auth).Put("/workouts/{id}", h.UpdateWorkout)
+		r.Group(func(r chi.Router) {
+			r.Use(auth)
+
+			r.Put("/", h.UpdateMainTrack)
+
+			// The whole track, drafts included — owner only, checked in the domain
+			r.Get("/workouts", h.GetMainTrackWorkouts)
+
+			r.Post("/workouts", h.CreateWorkout)
+			r.Put("/workouts/{id}", h.UpdateWorkout)
+			r.Delete("/workouts/{id}", h.DeleteWorkout)
+		})
 	})
 }
 

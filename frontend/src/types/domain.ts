@@ -54,4 +54,10 @@ export interface Workout {
 	Sections: Array<WorkoutSection>;
 
 	Notes?: string;
+
+	/** Видна ли тренировка участникам: будущие ещё не опубликованы. */
+	IsPublished?: boolean;
+	/** Открыто ли ещё окно правки. Считает бэкенд, клиент не пересчитывает.
+	 *  Это состояние тренировки, а не право читателя — права по Track.IsOwner. */
+	IsEditable?: boolean;
 }

@@ -2,6 +2,7 @@ package httpx
 
 import (
 	"net/http"
+	"strconv"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	R "github.com/go-pkgz/rest"
@@ -36,4 +37,15 @@ func ParseAndValidateBody[T validation.Validatable](w http.ResponseWriter, r *ht
 	}
 
 	return data, true
+}
+
+// QueryInt reads a numeric query parameter, falling back to the default on
+// anything that is not a number. Bounds are the caller's business.
+func QueryInt(r *http.Request, name string, fallback int) int {
+	value, err := strconv.Atoi(r.URL.Query().Get(name))
+	if err != nil {
+		return fallback
+	}
+
+	return value
 }

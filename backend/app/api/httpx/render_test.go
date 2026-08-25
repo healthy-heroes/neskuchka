@@ -102,6 +102,15 @@ func TestRenderDomainError(t *testing.T) {
 		assert.Equal(t, body(`{"error":"Forbidden"}`), response.Body.String())
 	})
 
+	t.Run("render locked error", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		RenderDomainError(response, zerolog.Nop(), fmt.Errorf("error: %w", domain.ErrLocked), "locked")
+
+		assert.Equal(t, "application/json; charset=utf-8", response.Header().Get("Content-Type"))
+		assert.Equal(t, http.StatusConflict, response.Code)
+		assert.Equal(t, body(`{"error":"Conflict"}`), response.Body.String())
+	})
+
 	t.Run("render internal server error", func(t *testing.T) {
 		response := httptest.NewRecorder()
 		RenderDomainError(response, zerolog.Nop(), fmt.Errorf("error: %w", errors.New("internal server error")), "internal server error")

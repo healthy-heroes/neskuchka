@@ -14,11 +14,14 @@ type StorageStub struct {
 
 	GetTrackFunc       func(context.Context, TrackID) (Track, error)
 	GetTrackBySlugFunc func(context.Context, TrackSlug) (Track, error)
+	UpdateTrackFunc    func(context.Context, Track) (Track, error)
 
 	GetWorkoutFunc    func(context.Context, WorkoutRef) (Workout, error)
-	FindWorkoutsFunc  func(context.Context, TrackID, WorkoutFindCriteria) ([]Workout, error)
+	FindWorkoutsFunc  func(context.Context, TrackID, WorkoutFindCriteria, time.Time) ([]Workout, error)
 	CreateWorkoutFunc func(context.Context, Workout) (Workout, error)
 	UpdateWorkoutFunc func(context.Context, Workout) (Workout, error)
+	DeleteWorkoutFunc func(context.Context, WorkoutRef) error
+	CountWorkoutsFunc func(context.Context, TrackID, time.Time) (int, int, error)
 }
 
 func (s *StorageStub) GetUser(ctx context.Context, id UserID) (User, error) {
@@ -45,12 +48,16 @@ func (s *StorageStub) GetTrackBySlug(ctx context.Context, slug TrackSlug) (Track
 	return s.GetTrackBySlugFunc(ctx, slug)
 }
 
+func (s *StorageStub) UpdateTrack(ctx context.Context, track Track) (Track, error) {
+	return s.UpdateTrackFunc(ctx, track)
+}
+
 func (s *StorageStub) GetWorkout(ctx context.Context, wr WorkoutRef) (Workout, error) {
 	return s.GetWorkoutFunc(ctx, wr)
 }
 
-func (s *StorageStub) FindWorkouts(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria) ([]Workout, error) {
-	return s.FindWorkoutsFunc(ctx, tid, criteria)
+func (s *StorageStub) FindWorkouts(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria, now time.Time) ([]Workout, error) {
+	return s.FindWorkoutsFunc(ctx, tid, criteria, now)
 }
 
 func (s *StorageStub) CreateWorkout(ctx context.Context, w Workout) (Workout, error) {
@@ -59,6 +66,14 @@ func (s *StorageStub) CreateWorkout(ctx context.Context, w Workout) (Workout, er
 
 func (s *StorageStub) UpdateWorkout(ctx context.Context, w Workout) (Workout, error) {
 	return s.UpdateWorkoutFunc(ctx, w)
+}
+
+func (s *StorageStub) DeleteWorkout(ctx context.Context, wr WorkoutRef) error {
+	return s.DeleteWorkoutFunc(ctx, wr)
+}
+
+func (s *StorageStub) CountWorkouts(ctx context.Context, tid TrackID, now time.Time) (int, int, error) {
+	return s.CountWorkoutsFunc(ctx, tid, now)
 }
 
 func createTrack() Track {
@@ -73,8 +88,11 @@ func createWorkout(trackID TrackID) Workout {
 	return Workout{
 		ID:      NewWorkoutID(),
 		TrackID: trackID,
-		Date:    time.Now(),
-		Notes:   "Test workout notes",
+		// dayOf, not time.Now(): a workout date is a calendar day, and the
+		// window predicates compare against one. A zoned instant here makes the
+		// test pass or fail by the hour it runs at.
+		Date:  dayOf(time.Now()),
+		Notes: "Test workout notes",
 		Sections: []WorkoutSection{
 			{
 				Title: "Section 1",

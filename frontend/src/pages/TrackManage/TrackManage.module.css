@@ -1,0 +1,9 @@
+/* Воздух под списком: иначе последняя строка упирается в край окна */
+.page {
+    padding-bottom: calc(var(--mantine-spacing-xl) * 2);
+}
+
+.about {
+    padding: var(--mantine-spacing-xl) 0 var(--mantine-spacing-lg);
+    border-bottom: 1px solid var(--mantine-color-gray-2);
+}
