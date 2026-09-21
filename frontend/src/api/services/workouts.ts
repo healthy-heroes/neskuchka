@@ -45,7 +45,7 @@ export interface UpdateTrackPayload {
 export const WorkoutsKeys = {
 	track: () => ['track:main'] as const,
 	workouts: () => [...WorkoutsKeys.track(), 'workouts'],
-	workout: (id: string) => [...WorkoutsKeys.track(), 'workout', id],
+	workout: (slug: string) => [...WorkoutsKeys.track(), 'workout', slug],
 
 	// Свой ключ: админский список отдаёт ещё и неопубликованное, в кэше
 	// публичного списка ему делать нечего
@@ -127,14 +127,14 @@ export class WorkoutsService extends Service {
 	}
 
 	/**
-	 * Get concrete workout by id
+	 * Get concrete workout by slug
 	 */
 	getWorkoutQuery(
-		id: string
+		slug: string
 	): UseQueryOptions<ApiResponse<TrackWorkoutData>, Error, TrackWorkoutData> {
 		return {
-			queryKey: WorkoutsKeys.workout(id),
-			queryFn: () => this.api.get<ApiResponse<TrackWorkoutData>>(`tracks/main/workouts/${id}`),
+			queryKey: WorkoutsKeys.workout(slug),
+			queryFn: () => this.api.get<ApiResponse<TrackWorkoutData>>(`tracks/main/workouts/${slug}`),
 			select: (response) => response.data,
 		};
 	}

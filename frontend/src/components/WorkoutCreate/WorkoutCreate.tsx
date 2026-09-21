@@ -24,7 +24,9 @@ export function WorkoutCreate() {
 	});
 
 	if (mutation.isSuccess) {
-		return <Navigate to="/workouts/$workoutId" params={{ workoutId: mutation.data.Workout.ID }} />;
+		return (
+			<Navigate to="/workouts/$workoutSlug" params={{ workoutSlug: mutation.data.Workout.Slug }} />
+		);
 	}
 
 	function handleCancel() {

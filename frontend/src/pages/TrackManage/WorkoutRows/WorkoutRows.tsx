@@ -82,8 +82,8 @@ function WorkoutRow({
 					<Button
 						renderRoot={(props) => (
 							<RouteLink
-								to="/workouts/$workoutId/edit"
-								params={{ workoutId: workout.ID }}
+								to="/workouts/$workoutSlug/edit"
+								params={{ workoutSlug: workout.Slug }}
 								underline="never"
 								{...props}
 							/>

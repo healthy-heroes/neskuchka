@@ -51,6 +51,10 @@ export interface Workout {
 	TrackID: string;
 	Date: string;
 
+	/** Адрес тренировки в ссылках: дата и хвост ID, `2026-09-21-3f4a5b`.
+	 *  Выводит бэкенд из Date и ID; при отправке на сервер не читается. */
+	Slug: string;
+
 	Sections: Array<WorkoutSection>;
 
 	Notes?: string;

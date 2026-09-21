@@ -63,6 +63,8 @@ export function makeInitialValues(trackId: string): WorkoutFormData {
 		ID: randomId(idPrefix),
 		TrackID: trackId,
 		Date: dayjs().format('YYYY-MM-DD'),
+		// Слаг назначает бэкенд при создании
+		Slug: '',
 		Sections: [makeSection('Разминка'), makeSection('Комплекс')],
 	};
 }

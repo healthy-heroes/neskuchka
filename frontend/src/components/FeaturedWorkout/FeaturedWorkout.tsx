@@ -66,8 +66,8 @@ export function FeaturedWorkout({ workout }: FeaturedWorkoutProps) {
 				</Button>
 
 				<RouteLink
-					to="/workouts/$workoutId"
-					params={{ workoutId: workout.ID }}
+					to="/workouts/$workoutSlug"
+					params={{ workoutSlug: workout.Slug }}
 					ml="auto"
 					fz="sm"
 					fw={600}

@@ -2,13 +2,20 @@ import dayjs from 'dayjs';
 import { randomId } from '@mantine/hooks';
 import { Workout } from '@/types/domain';
 
+/** Слаг по правилу бэкенда: дата и последние шесть символов ID. */
+export function workoutSlug({ ID, Date }: Pick<Workout, 'ID' | 'Date'>): string {
+	return `${Date}-${ID.slice(-6)}`;
+}
+
 export default function createWorkout(overrides: Partial<Workout> = {}): Workout {
 	const date = overrides.Date ?? '2025-01-01';
+	const id = overrides.ID ?? randomId();
 
 	return {
-		ID: randomId(),
+		ID: id,
 		TrackID: 'track-1',
 		Date: date,
+		Slug: workoutSlug({ ID: id, Date: date }),
 
 		// Состояние считает бэкенд, и фикстура считает его по тем же правилам:
 		// тренировка видна с её дня, а править её можно ещё сутки после

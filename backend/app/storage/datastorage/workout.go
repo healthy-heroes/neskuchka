@@ -85,6 +85,25 @@ func (s *Storage) GetWorkout(ctx context.Context, wr domain.WorkoutRef) (domain.
 	return workout.toDomain()
 }
 
+// GetWorkoutBySlug finds the workout a slug names: the one on that date whose
+// id ends in the tail.
+//
+// The date narrows the search through the track index to the handful of rows
+// of one day; the tail is compared on those. Two of them agreeing on the tail
+// is one chance in 65536, and is not handled: the lower id wins.
+func (s *Storage) GetWorkoutBySlug(ctx context.Context, ref domain.WorkoutSlugRef) (domain.Workout, error) {
+	workout := workoutRow{}
+	err := s.engine.GetContext(ctx, &workout,
+		"SELECT * FROM workout WHERE track_id = ? AND date = ? AND substr(id, -?) = ? ORDER BY id LIMIT 1",
+		ref.TrackID, ref.Date.Format(time.DateOnly), len(ref.IDTail), ref.IDTail,
+	)
+	if err != nil {
+		return domain.Workout{}, storage.HandleSqlError(err)
+	}
+
+	return workout.toDomain()
+}
+
 // workoutOrder is the one ordering of a track, and the keyset predicate below
 // has to match it exactly. Ties on date break by id: ids are UUIDv7, so they
 // sort by creation, which is what created_at was reaching for — except

@@ -18,6 +18,7 @@ type storage interface {
 	UpdateTrack(context.Context, Track) (Track, error)
 
 	GetWorkout(context.Context, WorkoutRef) (Workout, error)
+	GetWorkoutBySlug(context.Context, WorkoutSlugRef) (Workout, error)
 	FindWorkouts(context.Context, TrackID, WorkoutFindCriteria, time.Time) ([]Workout, error)
 	CreateWorkout(context.Context, Workout) (Workout, error)
 	UpdateWorkout(context.Context, Workout) (Workout, error)

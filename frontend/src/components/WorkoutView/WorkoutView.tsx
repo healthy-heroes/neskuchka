@@ -10,14 +10,14 @@ import { WorkoutSectionsSkeleton } from '../WorkoutSections/WorkoutSectionsSkele
 import classes from './WorkoutView.module.css';
 
 interface WorkoutViewProps {
-	workoutId: string;
+	workoutSlug: string;
 }
 
-export function WorkoutView({ workoutId }: WorkoutViewProps) {
+export function WorkoutView({ workoutSlug }: WorkoutViewProps) {
 	const { workouts } = useApi();
 
 	//todo: handle errors
-	const { data, isPending } = useQuery(workouts.getWorkoutQuery(workoutId));
+	const { data, isPending } = useQuery(workouts.getWorkoutQuery(workoutSlug));
 
 	if (isPending || !data) {
 		return (
