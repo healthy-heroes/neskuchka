@@ -10,7 +10,7 @@ import (
 	"github.com/healthy-heroes/neskuchka/backend/app/internal/session"
 )
 
-// GetWorkout returns a workout by id
+// GetWorkout returns a workout by slug
 func (s *Service) GetWorkout(w http.ResponseWriter, r *http.Request) {
 	logger := s.logger
 
@@ -26,9 +26,8 @@ func (s *Service) GetWorkout(w http.ResponseWriter, r *http.Request) {
 	// it to decide whether an unpublished workout may be shown.
 	userID, _ := session.GetUserID(r)
 
-	id := chi.URLParam(r, "id")
-	workout, err := s.dataStore.GetWorkout(r.Context(), domain.UserID(userID),
-		domain.WorkoutRef{TrackID: track.ID, WorkoutID: domain.WorkoutID(id)})
+	slug := domain.WorkoutSlug(chi.URLParam(r, "slug"))
+	workout, err := s.dataStore.GetWorkoutBySlug(r.Context(), domain.UserID(userID), track.ID, slug)
 	if err != nil {
 		httpx.RenderDomainError(w, logger, err, "failed to get workout")
 		return

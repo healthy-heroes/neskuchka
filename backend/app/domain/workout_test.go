@@ -111,11 +111,14 @@ func TestClearSlugs(t *testing.T) {
 	}
 }
 
-func TestGetWorkout(t *testing.T) {
+func TestGetWorkoutBySlug(t *testing.T) {
 	setup := func(track Track, w Workout) *Store {
 		return NewStore(Opts{
 			Storage: &StorageStub{
-				GetWorkoutFunc: func(ctx context.Context, wr WorkoutRef) (Workout, error) {
+				GetWorkoutBySlugFunc: func(ctx context.Context, ref WorkoutSlugRef) (Workout, error) {
+					if ref.TrackID != w.TrackID || ref.Date != w.Date {
+						return Workout{}, ErrNotFound
+					}
 					return w, nil
 				},
 				GetTrackFunc: func(ctx context.Context, tid TrackID) (Track, error) {
@@ -129,7 +132,7 @@ func TestGetWorkout(t *testing.T) {
 		track := createTrack()
 		w := workoutOn(track.ID, 0)
 
-		workout, err := setup(track, w).GetWorkout(context.Background(), UserID(""), w.Ref())
+		workout, err := setup(track, w).GetWorkoutBySlug(context.Background(), UserID(""), track.ID, w.Slug())
 
 		assert.Nil(t, err)
 		assert.Equal(t, w, workout)
@@ -139,7 +142,7 @@ func TestGetWorkout(t *testing.T) {
 		track := createTrack()
 		w := workoutOn(track.ID, 3)
 
-		workout, err := setup(track, w).GetWorkout(context.Background(), track.OwnerID, w.Ref())
+		workout, err := setup(track, w).GetWorkoutBySlug(context.Background(), track.OwnerID, track.ID, w.Slug())
 
 		assert.Nil(t, err)
 		assert.Equal(t, w, workout)
@@ -153,11 +156,20 @@ func TestGetWorkout(t *testing.T) {
 			"anonymous": UserID(""),
 			"stranger":  NewUserID(),
 		} {
-			_, err := setup(track, w).GetWorkout(context.Background(), uid, w.Ref())
+			_, err := setup(track, w).GetWorkoutBySlug(context.Background(), uid, track.ID, w.Slug())
 
-			// Not ErrForbidden: a 403 would confirm the id names something real
+			// Not ErrForbidden: a 403 would confirm the slug names something real
 			assert.ErrorIs(t, err, ErrNotFound, name)
 		}
+	})
+
+	t.Run("should not reach storage with a malformed slug", func(t *testing.T) {
+		track := createTrack()
+		w := workoutOn(track.ID, 0)
+
+		_, err := setup(track, w).GetWorkoutBySlug(context.Background(), UserID(""), track.ID, WorkoutSlug(w.ID))
+
+		assert.ErrorIs(t, err, ErrNotFound)
 	})
 }
 

@@ -81,16 +81,16 @@ function RouteComponent() {
 ### Protected + Owner check (TrackOwnerOnly)
 
 ```tsx
-// routes/workouts.$workoutId_.edit.tsx
+// routes/workouts.$workoutSlug_.edit.tsx
 function RouteComponent() {
-  const { workoutId } = Route.useParams()
+  const { workoutSlug } = Route.useParams()
   
   return (
     <TrackOwnerOnly 
       loadingComponent={<PageSkeleton hideHeader />} 
-      redirectTo={`/workouts/${workoutId}`}
+      redirectTo={`/workouts/${workoutSlug}`}
     >
-      <WorkoutEdit workoutId={workoutId} />
+      <WorkoutEdit workoutSlug={workoutSlug} />
     </TrackOwnerOnly>
   )
 }
@@ -98,11 +98,11 @@ function RouteComponent() {
 
 ```tsx
 // components/WorkoutEdit/WorkoutEdit.tsx
-function WorkoutEdit({ workoutId }: { workoutId: string }) {
+function WorkoutEdit({ workoutSlug }: { workoutSlug: string }) {
   // Owner check уже гарантирован TrackOwnerOnly
   // Компонент загружает только данные workout
   const { workouts } = useApi()
-  const { data, isPending } = useQuery(workouts.getWorkoutQuery(workoutId))
+  const { data, isPending } = useQuery(workouts.getWorkoutQuery(workoutSlug))
 
   if (isPending) {
     return <PageSkeleton />
@@ -115,10 +115,10 @@ function WorkoutEdit({ workoutId }: { workoutId: string }) {
 ### Public route (без проверок)
 
 ```tsx
-// routes/workouts.$workoutId.tsx
+// routes/workouts.$workoutSlug.tsx
 function RouteComponent() {
-  const { workoutId } = Route.useParams()
-  return <WorkoutView workoutId={workoutId} />  // Без RequireAuth
+  const { workoutSlug } = Route.useParams()
+  return <WorkoutView workoutSlug={workoutSlug} />  // Без RequireAuth
 }
 ```
 
@@ -166,16 +166,16 @@ function RouteComponent() {
 ```
 
 ```tsx
-// routes/workouts.$workoutId_.edit.tsx
+// routes/workouts.$workoutSlug_.edit.tsx
 function RouteComponent() {
-  const { workoutId } = Route.useParams()
+  const { workoutSlug } = Route.useParams()
   
   return (
     <TrackOwnerOnly 
       loadingComponent={<PageSkeleton hideHeader />} 
-      redirectTo={`/workouts/${workoutId}`}
+      redirectTo={`/workouts/${workoutSlug}`}
     >
-      <WorkoutEdit workoutId={workoutId} />
+      <WorkoutEdit workoutSlug={workoutSlug} />
     </TrackOwnerOnly>
   )
 }

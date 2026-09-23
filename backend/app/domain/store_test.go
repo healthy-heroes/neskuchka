@@ -16,12 +16,13 @@ type StorageStub struct {
 	GetTrackBySlugFunc func(context.Context, TrackSlug) (Track, error)
 	UpdateTrackFunc    func(context.Context, Track) (Track, error)
 
-	GetWorkoutFunc    func(context.Context, WorkoutRef) (Workout, error)
-	FindWorkoutsFunc  func(context.Context, TrackID, WorkoutFindCriteria, time.Time) ([]Workout, error)
-	CreateWorkoutFunc func(context.Context, Workout) (Workout, error)
-	UpdateWorkoutFunc func(context.Context, Workout) (Workout, error)
-	DeleteWorkoutFunc func(context.Context, WorkoutRef) error
-	CountWorkoutsFunc func(context.Context, TrackID, time.Time) (int, int, error)
+	GetWorkoutFunc       func(context.Context, WorkoutRef) (Workout, error)
+	GetWorkoutBySlugFunc func(context.Context, WorkoutSlugRef) (Workout, error)
+	FindWorkoutsFunc     func(context.Context, TrackID, WorkoutFindCriteria, time.Time) ([]Workout, error)
+	CreateWorkoutFunc    func(context.Context, Workout) (Workout, error)
+	UpdateWorkoutFunc    func(context.Context, Workout) (Workout, error)
+	DeleteWorkoutFunc    func(context.Context, WorkoutRef) error
+	CountWorkoutsFunc    func(context.Context, TrackID, time.Time) (int, int, error)
 }
 
 func (s *StorageStub) GetUser(ctx context.Context, id UserID) (User, error) {
@@ -54,6 +55,10 @@ func (s *StorageStub) UpdateTrack(ctx context.Context, track Track) (Track, erro
 
 func (s *StorageStub) GetWorkout(ctx context.Context, wr WorkoutRef) (Workout, error) {
 	return s.GetWorkoutFunc(ctx, wr)
+}
+
+func (s *StorageStub) GetWorkoutBySlug(ctx context.Context, ref WorkoutSlugRef) (Workout, error) {
+	return s.GetWorkoutBySlugFunc(ctx, ref)
 }
 
 func (s *StorageStub) FindWorkouts(ctx context.Context, tid TrackID, criteria WorkoutFindCriteria, now time.Time) ([]Workout, error) {

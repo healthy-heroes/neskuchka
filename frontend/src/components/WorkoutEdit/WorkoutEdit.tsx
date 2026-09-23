@@ -7,7 +7,7 @@ import { WorkoutCardSkeleton } from '../WorkoutCard/WorkoutCardSkeleton';
 import { WorkoutForm } from '../WorkoutForm/WorkoutForm';
 
 interface WorkoutEditProps {
-	workoutId: string;
+	workoutSlug: string;
 }
 
 /**
@@ -15,7 +15,7 @@ interface WorkoutEditProps {
  *
  * @attention This component don't check owner of the workout
  */
-export function WorkoutEdit({ workoutId }: WorkoutEditProps) {
+export function WorkoutEdit({ workoutSlug }: WorkoutEditProps) {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const { workouts } = useApi();
@@ -27,10 +27,17 @@ export function WorkoutEdit({ workoutId }: WorkoutEditProps) {
 			queryClient.invalidateQueries({ queryKey: WorkoutsKeys.track() });
 		},
 	});
-	const { data, isSuccess, isPending } = useQuery(workouts.getWorkoutQuery(workoutId));
+	const { data, isSuccess, isPending } = useQuery(workouts.getWorkoutQuery(workoutSlug));
 
+	// Слаг берём из ответа, а не из адреса: он выводится из даты, и после
+	// переноса тренировки старый уже никуда не ведёт
 	if (workoutUpdating.isSuccess) {
-		return <Navigate to="/workouts/$workoutId" params={{ workoutId }} />;
+		return (
+			<Navigate
+				to="/workouts/$workoutSlug"
+				params={{ workoutSlug: workoutUpdating.data.Workout.Slug }}
+			/>
+		);
 	}
 
 	if (isPending || !isSuccess) {
@@ -46,7 +53,7 @@ export function WorkoutEdit({ workoutId }: WorkoutEditProps) {
 	}
 
 	function handleCancel() {
-		navigate({ to: '/workouts/$workoutId', params: { workoutId } });
+		navigate({ to: '/workouts/$workoutSlug', params: { workoutSlug } });
 	}
 
 	const workout = data.Workout;

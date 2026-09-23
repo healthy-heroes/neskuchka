@@ -94,6 +94,45 @@ func Test_Workout_Get_NotFound(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrNotFound)
 }
 
+func Test_Workout_GetBySlug(t *testing.T) {
+	ds := setupTestStorage(t)
+
+	trackID := domain.NewTrackID()
+	seed := func(id domain.WorkoutID, date string) domain.Workout {
+		w, err := ds.CreateWorkout(t.Context(), domain.Workout{
+			ID: id, TrackID: trackID, Date: workoutDate(date), Sections: []domain.WorkoutSection{},
+		})
+		require.NoError(t, err)
+		return w
+	}
+
+	// Two workouts share a day; their ids agree on everything but the tail.
+	// A third shares the tail of the first but sits on another day.
+	first := seed("019a2b3c-4d5e-7f60-8a9b-0c1d2e3f0001", "2025-02-06")
+	second := seed("019a2b3c-4d5e-7f60-8a9b-0c1d2e3f0002", "2025-02-06")
+	seed("019a2b3c-4d5e-7f60-8a9c-0c1d2e3f0001", "2025-02-07")
+
+	t.Run("should tell same-day workouts apart by the tail", func(t *testing.T) {
+		got, err := ds.GetWorkoutBySlug(t.Context(), domain.WorkoutSlugRef{TrackID: trackID, Date: first.Date, IDTail: "3f0001"})
+		require.NoError(t, err)
+		assert.Equal(t, first, got)
+
+		got, err = ds.GetWorkoutBySlug(t.Context(), domain.WorkoutSlugRef{TrackID: trackID, Date: second.Date, IDTail: "3f0002"})
+		require.NoError(t, err)
+		assert.Equal(t, second, got)
+	})
+
+	t.Run("should not find a tail on another day", func(t *testing.T) {
+		_, err := ds.GetWorkoutBySlug(t.Context(), domain.WorkoutSlugRef{TrackID: trackID, Date: workoutDate("2025-02-08"), IDTail: "3f0001"})
+		assert.ErrorIs(t, err, domain.ErrNotFound)
+	})
+
+	t.Run("should not find a workout of another track", func(t *testing.T) {
+		_, err := ds.GetWorkoutBySlug(t.Context(), domain.WorkoutSlugRef{TrackID: domain.NewTrackID(), Date: first.Date, IDTail: "3f0001"})
+		assert.ErrorIs(t, err, domain.ErrNotFound)
+	})
+}
+
 func Test_Workout_Update(t *testing.T) {
 	ds := setupTestStorage(t)
 

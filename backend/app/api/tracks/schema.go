@@ -19,6 +19,10 @@ type WorkoutInfo struct {
 	Notes    string
 	Sections []domain.WorkoutSection
 
+	// Slug is the workout's address for links. Read-only: it is derived from
+	// Date and ID, so the client never sends it back.
+	Slug string
+
 	// IsPublished and IsEditable are the workout's state, not its data, and not
 	// the reader's permission: whether participants can see it yet, and whether
 	// its edit window is still open. They ride along so that the client shows
@@ -38,6 +42,8 @@ func MakeWorkoutInfo(workout domain.Workout, now time.Time) WorkoutInfo {
 		Date:     workout.Date.Format(time.DateOnly),
 		Notes:    workout.Notes,
 		Sections: makeSections(workout.Sections),
+
+		Slug: string(workout.Slug()),
 
 		IsPublished: workout.IsPublished(now),
 		IsEditable:  workout.IsEditable(now),

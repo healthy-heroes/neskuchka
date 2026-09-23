@@ -70,8 +70,8 @@ function HistoryRow({ workout }: { workout: Workout }) {
 
 	return (
 		<RouteLink
-			to="/workouts/$workoutId"
-			params={{ workoutId: workout.ID }}
+			to="/workouts/$workoutSlug"
+			params={{ workoutSlug: workout.Slug }}
 			className={classes.row}
 			underline="never"
 		>

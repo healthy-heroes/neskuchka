@@ -270,7 +270,7 @@ func (api *Api) addTracksRoutes(router chi.Router, session *session.Manager) {
 		r.Get("/", h.GetMainTrack)
 		r.Get("/last_workouts", h.GetMainTrackLastWorkouts)
 
-		r.Get("/workouts/{id}", h.GetWorkout)
+		r.Get("/workouts/{slug}", h.GetWorkout)
 
 		r.Group(func(r chi.Router) {
 			r.Use(auth)

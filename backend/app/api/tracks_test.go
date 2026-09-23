@@ -26,6 +26,7 @@ type trackResp struct {
 
 type workoutResp struct {
 	ID       string
+	Slug     string
 	TrackID  string
 	Date     string
 	Notes    string
@@ -244,16 +245,17 @@ func Test_ApiTracks_GetMainTrackLastWorkouts(t *testing.T) {
 }
 
 func Test_ApiTracks_GetWorkout(t *testing.T) {
-	t.Run("should return a workout by id", func(t *testing.T) {
+	t.Run("should return a workout by slug", func(t *testing.T) {
 		f := setupTracks(t)
 		workout := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(0), "easy day")
 
-		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(workout.ID))
+		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(workout.Slug()))
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		data := ReadJSON[workoutRespWrapper](t, resp)
 		assert.Equal(t, workoutResp{
 			ID:       string(workout.ID),
+			Slug:     string(workout.Slug()),
 			TrackID:  string(f.Track.ID),
 			Date:     dateIn(0),
 			Notes:    "easy day",
@@ -264,10 +266,33 @@ func Test_ApiTracks_GetWorkout(t *testing.T) {
 		}, data.Workout)
 	})
 
+	t.Run("should tell two workouts of one day apart", func(t *testing.T) {
+		f := setupTracks(t)
+		morning := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(0), "morning")
+		evening := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(0), "evening")
+
+		for _, workout := range []domain.Workout{morning, evening} {
+			resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(workout.Slug()))
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			data := ReadJSON[workoutRespWrapper](t, resp)
+			assert.Equal(t, string(workout.ID), data.Workout.ID)
+		}
+	})
+
 	t.Run("should return 404 for an unknown workout", func(t *testing.T) {
 		f := setupTracks(t)
+		workout := domain.Workout{ID: domain.NewWorkoutID(), Date: time.Now()}
 
-		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(domain.NewWorkoutID()))
+		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(workout.Slug()))
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
+
+	t.Run("should return 404 for an id where a slug is expected", func(t *testing.T) {
+		f := setupTracks(t)
+		workout := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(0), "easy day")
+
+		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(workout.ID))
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})
 
@@ -284,7 +309,7 @@ func Test_ApiTracks_GetWorkout(t *testing.T) {
 
 		alien := seedWorkout(t, f.TestApp, otherTrack.ID, "2026-01-10", "alien")
 
-		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(alien.ID))
+		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(alien.Slug()))
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	})
 }
@@ -718,7 +743,7 @@ func Test_ApiTracks_GetWorkoutHidesDrafts(t *testing.T) {
 			"anonymous": nil,
 			"stranger":  {WithCookie(f.LoginAs(t, stranger.ID))},
 		} {
-			resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(draft.ID), opts...)
+			resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(draft.Slug()), opts...)
 			assert.Equal(t, http.StatusNotFound, resp.StatusCode, name)
 		}
 	})
@@ -727,7 +752,7 @@ func Test_ApiTracks_GetWorkoutHidesDrafts(t *testing.T) {
 		f := setupTracks(t)
 		draft := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(3), "draft")
 
-		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(draft.ID),
+		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(draft.Slug()),
 			WithCookie(f.LoginAs(t, f.Owner.ID)))
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -740,7 +765,7 @@ func Test_ApiTracks_GetWorkoutHidesDrafts(t *testing.T) {
 		f := setupTracks(t)
 		published := seedWorkout(t, f.TestApp, f.Track.ID, dateIn(-3), "published")
 
-		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(published.ID))
+		resp := f.GET(t, "/api/v1/tracks/main/workouts/"+string(published.Slug()))
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 }

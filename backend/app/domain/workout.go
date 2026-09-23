@@ -170,13 +170,18 @@ type WorkoutPage struct {
 	Planned int
 }
 
-// GetWorkout gets a workout by id.
+// GetWorkoutBySlug gets a workout by the slug of its URL.
 //
 // An unpublished workout belongs to its owner alone. A stranger asking for one
 // is told it does not exist rather than that it is off limits: ErrForbidden
-// would confirm the id names something real.
-func (s *Store) GetWorkout(ctx context.Context, uid UserID, wr WorkoutRef) (Workout, error) {
-	w, err := s.storage.GetWorkout(ctx, wr)
+// would confirm the slug names something real.
+func (s *Store) GetWorkoutBySlug(ctx context.Context, uid UserID, tid TrackID, slug WorkoutSlug) (Workout, error) {
+	ref, err := ParseWorkoutSlug(tid, slug)
+	if err != nil {
+		return Workout{}, err
+	}
+
+	w, err := s.storage.GetWorkoutBySlug(ctx, ref)
 	if err != nil {
 		return Workout{}, err
 	}
@@ -185,7 +190,7 @@ func (s *Store) GetWorkout(ctx context.Context, uid UserID, wr WorkoutRef) (Work
 		return w, nil
 	}
 
-	t, err := s.storage.GetTrack(ctx, wr.TrackID)
+	t, err := s.storage.GetTrack(ctx, tid)
 	if err != nil {
 		return Workout{}, err
 	}

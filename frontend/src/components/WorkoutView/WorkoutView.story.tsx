@@ -12,7 +12,7 @@ const workout = createWorkout();
 const apiService = createApiServiceMock({
 	workouts: {
 		getWorkoutQuery: () => ({
-			queryKey: ['workout', workout.ID],
+			queryKey: ['workout', workout.Slug],
 			queryFn: () => Promise.resolve({ data: { Workout: workout } }),
 			select: (response) => response.data,
 		}),
@@ -22,7 +22,7 @@ const apiService = createApiServiceMock({
 export const Default = () => {
 	return (
 		<StoryPreview apiService={apiService}>
-			<WorkoutView workoutId={workout.ID} />
+			<WorkoutView workoutSlug={workout.Slug} />
 		</StoryPreview>
 	);
 };
